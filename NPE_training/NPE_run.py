@@ -19,7 +19,7 @@ def main(args):
     simulators = Simulators(args.task)
 
     # Sample theta from the prior
-    theta = priors().sample((args.num_training,))
+    theta = priors.sample((args.num_training,))
 
     # Run the simulator
     X = simulators(theta)
@@ -29,6 +29,7 @@ def main(args):
     inference = inference.append_simulations(theta, X)
 
     # Train the density estimator and build the posterior
+    print(f"training_start")
     start_time = time.time()  # Start timer
     density_estimator = inference.train()
     end_time = time.time()  # End timer
