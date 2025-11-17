@@ -35,7 +35,7 @@ def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, c
     if measure == "c2st":
         sample_post_size = sample_post.size(0)
         dist = c2st(true_sample[:sample_post_size], sample_post[:sample_post_size])
-            
+    print("c2st: ", dist)  
     # Save
     output_dir = f"../depot_hyun/NPE_ABC/NPE_{measure}_results/{task}/J_{int(num_training/1000)}K"   
     os.makedirs(output_dir, exist_ok=True)
