@@ -82,11 +82,6 @@ class Posteriors:
         return task.get_reference_posterior_samples(num_observation=j)
     
 
-def Posteriors(task_name: str, obs: torch.tensor):
-    task_name = task_name.lower()
-    if task_name == "two_moons":
-        return my_twomoons_posterior(obs,10_000)
-
 def observation_lists(task_name:str):
     task_name = task_name.lower()
     if task_name == "two_moons":
