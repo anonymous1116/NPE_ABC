@@ -267,7 +267,7 @@ def Simulators(task_name: str):
     if task_name == "bernoulli_glm":
         return simulator_bernoulli
     
-    elif task_name in ["my_twomoons"]:
+    elif task_name in ["two_moons"]:
         return simulator_my_twomoons
 
     else:
