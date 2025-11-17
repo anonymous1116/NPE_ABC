@@ -46,9 +46,9 @@ SLURM_SUBMIT_DIR=$(pwd)
 cd $SLURM_SUBMIT_DIR
 
 # Run the Python script for the current simulation
-echo "Running simulation for task '{args.task}', '{args.num_training}' '{args.methods}', {args.measure} x0_ind={j}, seed={seed}..."
-python ./utils/get_measure.py --task {args.task} --num_training {args.num_training} --measure {args.measure} --x0_ind {x0_ind} --seed {seed} --post_n_samples {post_n_samples} 
-echo "## Job completed for task '{args.task}', '{args.methods}', {args.measure} x0_ind={x0_ind}, seed={seed}" ##"
+echo "Running simulation for task '{args.task}', '{args.num_training}' '{args.methods}', x0_ind={j}, seed={seed}..."
+python ./utils/get_measure.py --task {args.task} --num_training {args.num_training}  --x0_ind {x0_ind} --seed {seed} --post_n_samples {post_n_samples} 
+echo "## Job completed for task '{args.task}', '{args.methods}', x0_ind={x0_ind}, seed={seed}" ##"
 """
     # Create the directory for SLURM files if it doesn't exist
     output_dir = f"NPE_ABC/{args.measure}/{args.task}/slurm_files"

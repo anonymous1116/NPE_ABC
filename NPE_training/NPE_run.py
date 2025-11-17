@@ -75,7 +75,7 @@ if __name__ == "__main__":
     limits = Bounds(args.task)
     x0_list = observation_lists(args.task)
     gpu_ind = True if torch.cuda.is_available() else False
-#
+
     for i in range(len(x0_list.tolist())):
-        create_c2st_job_script(args.task, args.num_training, "c2st", x0_ind = i, seed = args.seed, use_gpu = gpu_ind)
+        create_c2st_job_script(args.task, args.num_training, "c2st", i, args.seed, gpu_ind)
     
