@@ -31,10 +31,72 @@ def Priors(task_name: str):
     else:
         raise ValueError(f"Unknown task name for prior: {task_name}")
     
+
+class Posteriors:
+    def __init__(self, task):
+        self.task = task
+
+    def __call__(self, obs=None, n_samples=100, bounds=None, **kwargs):
+        # Handle the case where task is 'slcp' differently
+        if self.task == "two_moons":
+            return self.two_moons(kwargs.get('j', 0))
+        
+    def apply_bounds(self, samples, bounds):
+        # Apply bounds to filter the samples
+        if bounds is not None:
+            index = []
+            for j in range(samples.size()[1]):  # Iterate over each dimension
+                ind = (samples[:, j] < bounds[j][1]) & (samples[:, j] > bounds[j][0])
+                index.append(ind)
+            index = torch.stack(index, 1)
+            index = torch.all(index, 1)  # Check if all conditions hold per sample
+            samples = samples[index]
+        return samples
+
+    def my_twomoons(self, obs = torch.tensor([0.0,0.0]), n_samples = 100):
+        c = 1/np.sqrt(2)
+        theta = torch.zeros((n_samples, 2))
+        for i in range(n_samples):
+            p = Simulators("my_twomoons")(torch.zeros(1,2))
+            q = torch.zeros(2)
+            q[0] = p[0,0] - obs[0]
+            q[1] = obs[1] - p[0,1]
+            
+            if np.random.rand() < 0.5:
+                q[0] = -q[0]
+                
+            theta[i, 0] = c * (q[0] - q[1])
+            theta[i, 1] = c * (q[0] + q[1])
+        return theta
+    
+    def two_moons(self, j):
+        task = sbibm.get_task("two_moons")
+        return task.get_reference_posterior_samples(num_observation=j)
+
+    def gaussian_mixture(self, j):
+        task = sbibm.get_task("gaussian_mixture")  # See sbibm.get_available_tasks() for all tasks
+        return task.get_reference_posterior_samples(num_observation=j)
+    
+    def gaussian_linear_uniform(self, j):
+        task = sbibm.get_task("gaussian_linear_uniform")  # See sbibm.get_available_tasks() for all tasks
+        return task.get_reference_posterior_samples(num_observation=j)
+    
+
 def Posteriors(task_name: str, obs: torch.tensor):
     task_name = task_name.lower()
     if task_name == "two_moons":
         return my_twomoons_posterior(obs,10_000)
+
+def observation_lists(task_name:str):
+    task_name = task_name.lower()
+    if task_name == "two_moons":
+        obs_list = []
+        for j in range(1, 11):
+            task = sbibm.get_task(task_name)
+            observation = task.get_observation(num_observation=j)  # 10 per task
+            obs_list.append(observation[0].tolist())
+        return torch.tensor(obs_list)
+
 
 def simulator_bernoulli(thetas, batch_size=100_000):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

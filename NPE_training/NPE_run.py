@@ -7,8 +7,9 @@ import os
 import argparse
 import time
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
-from simulator import Simulators, Priors
-
+from simulator import Simulators, Priors, observation_lists, Posteriors, Bounds
+from sbibm.metrics.c2st import c2st
+import subprocess
 
 def main(args):
     # Set the random seed
@@ -56,12 +57,67 @@ def main(args):
     
     print(f"Saved inference object and elapsed time to '{output_file_path}'.")
 
+def create_c2st_job_script(args, j, i, post_n_samples, use_gpu=False):
+    sbatch_gpu_options = """
+#SBATCH --gpus-per-node=1
+#SBATCH --nodes=1
+#SBATCH --partition=a10,a30
+#SBATCH --mem=80G
+""" if use_gpu else """
+#SBATCH -p cpu
+"""
+
+    sbatch_activate_options = """
+conda activate /depot/wangxiao/apps/hyun18/NPE_NABC
+""" if use_gpu else """
+conda activate /depot/wangxiao/apps/hyun18/NPE_NABC
+"""
+
+    job_script = f"""#!/bin/bash
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=8
+#SBATCH --time=00:10:00
+#SBATCH --account=statdept
+#SBATCH -q standby
+{sbatch_gpu_options}
+#SBATCH --output={args.measure}/{args.task}/output_log/output_log_%A.log
+#SBATCH --error={args.measure}/{args.task}/error_log/error_log_%A.txt
+
+mkdir -p {args.measure}/{args.task}/output_log
+mkdir -p {args.measure}/{args.task}/error_log
+
+# Load the required Python environment
+module load conda
+{sbatch_activate_options}
+
+# Change to the directory where the job was submitted from
+SLURM_SUBMIT_DIR=$(pwd)
+cd $SLURM_SUBMIT_DIR
+
+# Run the Python script for the current simulation
+echo "Running simulation for task '{args.task}', '{args.num_training}' '{args.methods}', {args.measure} j={j}, i={i}..."
+python ./utils/get_measure.py --task {args.task} --num_training {args.num_training} --measure {args.measure} --x0_ind {j} --seed {i} --post_n_samples {post_n_samples} 
+echo "## Job completed for task '{args.task}', '{args.methods}', {args.measure} j={j}, i={i}" ##"
+"""
+    # Create the directory for SLURM files if it doesn't exist
+    output_dir = f"NPE_ABC/{args.measure}/{args.task}/slurm_files"
+    os.makedirs(output_dir, exist_ok=True)
+    job_file_path = os.path.join(output_dir, f"{args.task}_NPE_{int(args.num_training/1000)}K_c2st_j{j}_i{i}.sh")
+    with open(job_file_path, 'w') as f:
+        f.write(job_script)
+    print(f"Job script created: {job_file_path}")
+
+    # Submit the job immediately
+    subprocess.run(['sbatch', job_file_path])
+    print(f"Job {job_file_path} submitted.")
+
+
+
 def get_args():
     # Create an argument parser
     parser = argparse.ArgumentParser(description="Run simulations and inference.")
     parser.add_argument('--task', type=str, default='twomoons', help='Simulation type: twomoons, MoG, Lapl, GL_U or SLCP')
     parser.add_argument('--seed', type=int, default=1, help='Random seed for reproducibility')
-    parser.add_argument('--cond_den', type=str, default='maf', help='Conditional density estimator type: mdn, maf, nsf')
     parser.add_argument('--num_training', type=int, default=500_000, help='Number of simulations to run')
     return parser.parse_args()
 
@@ -71,10 +127,10 @@ if __name__ == "__main__":
     main(args)  # Pass the entire args object to the main function
 
     #task_params = get_task_parameters(args.task)
-    #limits = task_params["limits"]
-    ##x0 = task_params["x0_list"]
-    #gpu_ind = True if torch.cuda.is_available() else False
+    limits = Bounds(args.task)
+    x0 = observation_lists[args.task]
+    gpu_ind = True if torch.cuda.is_available() else False
 #
- #   for i in range(len(x0)):
-  #      create_c2st_job_script(args.cond_den, "NPE", args.task, "c2st", 10000, args.num_training, i, args.seed, use_gpu = gpu_ind)
+    for i in range(len(x0)):
+        create_c2st_job_script(args.task, args.num_training, "c2st", i = i, j = args.seed, use_gpu = gpu_ind)
     
