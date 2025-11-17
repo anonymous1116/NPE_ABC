@@ -26,11 +26,11 @@ def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, c
     with open(output_file_path, 'rb') as f:
         saved_data = pickle.load(f)
     
-    inference = saved_data['inference']
+    inference = saved_data['posterior']
     x0 = torch.tensor(x0, dtype = torch.float32)
     if x0.ndim == 1:
         x0= torch.reshape(x0, (1, x0.size(0)))
-    sample_post = inference.build_posterior().sample((post_n_samples,), x=torch.tensor(x0))
+    sample_post = posterior((post_n_samples,), x=torch.tensor(x0))
 
     if measure == "c2st":
         sample_post_size = sample_post.size(0)
