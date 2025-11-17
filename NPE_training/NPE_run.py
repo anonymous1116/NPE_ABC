@@ -7,9 +7,8 @@ import os
 import argparse
 import time
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
-from simulator import Simulators, Priors, observation_lists, Posteriors, Bounds
-from sbibm.metrics.c2st import c2st
-import subprocess
+from simulator import Simulators, Priors, observation_lists, Bounds
+from utils.evaluate import create_c2st_job_script
 
 def main(args):
     # Set the random seed
@@ -64,6 +63,7 @@ def get_args():
     parser.add_argument('--task', type=str, default='twomoons', help='Simulation type: twomoons, MoG, Lapl, GL_U or SLCP')
     parser.add_argument('--seed', type=int, default=1, help='Random seed for reproducibility')
     parser.add_argument('--num_training', type=int, default=500_000, help='Number of simulations to run')
+    parser.add_argument('--cond_den', type=str, default='maf', help='Conditional density estimator type: mdn, maf, nsf')
     return parser.parse_args()
 
 
@@ -77,5 +77,5 @@ if __name__ == "__main__":
     gpu_ind = True if torch.cuda.is_available() else False
 #
     for i in range(len(x0)):
-        create_c2st_job_script(args.task, args.num_training, "c2st", i = i, j = args.seed, use_gpu = gpu_ind)
+        create_c2st_job_script(args.task, args.num_training, "c2st", x0_ind = i, seed = args.seed, use_gpu = gpu_ind)
     
