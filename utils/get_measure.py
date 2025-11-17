@@ -5,7 +5,7 @@ from simulator import observation_lists, Bounds, Posteriors
 from sbibm.metrics.c2st import c2st
 
 
-def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training):
+def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, cond):
     x0_list = observation_lists(task)
     x0 = x0_list[x0_ind]
     torch.manual_seed(seed)
@@ -19,7 +19,7 @@ def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training):
     else:
         true_sample = posterior(torch.tensor(x0), n_samples=post_n_samples, bounds=limits)
     
-    output_file_path = f"/home/hyun18/depot_hyun/hyun/NPE_ABC/nets/{task}/J_{int(num_training/1000)}K"    
+    output_file_path = f"/home/hyun18/depot_hyun/hyun/NPE_ABC/nets/{task}/J_{int(num_training/1000)}K/{task}_{seed}_{cond}.pkl'"    
     if not os.path.exists(output_file_path):
         raise FileNotFoundError(f"NPE results file not found: {output_file_path}")
         
@@ -51,9 +51,12 @@ if __name__ == "__main__":
     parser.add_argument('--post_n_samples', type=int, default=10_000, help='Number of samples from posterior distributions')
     parser.add_argument("--num_training", type=int, default=500_000,
                         help="Number of simulations for training (default: 500_000)")
+    parser.add_argument('--cond_den', type=str, default='nsf', 
+                        help='Conditional density estimator type: mdn, maf, nsf')
+    
     
     args = parser.parse_args()
     
-    run_similiarity(args.task, args.measure, args.x0_ind, args.seed, args.post_n_samples, args.num_training)
+    run_similiarity(args.task, args.measure, args.x0_ind, args.seed, args.post_n_samples, args.num_training, args.cond_den)
 
 
