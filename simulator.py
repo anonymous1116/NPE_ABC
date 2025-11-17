@@ -4,7 +4,7 @@ import numpy as np
 import torch.distributions as D
 from torch.distributions import MultivariateNormal, Dirichlet, Multinomial
 from sbi.utils import BoxUniform
-
+import sbibm
 # Optional: you can use this from torch.distributions if available
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 
@@ -26,10 +26,15 @@ def Priors(task_name: str):
         precision_diag = 0.5 * torch.ones(dim)
         precision_matrix = torch.diag(precision_diag)
         return MultivariateNormal(loc=loc, precision_matrix=precision_matrix)
-    elif task_name in ["my_twomoons"]:
-        return BoxUniform(low = -5*torch.ones(2), high = 5*torch.ones(2))
+    elif task_name in ["two_moons"]:
+        return BoxUniform(low = -1*torch.ones(2), high = 1*torch.ones(2))
     else:
         raise ValueError(f"Unknown task name for prior: {task_name}")
+    
+def Posteriors(task_name: str, obs: torch.tensor):
+    task_name = task_name.lower()
+    if task_name == "two_moons":
+        return my_twomoons_posterior(obs,10_000)
 
 def simulator_bernoulli(thetas, batch_size=100_000):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

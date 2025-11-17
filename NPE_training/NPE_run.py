@@ -39,7 +39,7 @@ def main(args):
     print(f"Training with {args.cond_den}")
 
     # Define the output directory
-    output_dir = f"../depot_hyun/hyun/NPE_ABC_nets/{args.task}/J_{int(args.num_training/1000)}K"
+    output_dir = f"../depot_hyun/hyun/NPE_ABC/nets/{args.task}/J_{int(args.num_training/1000)}K"
 
     # Create the directory if it doesn't exist
     if not os.path.exists(output_dir):
