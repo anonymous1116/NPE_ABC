@@ -8,7 +8,7 @@ import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from simulator import observation_lists
 
-def create_c2st_job_script(task, num_training, measure, x0_ind, seed, post_n_samples, use_gpu=False):
+def create_c2st_job_script(task, num_training, measure, x0_ind, seed, post_n_samples, cond_den, use_gpu=False):
     sbatch_gpu_options = """
 #SBATCH --gpus-per-node=1
 #SBATCH --nodes=1
@@ -47,7 +47,7 @@ cd $SLURM_SUBMIT_DIR
 
 # Run the Python script for the current simulation
 echo "Running simulation for task '{task}', '{num_training}', x0_ind={x0_ind}, seed={seed}..."
-python ./utils/get_measure.py --task {task} --num_training {num_training} --measure {measure} --x0_ind {x0_ind} --seed {seed} --post_n_samples {post_n_samples} 
+python ./utils/get_measure.py --task {task} --num_training {num_training} --measure {measure} --x0_ind {x0_ind} --seed {seed} --post_n_samples {post_n_samples} --cond_den {cond_den} 
 echo "## Job completed for task '{task}', x0_ind={x0_ind}, seed={seed}" ##"
 """
     # Create the directory for SLURM files if it doesn't exist
@@ -73,6 +73,8 @@ def get_args():
     parser.add_argument('--post_n_samples', type=int, default=10_000, help='Number of samples from posterior distributions')
     parser.add_argument("--num_training", type=int, default=500_000,
                         help="Number of simulations for training (default: 500_000)")
+    parser.add_argument('--cond_den', type=str, default='nsf', 
+                        help='Conditional density estimator type: mdn, maf, nsf')
     return parser.parse_args()
 
 def main(args):
@@ -83,6 +85,6 @@ def main(args):
 
     for i in range(len(x0_list.tolist())):
         for j in seeds:
-            create_c2st_job_script(args.task, args.num_traning, args.measure, x0_ind = i, seed = j, use_gpu = gpu_ind)
+            create_c2st_job_script(args.task, args.num_traning, args.measure, x0_ind = i, seed = j, cond_den = args.cond_den, use_gpu = gpu_ind)
 
 
