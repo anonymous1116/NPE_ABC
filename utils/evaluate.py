@@ -83,6 +83,7 @@ def main(args):
     # Create SLURM job scripts for each combination of x0_list and 10 runs
     gpu_ind = True if torch.cuda.is_available() else False
 
+    print("distribute")
     for i in range(len(x0_list.tolist())):
         for j in seeds:
             create_c2st_job_script(args.task, args.num_traning, args.measure, x0_ind = i, seed = j, cond_den = args.cond_den, use_gpu = gpu_ind)
