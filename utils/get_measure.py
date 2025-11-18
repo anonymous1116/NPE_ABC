@@ -53,7 +53,8 @@ def get_args():
                         help="Number of simulations for training (default: 500_000)")
     parser.add_argument('--cond_den', type=str, default='nsf', 
                         help='Conditional density estimator type: mdn, maf, nsf')
-    
+    return parser.parse_args()
+
     
 if __name__ == "__main__":
     args = get_args()  # Parse command-line arguments    
