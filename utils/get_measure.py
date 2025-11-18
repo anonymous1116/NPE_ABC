@@ -42,7 +42,7 @@ def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, c
     torch.save(dist, os.path.join(output_dir, f"result_x0_{x0_ind}_seed_{seed}.pt"))  # Customize filename as needed
     
 
-if __name__ == "__main__":
+def get_args():
     parser = argparse.ArgumentParser(description="Run SLURM job for simulation.")
     parser.add_argument('--task', type=str, required=True, help='Task type')
     parser.add_argument('--measure', type=str, required=True, default = "c2st", help='Measurement type (c2st, SW)')
@@ -55,8 +55,8 @@ if __name__ == "__main__":
                         help='Conditional density estimator type: mdn, maf, nsf')
     
     
-    args = parser.parse_args()
-    
+if __name__ == "__main__":
+    args = get_args()  # Parse command-line arguments    
     run_similiarity(args.task, args.measure, args.x0_ind, args.seed, args.post_n_samples, args.num_training, args.cond_den)
 
 

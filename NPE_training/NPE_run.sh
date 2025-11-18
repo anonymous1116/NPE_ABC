@@ -35,3 +35,4 @@ python NPE_training/NPE_run.py --task "two_moons" --seed $seeds --cond_den "nsf"
 echo "## Run Completed for seed=$seeds ##"
 
 # python utils/get_measure.py --task "two_moons" --measure "c2st" --x0_ind 0 --seed 1 --post_n_samples 10000 --num_training 1000
+#python utils/evaluate.py --task "two_moons" --measure "c2st" --post_n_samples 10000 --num_training 1000
