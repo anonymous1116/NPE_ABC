@@ -77,6 +77,7 @@ def get_args():
                         help='Conditional density estimator type: mdn, maf, nsf')
     return parser.parse_args()
 
+
 def main(args):
     print("asdf")
     x0_list = observation_lists
@@ -90,4 +91,9 @@ def main(args):
             create_c2st_job_script(args.task, args.num_traning, args.measure, x0_ind = i, seed = j, cond_den = args.cond_den, use_gpu = gpu_ind)
     print("distribute end")
     
+
+if __name__ == "__main__":
+    args = get_args()  # Parse command-line arguments
+    main(args)  # Pass the entire args object to the main function
+
 
