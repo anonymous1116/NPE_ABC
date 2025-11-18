@@ -4,7 +4,7 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --partition=cpu
 #SBATCH --account=statdept
-#SBATCH --time=04:00:00
+#SBATCH --time=1-04:00:00
 #SBATCH --qos=normal
 #SBATCH --array=1-10               # Create a job array with indices from 1 to 10
 #SBATCH --output=NPE/NPE_nsf/output_log/output_log_%A_%a.log
@@ -30,7 +30,7 @@ seeds=$((seed_START + SLURM_ARRAY_TASK_ID - 1))
 
 # Run the Python script with the specified N_EPOCHS value
 echo "Running with seed=$seeds"
-python NPE_training/NPE_run.py --task "two_moons" --seed $seeds --cond_den "nsf" --num_training 100000
+python NPE_training/NPE_run.py --task "two_moons" --seed $seeds --cond_den "nsf" --num_training 500000
 #python NPE_training/NPE_run.py --task "two_moons" --seed 1 --num_training 1000 --cond_den "nsf"
 echo "## Run Completed for seed=$seeds ##"
 
