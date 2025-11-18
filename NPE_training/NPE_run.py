@@ -1,4 +1,4 @@
-import sys
+import sys, os
 import torch
 import numpy as np
 from sbi.inference import NPE

@@ -258,3 +258,15 @@ def forward_from_Z_chunked(
 
     theta = theta_flat.reshape(N, B, theta_dim)
     return theta
+
+
+def covs_chunked(MAT, chunk=1000):
+    N = MAT.shape[0]
+    mu = MAT.mean(dim=0, keepdim=True)         # (1, M, 2)
+    covs_list = []
+    for s in range(0, MAT.shape[1], chunk):
+        e = s + chunk
+        xc = MAT[:, s:e, :] - mu[:, s:e, :]    # (N, chunk, 2)
+        cov_chunk = torch.einsum('nmd,nme->mde', xc, xc) / (N - 1)  # (chunk,2,2)
+        covs_list.append(cov_chunk)
+    return torch.cat(covs_list, dim=0)       # (M, 2, 2)
