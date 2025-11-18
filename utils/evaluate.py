@@ -88,7 +88,7 @@ def main(args):
     print("distribute")
     for i in range(len(x0_list.tolist())):
         for j in seeds:
-            create_c2st_job_script(args.task, args.num_training, args.measure, x0_ind = i, seed = j, cond_den = args.cond_den, use_gpu = gpu_ind)
+            create_c2st_job_script(args.task, args.num_training, args.measure, x0_ind = i, seed = j, cond_den = args.cond_den, post_n_samples=10_000, use_gpu = gpu_ind)
     print("distribute end")
     
 
