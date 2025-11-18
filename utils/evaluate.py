@@ -78,6 +78,7 @@ def get_args():
     return parser.parse_args()
 
 def main(args):
+    print("asdf")
     x0_list = observation_lists
     seeds = np.arange(1, 11)  # Use np.arange instead of np.range
     # Create SLURM job scripts for each combination of x0_list and 10 runs
