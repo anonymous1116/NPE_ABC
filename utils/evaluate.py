@@ -80,7 +80,7 @@ def get_args():
 
 def main(args):
     print("asdf")
-    x0_list = observation_lists
+    x0_list = observation_lists(args.task)
     seeds = np.arange(1, 11)  # Use np.arange instead of np.range
     # Create SLURM job scripts for each combination of x0_list and 10 runs
     gpu_ind = True if torch.cuda.is_available() else False
