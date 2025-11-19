@@ -7,8 +7,8 @@
 #SBATCH --time=04:00:00
 #SBATCH --qos=standby
 #SBATCH --array=0-99               # Create a job array with indices from 1 to 10
-#SBATCH --output=NPE/NPE_nsf/output_log/output_log_%A_%a.log
-#SBATCH --error=NPE/NPE_nsf/output_log/error_log_%A_%a.txt
+#SBATCH --output=SNPE/NPE_nsf/output_log/output_log_%A_%a.log
+#SBATCH --error=SNPE/NPE_nsf/output_log/error_log_%A_%a.txt
 
 # Create the output_log directory if it doesn't exist
 mkdir -p NPE/NPE_nsf/output_log
@@ -29,5 +29,5 @@ num_training=1000
 task="two_moons"
 
 echo "[$(date)] Starting job: x0_ind=$x0_ind, seed=$seed, L=$L"
-python NPE_training/SNPE_run.py --task $task --seed $seeds --x0_ind $x0_ind --num_training $num_training --cond_den "nsf"
+python NPE_training/SNPE_run.py --task $task --seed $seed --x0_ind $x0_ind --num_training $num_training --cond_den "nsf"
 echo "[$(date)] Job complete: x0_ind=$x0_ind, seed=$seed"
