@@ -1,7 +1,7 @@
 
 import os, sys, torch,pickle, argparse 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
-from simulator import observation_lists, Bounds, Posteriors
+from simulator import observation_lists, Bounds, true_Posteriors
 from sbibm.metrics.c2st import c2st
 
 
@@ -12,7 +12,7 @@ def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, c
     print(x0)
 
     limits = Bounds(task)
-    posterior = Posteriors(task)
+    posterior = true_Posteriors(task)
     task_benchmark = ["two_moons"]
     if task in task_benchmark:
         true_sample = posterior(j = x0_ind+1)
