@@ -25,7 +25,9 @@ cd $SLURM_SUBMIT_DIR
 seed=$((SLURM_ARRAY_TASK_ID / 10 + 1))
 # Run the calibrate_amor.py
 x0_ind=$((SLURM_ARRAY_TASK_ID % 10)) 
+num_training=1000
+task="two_moons"
 
 echo "[$(date)] Starting job: x0_ind=$x0_ind, seed=$seed, L=$L"
-python NPE_training/SNPE_run.py --task "two_moons" --seed $seeds --x0_ind $x0_ind --cond_den "nsf" --num_training 1000
+python NPE_training/SNPE_run.py --task $task --seed $seeds --x0_ind $x0_ind --num_training $num_training --cond_den "nsf"
 echo "[$(date)] Job complete: x0_ind=$x0_ind, seed=$seed"
