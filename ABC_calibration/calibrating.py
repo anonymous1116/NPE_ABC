@@ -131,7 +131,6 @@ def main(args):
     covs_X = covs_X
     print(covs_X)
 
-    
     samples_GPU = forward_from_Z_chunked(density_estimator_npe_gpu, x0, Y_abc.size(1), 50000)
     samples_GPU = samples_GPU.squeeze(1).cpu()
     mean_obs = torch.mean(samples_GPU,0)
@@ -201,7 +200,6 @@ def get_args():
                     help="Tolerance value for ABC (any positive float, default: 1e-4 but less than 1e-2)")
     parser.add_argument('--cond_den', type=str, default='nsf', 
                         help='Conditional density estimator type: mdn, maf, nsf')
-    
     return parser.parse_args()
 
 if __name__ == "__main__":
