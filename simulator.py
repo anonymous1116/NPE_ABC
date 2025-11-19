@@ -31,7 +31,6 @@ def Priors(task_name: str):
     else:
         raise ValueError(f"Unknown task name for prior: {task_name}")
     
-
 class true_Posteriors:
     def __init__(self, task):
         self.task = task
@@ -91,8 +90,6 @@ class true_Posteriors:
             raise ValueError(f"File for posterior not found.")
         return post_sample
     
-
-
 def observation_lists(task_name:str):
     task_name = task_name.lower()
     if task_name in ["two_moons", "bernoulli_glm2"]:
@@ -103,7 +100,6 @@ def observation_lists(task_name:str):
             obs_list.append(observation[0].tolist())
         return torch.tensor(obs_list)
         
-
 def simulator_bernoulli(thetas, batch_size=100_000):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     design_matrix = torch.load("/home/hyun18/NDP/benchmark/design_matrix.pt").to(device)
