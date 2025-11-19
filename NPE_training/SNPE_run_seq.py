@@ -26,7 +26,6 @@ def main(args):
     x0 = observation_lists(args.task)[args.x0_ind]
     inference = NPE(priors)
     proposal = priors
-    num_rounds = 10
     start_time = time.time()  # Start timer
 
     # Load the inference object if it exists
@@ -97,7 +96,7 @@ def main(args):
         with open(output_file_path_tmp, 'wb') as f:
             pickle.dump({'inference': inference, 'density_estimator': density_estimator, 'elapsed_time_list': [elapsed_time], 'c2st_list': [c2st_results], 'round': round}, f)
         print(f"Saved inference object and elapsed time to '{output_file_path_tmp}'.")
-        print(f"round {round} completed")
+    print(f"round {round} completed")
     
     if round >= args.total_round-1:
         print("Training completed successfully.")
@@ -145,7 +144,7 @@ cd $SLURM_SUBMIT_DIR
 
 # Run the Python script for additional training
 echo "Resuming training..."
-python NPE_training/SNPE_run_seq.py --task "{args.task}" --seed {args.seed} --cond_den "{args.cond_den}" --num_training {args.num_training} --x0_ind {args.x0_ind}
+python NPE_training/SNPE_run_seq.py --task "{args.task}" --seed {args.seed} --cond_den "{args.cond_den}" --num_training {args.num_training} --x0_ind {args.x0_ind} --total_round {args.total_round}
 echo "## Job completed for task {args.task} with seed {args.seed} ##"
 """
     # Create the directory if it doesn't exist
