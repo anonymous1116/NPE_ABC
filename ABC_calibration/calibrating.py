@@ -25,7 +25,7 @@ def main(args):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     priors = Priors(args.task)
-    posteriors = Posteriors(args.task)
+    true_posteriors = Posteriors(args.task)
     simulators = Simulators(args.task)
     bounds = Bounds(args.task)
     
@@ -104,9 +104,9 @@ def main(args):
 
     task_benchmark = ["two_moons"]
     if args.task in task_benchmark:
-        post_sample = posterior(j = args.x0_ind+1)
+        post_sample = true_posteriors(j = args.x0_ind+1)
     else:
-        post_sample = posterior(torch.tensor(x0), n_samples=10_000, bounds=bounds)
+        post_sample = true_posteriors(torch.tensor(x0), n_samples=10_000, bounds=bounds)
     
     tol = (args.tol/tol0 + 1e-12)
 
