@@ -40,7 +40,7 @@ class true_Posteriors:
         # Handle the case where task is 'slcp' differently
         if self.task == "two_moons":
             return self.two_moons(kwargs.get('j', 0))
-        
+
     def apply_bounds(self, samples, bounds):
         # Apply bounds to filter the samples
         if bounds is not None:
@@ -81,17 +81,28 @@ class true_Posteriors:
         task = sbibm.get_task("gaussian_linear_uniform")  # See sbibm.get_available_tasks() for all tasks
         return task.get_reference_posterior_samples(num_observation=j)
     
+    def bernoulli_glm(self, j):
+        try:
+            # Get the directory of the current file (simulator.py)
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            file_path = os.path.join(current_dir, f"../depot_hyun/NeuralABC_R/bernoulli_glm/post_{j}.pt")
+            post_sample = torch.load(file_path)
+        except FileNotFoundError:
+            raise ValueError(f"File for posterior not found.")
+        return post_sample
+    
+
 
 def observation_lists(task_name:str):
     task_name = task_name.lower()
-    if task_name == "two_moons":
+    if task_name in ["two_moons", "bernoulli_glm2"]:
         obs_list = []
         for j in range(1, 11):
             task = sbibm.get_task(task_name)
             observation = task.get_observation(num_observation=j)  # 10 per task
             obs_list.append(observation[0].tolist())
         return torch.tensor(obs_list)
-
+        
 
 def simulator_bernoulli(thetas, batch_size=100_000):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
