@@ -33,13 +33,13 @@ def main(args):
     #X_cal = simulators(Y_cal)
         
     # Initialize the Priors and Simulators classes and ABC_methods
-    if args.task in ["two_moons"]:
-        tol0 = 1e-2
-    else:
-        tol0 = 1e-3
+    #if args.task in ["two_moons"]:
+    #    tol0 = 1e-2
+    #else:
+    #    tol0 = 1e-3
 
-    if L > 1_000_000_000 + 1:
-        tol0 = 1e-5
+    #if L > 1_000_000_000 + 1:
+    #    tol0 = 1e-5
     
     chunk_size = 50_000_000
     num_chunks = L // chunk_size
@@ -91,7 +91,7 @@ def main(args):
         
         X_chunk = simulators(Y_chunk)
         
-        index_ABC = ABC_rej2(x0, X_chunk, tol0, device, args.task)
+        index_ABC = ABC_rej2(x0, X_chunk, args.tol, device, args.task)
         X_chunk, Y_chunk = X_chunk[index_ABC], Y_chunk[index_ABC]
         X_abc.append(X_chunk)
         Y_abc.append(Y_chunk)
