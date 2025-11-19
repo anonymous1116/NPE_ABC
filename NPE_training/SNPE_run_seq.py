@@ -53,6 +53,7 @@ def main(args):
             round = data['round']
             print("Loaded previous inference object.")
         round += 1
+        print("round", flush = True)
         torch.manual_seed(args.seed + round)
         start_time = time.time()
         posterior = inference.build_posterior(density_estimator)
@@ -98,7 +99,8 @@ def main(args):
             pickle.dump({'inference': inference, 'density_estimator': density_estimator, 'elapsed_time_list': [elapsed_time], 'c2st_list': [c2st_results], 'round': round}, f)
         print(f"Saved inference object and elapsed time to '{output_file_path_tmp}'.")
         print(f"round {round} completed")
-    if round == {args.total_round-1}:
+    
+    if round == args.total_round-1:
         print("Training completed successfully.")
         output_dir = f"../depot_hyun/hyun/NPE_ABC/SNPE_nets_seq_round{args.total_round}/{args.task}/J_{int(args.num_training/1000)}K"
         if not os.path.exists(output_dir):
