@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
-#SBATCH --time=00:15:00
+#SBATCH --time=01:00:00
 #SBATCH --account=statdept
 #SBATCH --gpus-per-node=1
 #SBATCH --mem=170G
@@ -27,10 +27,10 @@ cd $SLURM_SUBMIT_DIR
 # Calculate seed and dim_out
 seed=$((SLURM_ARRAY_TASK_ID / 10 + 1))
 #L=100000000
-L=100000000
-task="two_moons"
+L=1000000000
+task="bernoulli_glm2"
 num_training=500000
-tol=1e-4
+tol=1e-5
 
 # Run the calibrate_amor.py
 x0_ind=$((SLURM_ARRAY_TASK_ID % 10)) 
