@@ -84,7 +84,7 @@ def main(args):
 
         if nums == 0:
             break
-        if args.task == "bernoulli_glm":
+        if args.task == "bernoulli_glm2":
             Y_chunk = truncated_mvn_sample(nums, priors_mean, priors_std, min_vals, max_vals)
         else:
             Y_chunk = param_box(UnifSample(bins = 10), adj, num=nums)
