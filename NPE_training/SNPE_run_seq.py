@@ -65,7 +65,9 @@ def main(args):
         posterior = inference.build_posterior(density_estimator)
         samples = posterior.sample((10_000,), x=x0)
         end_time = time.time()
+        elapsed_time = end_time - start_time
         c2st_results = c2st(samples, true)[0].tolist()
+        print("c2st", c2st_results)
         c2st_list.append(c2st_results)
         elapsed_time_list.append(elapsed_time)
         with open(output_file_path_tmp, 'wb') as f:
@@ -88,6 +90,8 @@ def main(args):
         
         c2st_results = c2st(samples, true)[0].tolist()
         #proposal = posterior.set_default_x(x0)
+        print("c2st", c2st_results)
+        
         elapsed_time = end_time - start_time
 
         with open(output_file_path_tmp, 'wb') as f:
