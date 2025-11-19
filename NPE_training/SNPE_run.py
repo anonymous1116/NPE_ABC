@@ -80,6 +80,8 @@ def get_args():
     parser.add_argument('--num_training', type=int, default=500_000, help='Number of simulations to run')
     parser.add_argument('--cond_den', type=str, default='nsf', help='Conditional density estimator type: mdn, maf, nsf')
     parser.add_argument('--x0_ind', type=int, default=0, help='observation index')
+    #parser.add_argument('--total_round', type=int, default=0, help='observation index')
+    
     return parser.parse_args()
 
 if __name__ == "__main__":

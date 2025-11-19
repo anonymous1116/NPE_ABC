@@ -91,7 +91,7 @@ def main(args):
         
         c2st_results = c2st(samples, true)[0].tolist()
         #proposal = posterior.set_default_x(x0)
-        print("c2st", c2st_results)
+        print(f"c2st, {c2st_results}")
         
         elapsed_time = end_time - start_time
 
