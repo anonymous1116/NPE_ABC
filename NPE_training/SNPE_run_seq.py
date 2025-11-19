@@ -100,7 +100,7 @@ def main(args):
         print(f"Saved inference object and elapsed time to '{output_file_path_tmp}'.")
         print(f"round {round} completed")
     
-    if round == args.total_round-1:
+    if round >= args.total_round-1:
         print("Training completed successfully.")
         output_dir = f"../depot_hyun/hyun/NPE_ABC/SNPE_nets_seq_round{args.total_round}/{args.task}/J_{int(args.num_training/1000)}K"
         if not os.path.exists(output_dir):
