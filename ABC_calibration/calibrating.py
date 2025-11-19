@@ -29,18 +29,6 @@ def main(args):
     simulators = Simulators(args.task)
     bounds = Bounds(args.task)
     
-    #Y_cal = priors.sample((1_000_000,))
-    #X_cal = simulators(Y_cal)
-        
-    # Initialize the Priors and Simulators classes and ABC_methods
-    #if args.task in ["two_moons"]:
-    #    tol0 = 1e-2
-    #else:
-    #    tol0 = 1e-3
-
-    #if L > 1_000_000_000 + 1:
-    #    tol0 = 1e-5
-    
     chunk_size = 50_000_000
     num_chunks = L // chunk_size
     
