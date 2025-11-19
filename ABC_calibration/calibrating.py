@@ -72,7 +72,7 @@ def main(args):
         min_vals = torch.min(adj,0).values
     
     priors_mean = torch.zeros(10)
-    priors_std = torch.ones(10) * np.sqrt([2])
+    priors_std = torch.ones(10) * np.sqrt(2)
 
     print("max_vals:", max_vals)   
     print("min_vals:", min_vals)
@@ -108,8 +108,7 @@ def main(args):
     else:
         post_sample = true_posteriors(torch.tensor(x0), n_samples=10_000, bounds=bounds)
     
-    tol = (args.tol/tol0 + 1e-12)
-
+    
     density_estimator_npe = saved_data["density_estimator"]
     N = 10000
     
@@ -160,7 +159,7 @@ def main(args):
     
     NABC_results.append(tmp)
     
-    sci_str = format(tol*tol0, ".0e")
+    sci_str = format(args.tol, ".0e")
     print(sci_str)  # Output: '1e-02'
     
 
