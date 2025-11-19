@@ -108,7 +108,10 @@ def observation_lists(task_name:str):
             observation = task.get_observation(num_observation=j)  # 10 per task
             obs_list.append(observation[0].tolist())
         return torch.tensor(obs_list)
-        
+    else:
+        raise ValueError(f"Unknown task name for observation_lists: {task_name}")
+    
+
 def simulator_bernoulli(thetas, batch_size=100_000):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     design_matrix = torch.load("/home/hyun18/NPE_ABC/utils/files/design_matrix.pt").to(device)
