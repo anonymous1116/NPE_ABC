@@ -35,6 +35,6 @@ python NPE_training/SNPE_run.py --task $task --seed $seed --x0_ind $x0_ind --num
 echo "[$(date)] Job complete: x0_ind=$x0_ind, seed=$seed"
 
 
-#python NPE_training/SNPE_run_seq.py --task "two_moons" --seed 1 --x0_ind 1 --num_training 1000 --cond_den "nsf" --total_round 2
+#python NPE_training/SNPE_run_seq.py --task "two_moons" --seed 1 --x0_ind 1 --num_training 1000 --cond_den "nsf" --total_round 5
 #python NPE_training/SNPE_run.py --task "two_moons" --seed 1 --x0_ind 1 --num_training 1000 --cond_den "nsf" --total_round 2
 
