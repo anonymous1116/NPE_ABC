@@ -72,7 +72,7 @@ def main(args):
         c2st_list.append(c2st_results)
         elapsed_time_list.append(elapsed_time)
         with open(output_file_path_tmp, 'wb') as f:
-            pickle.dump({'inference': inference, 'density_estimator': density_estimator, 'elapsed_time_list': [elapsed_time], 'c2st_list': [c2st_results], 'round': round}, f)
+            pickle.dump({'inference': inference, 'density_estimator': density_estimator, 'elapsed_time_list': [elapsed_time], 'c2st_list': c2st_list, 'round': round}, f)
         print(f"Saved inference object and elapsed time to '{output_file_path_tmp}'.")
 
     else:
@@ -91,7 +91,7 @@ def main(args):
         
         c2st_results = c2st(samples, true)[0].tolist()
         #proposal = posterior.set_default_x(x0)
-        print(f"c2st, {c2st_results}")
+        print("c2st", c2st_results)
         
         elapsed_time = end_time - start_time
 
