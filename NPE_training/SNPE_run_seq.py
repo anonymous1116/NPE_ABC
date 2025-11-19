@@ -31,7 +31,7 @@ def main(args):
     c2st_results_list = []
 
     # Load the inference object if it exists
-    output_dir_tmp = f"../depot_hyun/hyun/NPE_ABC/SNPE_nets_temp/{args.task}/J_{int(args.num_training/1000)}K"
+    output_dir_tmp = f"../depot_hyun/hyun/NPE_ABC/SNPE_nets_{args.total_round}_temp/{args.task}/J_{int(args.num_training/1000)}K"
     
     # Create the temporal directory if it doesn't exist
     if not os.path.exists(output_dir_tmp):
@@ -93,10 +93,10 @@ def main(args):
         with open(output_file_path_tmp, 'wb') as f:
             pickle.dump({'inference': inference, 'density_estimator': density_estimator, 'elapsed_time_list': [elapsed_time], 'c2st_list': [c2st_results], 'round': round}, f)
         print(f"Saved inference object and elapsed time to '{output_file_path_tmp}'.")
-
-    if round == 9:
+        print(f"round {round} completed")
+    if round == {args.total_round-1}:
         print("Training completed successfully.")
-        output_dir = f"../depot_hyun/hyun/NPE_ABC/SNPE_nets_seq/{args.task}/J_{int(args.num_training/1000)}K"
+        output_dir = f"../depot_hyun/hyun/NPE_ABC/SNPE_nets_seq_round{args.total_round}/{args.task}/J_{int(args.num_training/1000)}K"
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
             print(f"Save Directory '{output_dir}' created.")
@@ -112,7 +112,7 @@ def main(args):
         
     
     else:
-        print(f"Training not completed. Generating a new job script..., round {round}/9")
+        print(f"Training not completed. Generating a new job script..., round {round}/{args.total_round-1}")
         create_job_script(args)
 
     
@@ -140,7 +140,7 @@ cd $SLURM_SUBMIT_DIR
 
 # Run the Python script for additional training
 echo "Resuming training..."
-python NPE_training/SNPE_run_seq.py --task "{args.task}" --seed {args.seed} --cond_den "{args.cond_den}" --num_training {args.num_training}
+python NPE_training/SNPE_run_seq.py --task "{args.task}" --seed {args.seed} --cond_den "{args.cond_den}" --num_training {args.num_training} --x0_ind {args.x0_ind}
 echo "## Job completed for task {args.task} with seed {args.seed} ##"
 """
     # Create the directory if it doesn't exist
@@ -151,7 +151,7 @@ echo "## Job completed for task {args.task} with seed {args.seed} ##"
     else:
         print(f"Directory '{output_dir}' already exists.")
 
-    job_file_path = os.path.join(output_dir, f"{args.cond_den}_{args.seed}_continued.sh")
+    job_file_path = os.path.join(output_dir, f"{args.cond_den}_{args.x0_ind}_{args.seed}_round{args.total_round}_continued.sh")
     with open(job_file_path, 'w') as f:
         f.write(job_script)
     print(f"Job script created and submitted: {job_file_path}")
@@ -169,6 +169,7 @@ def get_args():
     parser.add_argument('--cond_den', type=str, required=True, help='Conditional density estimator type: mdn, maf, nsf')
     parser.add_argument('--num_training', type=int, default=500_000, help='Number of simulations to run')
     parser.add_argument('--x0_ind', type=int, default=0, help='observation index')
+    parser.add_argument('--total_round', type=int, default=2, help='total round of SNPE')
     
     return parser.parse_args()
 
