@@ -164,7 +164,7 @@ def main(args):
     print(sci_str)  # Output: '1e-02'
     
 
-    output_dir = f"../depot_hyun/hyun/NPE_ABC/NPE_ABC_c2st_results/{args.task}/{int(args.L/1_000_000)}M_eta{sci_str}"
+    output_dir = f"../depot_hyun/hyun/NPE_ABC/NPE_ABC_c2st_results/{args.task}/J_{int(args.num_training/1000)}K/{int(args.L/1_000_000)}M_eta{sci_str}"
     ## Create the directory if it doesn't exist
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
