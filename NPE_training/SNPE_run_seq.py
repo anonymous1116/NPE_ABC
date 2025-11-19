@@ -28,7 +28,6 @@ def main(args):
     proposal = priors
     num_rounds = 10
     start_time = time.time()  # Start timer
-    c2st_results_list = []
 
     # Load the inference object if it exists
     output_dir_tmp = f"../depot_hyun/hyun/NPE_ABC/SNPE_nets_{args.total_round}_temp/{args.task}/J_{int(args.num_training/1000)}K"
