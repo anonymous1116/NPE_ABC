@@ -1,13 +1,17 @@
 #!/bin/bash
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
-#SBATCH --time=03:59:00
-#SBATCH --account=standby
+#SBATCH --time=00:10:00
+#SBATCH --account=statdept
 #SBATCH --gpus-per-node=1
-#SBATCH --nodes=1
+#SBATCH --mem=170G
+#SBATCH --qos=standby
+#SBATCH --partition=a10
 #SBATCH --array=0-99
-#SBATCH --output=ABC_calibration/output_log/output_log_%A_%a.out
-#SBATCH --error=ABC_calibration/output_log/error_log_%A_%a.txt
+#SBATCH --output=ABC_calibration/log/output_log_%A_%a.out
+#SBATCH --error=ABC_calibration/log/error_log_%A_%a.txt
+
+# #SBATCH --partition=a10,a100-40gb,a100-80gb
 
 # Create the output_log directory if it doesn't exist
 mkdir -p ABC_calibration/output_log
