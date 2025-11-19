@@ -130,8 +130,8 @@ def create_job_script(args):
 #SBATCH --account=statdept
 #SBATCH --time=04:00:00
 #SBATCH --qos=standby
-#SBATCH --output=SNPE/output_log/output_log_%a.log
-#SBATCH --error=SNPE/output_log/error_log_%a.txt
+#SBATCH --output=SNPE/output_log/output_log_%A_%a.log
+#SBATCH --error=SNPE/output_log/error_log_%A_%a.txt
 
 # Create the output_log directory if it doesn't exist
 mkdir -p SNPE/output_log
