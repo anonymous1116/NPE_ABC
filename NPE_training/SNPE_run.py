@@ -7,8 +7,9 @@ import os
 import argparse
 import time
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
-from simulator import Simulators, Priors, observation_lists, Bounds
+from simulator import Simulators, Priors, observation_lists, true_Posteriors
 from utils.evaluate import create_c2st_job_script
+from sbibm.metrics.c2st import c2st
 
 def main(args):
     # Set the random seed
@@ -17,15 +18,33 @@ def main(args):
     # Initialize the Priors and Simulators classes
     priors = Priors(args.task)
     simulators = Simulators(args.task)
-
+    true_posteriors = true_Posteriors(args.task)
+    
+    true = true_posteriors(j = args.x0_ind+1)
+    
     x0 = observation_lists[args.x0_ind]
     inference = NPE(priors)
 
-    # Create inference object
-    inference = NPE(prior=priors, density_estimator=args.cond_den)
-    inference = inference.append_simulations(theta, X)
+    inference = NPE(priors)
+    proposal = priors
+    num_rounds = 10
 
-    # Train the density estimator and build the posterior
+    c2st_results_list = []
+    for _ in range(num_rounds):
+        theta = proposal.sample((args.num_training,))
+        x = simulators(theta)
+
+        # In `SNLE` and `SNRE`, you should not pass the `proposal` to `.append_simulations()`.
+        density_estimator = inference.append_simulations(
+            theta, x, proposal=proposal
+        ).train()
+        posterior = inference.build_posterior(density_estimator)
+        samples = posterior.sample((10_000,), x=x0)
+        c2st_results = c2st(samples, true)
+        c2st_results_list.append(c2st_results[0].tolist())
+        print(f"J: {int(args.num_training/1000)}K, Round: {_+1}, c2st {c2st_results}" )
+        proposal = posterior.set_default_x(x0)
+    
     print(f"training_start")
     start_time = time.time()  # Start timer
     density_estimator = inference.train()
@@ -36,7 +55,7 @@ def main(args):
     print(f"Training with {args.cond_den}")
 
     # Define the output directory
-    output_dir = f"../depot_hyun/hyun/NPE_ABC/nets/{args.task}/J_{int(args.num_training/1000)}K"
+    output_dir = f"../depot_hyun/hyun/NPE_ABC/SNPE_nets/{args.task}/J_{int(args.num_training/1000)}K"
 
     # Create the directory if it doesn't exist
     if not os.path.exists(output_dir):
@@ -53,7 +72,10 @@ def main(args):
     
     print(f"Saved inference object and elapsed time to '{output_file_path}'.")
 
-
+    output_dir = f"../depot_hyun/hyun/NPE_ABC/SNPE_c2st_results/{args.task}/J_{int(args.num_training/1000)}K"   
+    os.makedirs(output_dir, exist_ok=True)
+    torch.save(c2st_results_list, os.path.join(output_dir, f"result_x0_{args.x0_ind}_seed_{args.seed}.pt"))  # Customize filename as needed
+    
 def get_args():
     # Create an argument parser
     parser = argparse.ArgumentParser(description="Run simulations and inference.")
@@ -64,16 +86,6 @@ def get_args():
     parser.add_argument('--x0_ind', type=int, default=1, help='observation index')
     return parser.parse_args()
 
-
 if __name__ == "__main__":
     args = get_args()  # Parse command-line arguments
     main(args)  # Pass the entire args object to the main function
-
-    #task_params = get_task_parameters(args.task)
-    limits = Bounds(args.task)
-    x0_list = observation_lists(args.task)
-    gpu_ind = True if torch.cuda.is_available() else False
-
-    for i in range(len(x0_list.tolist())):
-        create_c2st_job_script(args.task, args.num_training, "c2st", i, args.seed, 10_000, args.cond_den, gpu_ind)
-    
