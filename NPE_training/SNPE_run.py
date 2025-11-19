@@ -25,10 +25,10 @@ def main(args):
     x0 = observation_lists(args.task)[args.x0_ind]
     inference = NPE(priors)
     proposal = priors
-    num_rounds = 10
-    start_time = time.time()  # Start timer
     c2st_results_list = []
-    for _ in range(num_rounds):
+    elapsed_time_list = []
+    for _ in range(args.total_round):
+        start_time = time.time()  # Start timer
         theta = proposal.sample((args.num_training,))
         x = simulators(theta)
 
@@ -36,11 +36,13 @@ def main(args):
         density_estimator = inference.append_simulations(
             theta, x, proposal=proposal
         ).train()
+        end_time = time.time()
         posterior = inference.build_posterior(density_estimator)
         samples = posterior.sample((10_000,), x=x0)
         c2st_results = c2st(samples, true)
         c2st_results_list.append(c2st_results[0].tolist())
-        print(f"J: {int(args.num_training/1000)}K, Round: {_+1}, c2st {c2st_results}" )
+        elapsed_time_list.append(elapsed_time)
+        print(f"J: {int(args.num_training/1000)}K, Round: {_+1}/{args.total_round}, c2st {c2st_results}" )
         proposal = posterior.set_default_x(x0)
     
     print(f"training_start")
@@ -51,7 +53,7 @@ def main(args):
     print(f"Training with {args.cond_den}")
 
     # Define the output directory
-    output_dir = f"../depot_hyun/hyun/NPE_ABC/SNPE_nets/{args.task}/J_{int(args.num_training/1000)}K"
+    output_dir = f"../depot_hyun/hyun/NPE_ABC/SNPE_nets_round{args.total_round}/{args.task}/J_{int(args.num_training/1000)}K"
 
     # Create the directory if it doesn't exist
     if not os.path.exists(output_dir):
@@ -62,13 +64,13 @@ def main(args):
 
     # Save the inference object using pickle in the specified directory
     # Save the inference object and elapsed time using pickle in the specified directory
-    output_file_path = os.path.join(output_dir, f"{args.task}_{args.seed}_{args.cond_den}.pkl")
+    output_file_path = os.path.join(output_dir, f"{args.task}_{args.seed}_{args.total_round}_{args.cond_den}.pkl")
     with open(output_file_path, 'wb') as f:
-        pickle.dump({'density_estimator': density_estimator, 'posterior': inference.build_posterior(density_estimator), 'elapsed_time': elapsed_time}, f)
-    
+        pickle.dump({'density_estimator': density_estimator, 'posterior': inference.build_posterior(density_estimator), 'elapsed_time_list': elapsed_time, 'c2st_list': c2st_results_list}, f)
+        
     print(f"Saved inference object and elapsed time to '{output_file_path}'.")
 
-    output_dir = f"../depot_hyun/hyun/NPE_ABC/SNPE_c2st_results/{args.task}/J_{int(args.num_training/1000)}K"   
+    output_dir = f"../depot_hyun/hyun/NPE_ABC/SNPE_c2st_round{args.total_round}_results/{args.task}/J_{int(args.num_training/1000)}K"   
     os.makedirs(output_dir, exist_ok=True)
     torch.save(c2st_results_list, os.path.join(output_dir, f"result_x0_{args.x0_ind}_seed_{args.seed}.pt"))  # Customize filename as needed
     
@@ -80,7 +82,7 @@ def get_args():
     parser.add_argument('--num_training', type=int, default=500_000, help='Number of simulations to run')
     parser.add_argument('--cond_den', type=str, default='nsf', help='Conditional density estimator type: mdn, maf, nsf')
     parser.add_argument('--x0_ind', type=int, default=0, help='observation index')
-    #parser.add_argument('--total_round', type=int, default=0, help='observation index')
+    parser.add_argument('--total_round', type=int, default=0, help='observation index')
     
     return parser.parse_args()
 
