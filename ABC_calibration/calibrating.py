@@ -212,6 +212,5 @@ if __name__ == "__main__":
     print(f"L: {args.L}")
     print(f"task: {args.task}")
     print(f"num_training: {args.num_training}")
-    print(f"layer_len: {args.layer_len}")
     print(f"tol: {args.tol}")
     print(f"cond_den: {args.cond_den}")
