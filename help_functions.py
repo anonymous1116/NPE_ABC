@@ -162,8 +162,9 @@ def truncated_mvn_sample(L, mean, std, lower, upper):
 @torch.no_grad()
 def forward_from_Z_chunked(
     density_estimator,
-    Z,                      # [N, theta_dim] or [N, B, theta_dim]
     x_b,                    # [B, x_dim]
+    theta_dim,
+    N,
     chunk_elems=131072,     # rows of (N*B) per chunk
     verbose=True,           # turn on/off prints
     logger=None,            # optional: a logging.Logger
@@ -186,28 +187,17 @@ def forward_from_Z_chunked(
     
     device = next(flow.parameters()).device
     x_b = x_b.to(device)
-    Z = Z.to(device)
     
     with torch.no_grad():    
         context = embed(x_b)                     # [B, context_dim]
     B = context.shape[0]
-
-    if Z.dim() == 2:                         # [N, theta_dim]
-        N, theta_dim = Z.shape
-        Z_flat = Z.unsqueeze(1).expand(N, B, theta_dim).reshape(N * B, theta_dim)
-    elif Z.dim() == 3:                       # [N, B, theta_dim]
-        N, Bz, theta_dim = Z.shape
-        assert Bz == B, "Z's B must match x_b's B."
-        Z_flat = Z.reshape(N * B, theta_dim)
-    else:
-        raise ValueError("Z must be [N, theta_dim] or [N, B, theta_dim].")
-
+    
     ctx_flat = context.unsqueeze(0).expand(N, B, -1).reshape(N * B, context.shape[-1])
     #ctx_flat = torch.repeat_interleave(context,repeats = N, dim = 0)
     total = N * B
     n_chunks = math.ceil(total / chunk_elems)
 
-    theta_flat = torch.empty(total, theta_dim, device=device, dtype=Z_flat.dtype)
+    theta_flat = torch.empty(total, theta_dim, device=device, dtype=x_b.dtype)
     
     if device.type == "cuda":
         torch.cuda.synchronize()
@@ -226,8 +216,9 @@ def forward_from_Z_chunked(
         rows  = end - start
 
         t_chunk0 = time.perf_counter()
-        z_chunk   = Z_flat[start:end].contiguous()      # [rows, theta_dim]
         ctx_chunk = ctx_flat[start:end].contiguous()    # [rows, context_dim]
+        z_chunk = torch.randn_like(ctx_chunk)
+    
         with torch.no_grad():
             y_chunk, _ = transform.inverse(z_chunk, context=ctx_chunk)
 
@@ -258,7 +249,6 @@ def forward_from_Z_chunked(
 
     theta = theta_flat.reshape(N, B, theta_dim)
     return theta
-
 
 def covs_chunked(MAT, chunk=1000):
     N = MAT.shape[0]

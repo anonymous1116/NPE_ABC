@@ -113,18 +113,17 @@ def main(args):
     density_estimator_npe = saved_data["density_estimator"]
     N = 10000
     
-    Z = torch.randn(N, X_abc.size(0), Y_abc.size(1), device=device)   # shared across all x_b (CRN)
     density_estimator_npe_gpu = density_estimator_npe.to(device).eval()
 
     # 3) Put your data on the same device
-    X_cal_b = torch.clone(X_abc.to(device))       # [B, x_dim]
-    Z   = Z.to(device)                  # [N, theta_dim] or [N, B, theta_dim]
-
+    X_abc = X_abc.to(device)       # [B, x_dim]
+    
     # 4) Now call your fast function (or sbi’s sample_batched) on GPU
     samples_all = forward_from_Z_chunked(
         density_estimator_npe_gpu, 
-        Z, 
-        X_cal_b
+        X_abc,
+        Y_abc.size(1),
+        N
     )
     samples_all = samples_all.cpu()
     mean_X = torch.mean(samples_all,0)
@@ -132,9 +131,8 @@ def main(args):
     covs_X = covs_X
     print(covs_X)
 
-    Z_one = torch.randn(50000, 1, 2, device = device)
-
-    samples_GPU = forward_from_Z_chunked(density_estimator_npe_gpu, Z_one, x0)
+    
+    samples_GPU = forward_from_Z_chunked(density_estimator_npe_gpu, x0, Y_abc.size(1), 50000)
     samples_GPU = samples_GPU.squeeze(1).cpu()
     mean_obs = torch.mean(samples_GPU,0)
     cov_obs = torch.cov(samples_GPU.T)
