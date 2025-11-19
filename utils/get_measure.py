@@ -13,7 +13,7 @@ def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, c
 
     limits = Bounds(task)
     posterior = true_Posteriors(task)
-    task_benchmark = ["two_moons"]
+    task_benchmark = ["two_moons", "bernoulli_glm2"]
     if task in task_benchmark:
         true_sample = posterior(j = x0_ind+1)
     else:
