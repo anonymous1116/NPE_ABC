@@ -14,7 +14,7 @@ from sbibm.metrics.c2st import c2st
 def main(args):
     # Set the random seed
     torch.manual_seed(args.seed)
-
+    
     # Initialize the Priors and Simulators classes
     priors = Priors(args.task)
     simulators = Simulators(args.task)
@@ -79,7 +79,7 @@ def get_args():
     parser.add_argument('--seed', type=int, default=1, help='Random seed for reproducibility')
     parser.add_argument('--num_training', type=int, default=500_000, help='Number of simulations to run')
     parser.add_argument('--cond_den', type=str, default='nsf', help='Conditional density estimator type: mdn, maf, nsf')
-    parser.add_argument('--x0_ind', type=int, default=1, help='observation index')
+    parser.add_argument('--x0_ind', type=int, default=0, help='observation index')
     return parser.parse_args()
 
 if __name__ == "__main__":
