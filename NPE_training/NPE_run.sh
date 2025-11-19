@@ -30,7 +30,7 @@ seeds=$((seed_START + SLURM_ARRAY_TASK_ID - 1))
 
 # Run the Python script with the specified N_EPOCHS value
 echo "Running with seed=$seeds"
-python NPE_training/NPE_run.py --task "bernoulli_glm2" --seed $seeds --cond_den "nsf" --num_training 1000
+python NPE_training/NPE_run.py --task "bernoulli_glm2" --seed $seeds --cond_den "nsf" --num_training 10000
 #python NPE_training/NPE_run.py --task "bernoulli_glm2" --seed 1 --num_training 1000 --cond_den "nsf"
 echo "## Run Completed for seed=$seeds ##"
 
