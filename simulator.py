@@ -39,6 +39,8 @@ class true_Posteriors:
         # Handle the case where task is 'slcp' differently
         if self.task == "two_moons":
             return self.two_moons(kwargs.get('j', 0))
+        elif self.task in ["bernoulli_glm2"]:
+            return self.bernoulli_glm2(kwargs.get('j', 0))    
 
     def apply_bounds(self, samples, bounds):
         # Apply bounds to filter the samples
@@ -80,7 +82,7 @@ class true_Posteriors:
         task = sbibm.get_task("gaussian_linear_uniform")  # See sbibm.get_available_tasks() for all tasks
         return task.get_reference_posterior_samples(num_observation=j)
     
-    def bernoulli_glm(self, j):
+    def bernoulli_glm2(self, j):
         try:
             # Get the directory of the current file (simulator.py)
             current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -92,10 +94,17 @@ class true_Posteriors:
     
 def observation_lists(task_name:str):
     task_name = task_name.lower()
-    if task_name in ["two_moons", "bernoulli_glm2"]:
+    if task_name in ["two_moons"]:
         obs_list = []
         for j in range(1, 11):
             task = sbibm.get_task(task_name)
+            observation = task.get_observation(num_observation=j)  # 10 per task
+            obs_list.append(observation[0].tolist())
+        return torch.tensor(obs_list)
+    elif task_name in ["bernoulli_glm2"]:
+        obs_list = []
+        for j in range(1, 11):
+            task = sbibm.get_task("bernoulli_glm")
             observation = task.get_observation(num_observation=j)  # 10 per task
             obs_list.append(observation[0].tolist())
         return torch.tensor(obs_list)
