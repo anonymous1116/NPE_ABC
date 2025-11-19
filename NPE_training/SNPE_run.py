@@ -37,6 +37,7 @@ def main(args):
             theta, x, proposal=proposal
         ).train()
         end_time = time.time()
+        elapsed_time = end_time -start_time
         posterior = inference.build_posterior(density_estimator)
         samples = posterior.sample((10_000,), x=x0)
         c2st_results = c2st(samples, true)
