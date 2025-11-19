@@ -24,11 +24,9 @@ def main(args):
     
     x0 = observation_lists(args.task)[args.x0_ind]
     inference = NPE(priors)
-
-    inference = NPE(priors)
     proposal = priors
     num_rounds = 10
-
+    start_time = time.time()  # Start timer
     c2st_results_list = []
     for _ in range(num_rounds):
         theta = proposal.sample((args.num_training,))
@@ -46,8 +44,6 @@ def main(args):
         proposal = posterior.set_default_x(x0)
     
     print(f"training_start")
-    start_time = time.time()  # Start timer
-    density_estimator = inference.train()
     end_time = time.time()  # End timer
 
     elapsed_time = end_time - start_time  # Calculate elapsed time
