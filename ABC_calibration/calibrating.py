@@ -55,7 +55,7 @@ def main(args):
     print("x0_size", x0.size(), flush = True)
     #print("X_cal size", X_cal.size(), flush = True)
     
-    output_file_path = os.path.join(f'../depot_hyun/hyun/NPE_ABC_nets/{args.task}/J_{int(args.num_training/1000)}K/{args.task}_{seed}_{args.NPE_cond}.pkl')
+    output_file_path = os.path.join(f'../depot_hyun/hyun/NPE_ABC_nets/{args.task}/J_{int(args.num_training/1000)}K/{args.task}_{seed}_{args.cond_den}.pkl')
     with open(output_file_path, 'rb') as f:
         saved_data = pickle.load(f)
     posterior = saved_data["posterior"]
