@@ -32,6 +32,7 @@ seeds=$((seed_START + SLURM_ARRAY_TASK_ID - 1))
 echo "Running with seed=$seeds"
 python NPE_training/NPE_run.py --task "bernoulli_glm2" --seed $seeds --cond_den "nsf" --num_training 300000
 #python NPE_training/NPE_run.py --task "bernoulli_glm2" --seed 1 --num_training 1000 --cond_den "nsf"
+#python NPE_training/SNPE_run.py --task "two_moons" --seed 1 --num_training 1000 --cond_den "nsf" --x0_ind 0
 echo "## Run Completed for seed=$seeds ##"
 
 # python utils/get_measure.py --task "bernoulli_glm2" --measure "c2st" --x0_ind 1 --seed 1 --post_n_samples 10000 --num_training 1000

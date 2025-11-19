@@ -22,7 +22,7 @@ def main(args):
     
     true = true_posteriors(j = args.x0_ind+1)
     
-    x0 = observation_lists[args.x0_ind]
+    x0 = observation_lists(args.task)[args.x0_ind]
     inference = NPE(priors)
 
     inference = NPE(priors)
