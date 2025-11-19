@@ -6,7 +6,7 @@
 #SBATCH --gpus-per-node=1
 #SBATCH --mem=170G
 #SBATCH --qos=standby
-#SBATCH --partition=a30
+#SBATCH --partition=a10,a30
 #SBATCH --array=0-99
 #SBATCH --output=ABC_calibration/log/output_log_%A_%a.out
 #SBATCH --error=ABC_calibration/log/error_log_%A_%a.txt
@@ -27,10 +27,10 @@ cd $SLURM_SUBMIT_DIR
 # Calculate seed and dim_out
 seed=$((SLURM_ARRAY_TASK_ID / 10 + 1))
 #L=100000000
-L=1000000
+L=10000000
 task="two_moons"
 num_training=10000
-tol=1e-2
+tol=1e-3
 
 # Run the calibrate_amor.py
 x0_ind=$((SLURM_ARRAY_TASK_ID % 10)) 
