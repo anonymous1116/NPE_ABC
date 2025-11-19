@@ -40,6 +40,3 @@ echo "[$(date)] Starting job: x0_ind=$x0_ind, seed=$seed, L=$L"
 python ABC_calibration/calibrating.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol
 
 echo "[$(date)] Job complete: x0_ind=$x0_ind, seed=$seed"
-
-#python benchmark/benchmark_calibrating.py --x0_ind 1 --seed 1 --L 100000000 --task "slcp" --num_training 300000 --tol 1e-4
-#python ABC_calibration/calibrating.py --x0_ind 1 --seed 1 --task "two_moons" --L 1000000 --num_training 10000 --tol 1e-2 

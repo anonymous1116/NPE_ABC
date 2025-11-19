@@ -11,7 +11,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 
 def Bounds(task_name: str):
     task_name = task_name.lower()
-    if task_name == "bernoulli_glm":
+    if task_name == "bernoulli_glm2":
         return None
     elif task_name in ["two_moons"]:
         return [[-1, 1]] * 2
@@ -20,7 +20,7 @@ def Bounds(task_name: str):
 
 def Priors(task_name: str):
     task_name = task_name.lower()
-    if task_name == "bernoulli_glm":
+    if task_name in ["bernoulli_glm2"]:
         dim = 10
         loc = torch.zeros(dim)
         precision_diag = 0.5 * torch.ones(dim)
@@ -32,7 +32,7 @@ def Priors(task_name: str):
         raise ValueError(f"Unknown task name for prior: {task_name}")
     
 
-class Posteriors:
+class true_Posteriors:
     def __init__(self, task):
         self.task = task
 
@@ -259,12 +259,10 @@ def simulator_my_twomoons(theta):
     
 def Simulators(task_name: str):
     task_name = task_name.lower()
-    if task_name == "bernoulli_glm":
+    if task_name in ["bernoulli_glm2"]:
         return simulator_bernoulli
-    
     elif task_name in ["two_moons"]:
         return simulator_my_twomoons
-
     else:
         raise ValueError(f"Unknown task name for simulator: {task_name}")
     
@@ -289,16 +287,16 @@ def MoG_posterior(obs, n_samples, bounds = None):
     return tmp[sam_ind,:]
 
 def apply_bounds(samples, bounds):
-        # Apply bounds to filter the samples
-        if bounds is not None:
-            index = []
-            for j in range(samples.size()[1]):  # Iterate over each dimension
-                ind = (samples[:, j] < bounds[j][1]) & (samples[:, j] > bounds[j][0])
-                index.append(ind)
-            index = torch.stack(index, 1)
-            index = torch.all(index, 1)  # Check if all conditions hold per sample
-            samples = samples[index]
-        return samples
+    # Apply bounds to filter the samples
+    if bounds is not None:
+        index = []
+        for j in range(samples.size()[1]):  # Iterate over each dimension
+            ind = (samples[:, j] < bounds[j][1]) & (samples[:, j] > bounds[j][0])
+            index.append(ind)
+        index = torch.stack(index, 1)
+        index = torch.all(index, 1)  # Check if all conditions hold per sample
+        samples = samples[index]
+    return samples
 
 def my_twomoons_posterior(obs = torch.tensor([0.0,0.0]), n_samples = 100):
     c = 1/np.sqrt(2)

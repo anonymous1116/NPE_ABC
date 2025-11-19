@@ -6,7 +6,7 @@ import sbibm
 import time
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from sbibm.metrics.c2st import c2st
-from simulator import Priors, Simulators, Bounds, observation_lists, Posteriors
+from simulator import Priors, Simulators, Bounds, observation_lists, true_Posteriors
 from help_functions import UnifSample, param_box, truncated_mvn_sample, ABC_rej2, forward_from_Z_chunked, covs_chunked
 import matplotlib.pyplot as plt
 from pathlib import Path
@@ -25,7 +25,7 @@ def main(args):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     priors = Priors(args.task)
-    true_posteriors = Posteriors(args.task)
+    true_posteriors = true_Posteriors(args.task)
     simulators = Simulators(args.task)
     bounds = Bounds(args.task)
     
