@@ -58,10 +58,10 @@ def main(args):
         proposal = posterior.set_default_x(x0)
         theta = proposal.sample((args.num_training,))
         x = simulators(theta)
-        density_estimator = inference.append_simulations(
+        density_estimator2 = inference.append_simulations(
             theta, x, proposal=proposal
         ).train()
-        posterior = inference.build_posterior(density_estimator)
+        posterior = inference.build_posterior(density_estimator2)
         samples = posterior.sample((10_000,), x=x0)
         end_time = time.time()
         elapsed_time = end_time - start_time
@@ -70,7 +70,7 @@ def main(args):
         c2st_list.append(c2st_results)
         elapsed_time_list.append(elapsed_time)
         with open(output_file_path_tmp, 'wb') as f:
-            pickle.dump({'inference': inference, 'density_estimator': density_estimator, 'elapsed_time_list': elapsed_time_list, 'c2st_list': c2st_list, 'round': round}, f)
+            pickle.dump({'inference': inference, 'density_estimator': density_estimator2, 'elapsed_time_list': elapsed_time_list, 'c2st_list': c2st_list, 'round': round}, f)
         print(f"Saved inference object and elapsed time to '{output_file_path_tmp}'.")
 
     else:
