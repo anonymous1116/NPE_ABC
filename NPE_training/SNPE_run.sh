@@ -29,8 +29,8 @@ num_training=300000
 task="two_moons"
 total_round=5
 echo "[$(date)] Starting job: x0_ind=$x0_ind, seed=$seed, L=$L"
-python NPE_training/SNPE_run.py --task $task --seed $seed --x0_ind $x0_ind --num_training $num_training --cond_den "nsf" --total_round $total_round
-#python NPE_training/SNPE_run_seq.py --task "two_moons" --seed $seed --x0_ind $x0_ind --num_training $num_training --cond_den "nsf" --total_round $total_round
+#python NPE_training/SNPE_run.py --task $task --seed $seed --x0_ind $x0_ind --num_training $num_training --cond_den "nsf" --total_round $total_round
+python NPE_training/SNPE_run_seq.py --task "two_moons" --seed $seed --x0_ind $x0_ind --num_training $num_training --cond_den "nsf" --total_round $total_round
 
 echo "[$(date)] Job complete: x0_ind=$x0_ind, seed=$seed"
 
