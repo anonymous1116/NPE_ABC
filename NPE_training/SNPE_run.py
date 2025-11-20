@@ -27,6 +27,8 @@ def main(args):
     proposal = priors
     c2st_results_list = []
     elapsed_time_list = []
+    end_time = time.time()
+        
     for _ in range(args.total_round):
         start_time = time.time()  # Start timer
         theta = proposal.sample((args.num_training,))
@@ -37,7 +39,7 @@ def main(args):
             theta, x, proposal=proposal
         ).train()
         end_time = time.time()
-        elapsed_time = end_time -start_time
+        elapsed_time = end_time - start_time
         posterior = inference.build_posterior(density_estimator)
         samples = posterior.sample((10_000,), x=x0)
         c2st_results = c2st(samples, true)
@@ -46,13 +48,6 @@ def main(args):
         print(f"J: {int(args.num_training/1000)}K, Round: {_+1}/{args.total_round}, c2st {c2st_results}" )
         proposal = posterior.set_default_x(x0)
     
-    print(f"training_start")
-    end_time = time.time()  # End timer
-
-    elapsed_time = end_time - start_time  # Calculate elapsed time
-    print(f"Training completed in {elapsed_time:.2f} seconds")
-    print(f"Training with {args.cond_den}")
-
     # Define the output directory
     output_dir = f"../depot_hyun/hyun/NPE_ABC/SNPE_nets_round{args.total_round}/{args.task}/J_{int(args.num_training/1000)}K"
 
