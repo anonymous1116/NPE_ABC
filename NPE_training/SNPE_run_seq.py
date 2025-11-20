@@ -114,7 +114,6 @@ def main(args):
         # dump the residuals
         os.remove(output_file_path_tmp)
         
-    
     else:
         print(f"Training not completed. Generating a new job script..., round {round}/{args.total_round-1}")
         create_job_script(args)
