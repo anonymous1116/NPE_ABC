@@ -57,7 +57,7 @@ def main(args):
         print(f"Directory '{output_dir}' created.")
     else:
         print(f"Directory '{output_dir}' already exists.")
-
+    print(density_estimator)
     # Save the inference object using pickle in the specified directory
     # Save the inference object and elapsed time using pickle in the specified directory
     output_file_path = os.path.join(output_dir, f"{args.task}_x0{args.x0_ind}_seed{args.seed}_{args.cond_den}.pkl")
