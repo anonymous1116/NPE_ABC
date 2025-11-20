@@ -25,7 +25,7 @@ cd $SLURM_SUBMIT_DIR
 seed=$((SLURM_ARRAY_TASK_ID / 10 + 1))
 # Run the calibrate_amor.py
 x0_ind=$((SLURM_ARRAY_TASK_ID % 10)) 
-num_training=1000
+num_training=100000
 task="two_moons"
 total_round=5
 echo "[$(date)] Starting job: x0_ind=$x0_ind, seed=$seed, L=$L"
