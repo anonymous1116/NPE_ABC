@@ -67,7 +67,7 @@ def main(args):
     # Save the inference object and elapsed time using pickle in the specified directory
     output_file_path = os.path.join(output_dir, f"{args.task}_x0{args.x0_ind}_seed{args.seed}_{args.cond_den}.pkl")
     with open(output_file_path, 'wb') as f:
-        pickle.dump({'density_estimator': density_estimator, 'posterior': inference.build_posterior(density_estimator), 'elapsed_time_list': elapsed_time, 'c2st_list': c2st_results_list}, f)
+        pickle.dump({'density_estimator': density_estimator, 'posterior': inference.build_posterior(density_estimator), 'elapsed_time_list': elapsed_time_list, 'c2st_list': c2st_results_list}, f)
         
     print(f"Saved inference object and elapsed time to '{output_file_path}'.")
 

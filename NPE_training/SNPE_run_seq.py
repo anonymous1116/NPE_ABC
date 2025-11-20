@@ -70,7 +70,7 @@ def main(args):
         c2st_list.append(c2st_results)
         elapsed_time_list.append(elapsed_time)
         with open(output_file_path_tmp, 'wb') as f:
-            pickle.dump({'inference': inference, 'density_estimator': density_estimator, 'elapsed_time_list': [elapsed_time], 'c2st_list': c2st_list, 'round': round}, f)
+            pickle.dump({'inference': inference, 'density_estimator': density_estimator, 'elapsed_time_list': elapsed_time_list, 'c2st_list': c2st_list, 'round': round}, f)
         print(f"Saved inference object and elapsed time to '{output_file_path_tmp}'.")
 
     else:
@@ -109,7 +109,7 @@ def main(args):
 
         output_file_path = os.path.join(output_dir, f"{args.task}_x0{args.x0_ind}_seed{args.seed}_{args.cond_den}.pkl")
         with open(output_file_path, 'wb') as f:
-            pickle.dump({'density_estimator': density_estimator, 'posterior': inference.build_posterior(density_estimator), 'elapsed_time_list': elapsed_time, 'c2st_list': c2st_list}, f)
+            pickle.dump({'density_estimator': density_estimator, 'posterior': inference.build_posterior(density_estimator), 'elapsed_time_list': elapsed_time_list, 'c2st_list': c2st_list}, f)
         
         # dump the residuals
         os.remove(output_file_path_tmp)
