@@ -23,7 +23,7 @@ def main(args):
     true = true_posteriors(j = args.x0_ind+1)
     
     x0 = observation_lists(args.task)[args.x0_ind]
-    inference = NPE(priors)
+    inference = NPE(priors, density_estimator = args.cond_den)
     proposal = priors
     c2st_results_list = []
     elapsed_time_list = []
