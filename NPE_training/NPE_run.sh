@@ -36,5 +36,5 @@ python NPE_training/NPE_run.py --task "bernoulli_glm2" --seed $seeds --cond_den 
 echo "## Run Completed for seed=$seeds ##"
 
 # python utils/get_measure.py --task "bernoulli_glm2" --measure "c2st" --x0_ind 1 --seed 1 --post_n_samples 10000 --num_training 1000
-#python utils/evaluate.py --task "two_moons" --measure "c2st" --post_n_samples 10000 --num_training 1000
+#python utils/evaluate.py --task "bernoulli_glm2" --measure "c2st" --post_n_samples 10000 --num_training 2000000
 #python ABC_calibration/calibrating.py --x0_ind 1 --seed 1 --task "bernoulli_glm2" --L 10000000 --num_training 1000 --tol 1e-3 
