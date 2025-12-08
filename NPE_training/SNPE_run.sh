@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=8
+#SBATCH --cpus-per-task=6
 #SBATCH --partition=cpu
 #SBATCH --account=statdept
 #SBATCH --time=3-04:00:00
