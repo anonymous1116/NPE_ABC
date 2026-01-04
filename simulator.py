@@ -88,7 +88,7 @@ class true_Posteriors:
             obs = obs.flatten()
         posterior = []
         for i in range(5):
-            obs_tmp = obs[2*i, 2*i +1]
+            obs_tmp = obs[2*i: (2*i +1)]
             tmp2 = self.my_twomoons(obs = obs_tmp, n_samples = n_samples)
             posterior.append(tmp2)
         return torch.cat(posterior, dim = 1)
