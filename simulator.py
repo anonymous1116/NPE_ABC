@@ -15,6 +15,10 @@ def Bounds(task_name: str):
         return None
     elif task_name in ["two_moons"]:
         return [[-1, 1]] * 2
+    elif task_name in ["my_twomoons"]:
+        return [[-5, 5]] * 2
+    elif task_name in ["my_five_twomoons"]:
+        return [[-5, 5]] * 10
     else:
         raise ValueError(f"Unknown task name for bounds: {task_name}")
 
@@ -28,6 +32,10 @@ def Priors(task_name: str):
         return MultivariateNormal(loc=loc, precision_matrix=precision_matrix)
     elif task_name in ["two_moons"]:
         return BoxUniform(low = -1*torch.ones(2), high = 1*torch.ones(2))
+    elif task_name in ["my_twomoons"]:
+        return BoxUniform(low = -5*torch.ones(2), high = 5*torch.ones(2))
+    elif task_name in ["my_five_twomoons"]:
+        return BoxUniform(low = -5*torch.ones(10), high = 5*torch.ones(10))
     else:
         raise ValueError(f"Unknown task name for prior: {task_name}")
     
