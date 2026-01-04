@@ -43,11 +43,21 @@ def main(args):
     print("x0_size", x0.size(), flush = True)
     #print("X_cal size", X_cal.size(), flush = True)
     
+    Y_cal = priors.sample((1_000_000,))
+    X_cal = simulators(Y_cal)
+
     output_file_path = os.path.join(f'../depot_hyun/hyun/NPE_ABC/nets/{args.task}/J_{int(args.num_training/1000)}K/{args.task}_{seed}_{args.cond_den}.pkl')
     with open(output_file_path, 'rb') as f:
         saved_data = pickle.load(f)
-    posterior = saved_data["posterior"]
-    adj = posterior.sample((100_000,), x=x0)
+    density_estimator_npe = saved_data["density_estimator"]
+    density_estimator_npe_gpu = density_estimator_npe.to(device).eval()
+    flow = density_estimator_npe_gpu.net
+    transform=flow._transform
+    embed = flow._embedding_net
+    with torch.no_grad():
+        tmp, _ =  transform.forward(Y_cal.to(device), context = embed(X_cal.to(device)) )
+        adj, _ = transform.inverse(tmp, context = embed(x0.expand((tmp.size(0),x0.size(1))).to(device)))    
+    adj = adj.cpu()
 
     X_abc = []
     Y_abc = []
@@ -96,44 +106,11 @@ def main(args):
     else:
         post_sample = true_posteriors(torch.tensor(x0), n_samples=10_000, bounds=bounds)
     
-    
-    density_estimator_npe = saved_data["density_estimator"]
-    N = 10000
-    
-    density_estimator_npe_gpu = density_estimator_npe.to(device).eval()
+    with torch.no_grad():
+        tmp, _ =  transform.forward(Y_abc.to(device), context = embed(X_abc.to(device)) )
+        new_theta, _ = transform.inverse(tmp, context = embed(x0.expand((tmp.size(0),x0.size(1))).to(device)))    
 
-    # 3) Put your data on the same device
-    X_abc = X_abc.to(device)       # [B, x_dim]
-    
     # 4) Now call your fast function (or sbi’s sample_batched) on GPU
-    samples_all = forward_from_Z_chunked(
-        density_estimator_npe_gpu, 
-        X_abc,
-        Y_abc.size(1),
-        N
-    )
-    samples_all = samples_all.cpu()
-    mean_X = torch.mean(samples_all,0)
-    covs_X = covs_chunked(samples_all, chunk=1000)
-    covs_X = covs_X
-    print(covs_X)
-
-    samples_GPU = forward_from_Z_chunked(density_estimator_npe_gpu, x0, Y_abc.size(1), 50000)
-    samples_GPU = samples_GPU.squeeze(1).cpu()
-    mean_obs = torch.mean(samples_GPU,0)
-    cov_obs = torch.cov(samples_GPU.T)
-    print(mean_obs)
-    print(cov_obs)
-    sd_x0 = torch.linalg.cholesky(cov_obs)
-
-    sd_X = torch.linalg.cholesky(covs_X)      # (10000, 2, 2)
-    identity = torch.eye(sd_X.size(-1), device=sd_X.device)
-    Sigma_inv_half = torch.linalg.solve_triangular(sd_X, identity, upper=False) # Getting inverse
-    resid_tmp = Y_abc - mean_X
-    resid_unsqueezed = resid_tmp.unsqueeze(-1)  # (B, d) → (B, d, 1)
-    output = torch.bmm(Sigma_inv_half, resid_unsqueezed)  # (B, d, 1)
-    output = output.squeeze(-1)
-    new_theta = torch.matmul(output, sd_x0.squeeze(0).T) + mean_obs
     end_time = time.time()
     
     
@@ -151,7 +128,7 @@ def main(args):
     print(sci_str)  # Output: '1e-02'
     
 
-    output_dir = f"../depot_hyun/hyun/NPE_ABC/NPE_ABC_c2st_results/{args.task}/J_{int(args.num_training/1000)}K/{int(args.L/1_000_000)}M_eta{sci_str}"
+    output_dir = f"../depot_hyun/hyun/NPE_ABC/flow_c2st_results/{args.task}/J_{int(args.num_training/1000)}K/{int(args.L/1_000_000)}M_eta{sci_str}"
     ## Create the directory if it doesn't exist
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
