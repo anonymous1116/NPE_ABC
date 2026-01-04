@@ -125,7 +125,8 @@ def observation_lists(task_name:str):
         return torch.tensor(obs_list)
     elif task_name in ["my_twomoons"]:
         return torch.tensor([[0.0, 0.0], [0.0, 1.0], [0.0, 2.0], [0.1, 0.1], 
-                             [-0.1, -0.1], [-3.0, 3.0], [-2.0, 3.0], [-1.0, 1.0], [-0.5, 1.0], [-0.25, 0.5]], 
+                             [-0.1, -0.1], [-3.0, 3.0], [-2.0, 3.0], 
+                             [-1.0, 1.0], [-0.5, 1.0], [-0.25, 0.5]], 
                              dtype = torch.float32)
     #elif task_name in ["my_five_twomoons"]:
     #    
