@@ -313,7 +313,7 @@ def simulator_my_five_twomoons(theta):
     # theta: N * 10 dimensions
     X = []
     for i in range(5):
-        tmp = torch.clone(theta[:, torch.tensor([2*i, 2*i + 2] )])
+        tmp = torch.clone(theta[:, 2*i : (2*i + 2 )] )
         tmp2 = simulator_my_twomoons(tmp)
         X.append(tmp2)
     return torch.cat(X, dim = 1)
