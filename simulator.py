@@ -307,7 +307,6 @@ def simulator_my_twomoons(theta):
     y = py + (theta[:, 1] - theta[:, 0]) / np.sqrt(2)
 
     return torch.stack([x, y], dim=1).to("cpu")
-    
 
 def simulator_my_five_twomoons(theta):
     # theta: N * 10 dimensions
@@ -317,7 +316,6 @@ def simulator_my_five_twomoons(theta):
         tmp2 = simulator_my_twomoons(tmp)
         X.append(tmp2)
     return torch.cat(X, dim = 1)
-
 
 def Simulators(task_name: str):
     task_name = task_name.lower()
@@ -329,7 +327,6 @@ def Simulators(task_name: str):
         return simulator_my_twomoons
     elif task_name in ["my_five_twomoons"]:
         return simulator_my_five_twomoons
-    
     else:
         raise ValueError(f"Unknown task name for simulator: {task_name}")
     
