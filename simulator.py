@@ -128,9 +128,10 @@ def observation_lists(task_name:str):
                              [-0.1, -0.1], [-3.0, 3.0], [-2.0, 3.0], 
                              [-1.0, 1.0], [-0.5, 1.0], [-0.25, 0.5]], 
                              dtype = torch.float32)
-    #elif task_name in ["my_five_twomoons"]:
-    #    
-    #    return 
+    elif task_name in ["my_five_twomoons"]:
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        obs = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/my_five_twomoon_obs.pt")    
+        return obs
     else:
         raise ValueError(f"Unknown task name for observation_lists: {task_name}")
     
