@@ -46,6 +46,10 @@ def main(args):
     Y_cal = priors.sample((1_000_000,))
     X_cal = simulators(Y_cal)
 
+
+    index_ABC = ABC_rej2(x0, X_cal, 1e-2, device, args.task)
+    X_cal, Y_cal = X_cal[index_ABC], Y_cal[index_ABC]
+
     output_file_path = os.path.join(f'../depot_hyun/hyun/NPE_ABC/nets/{args.task}/J_{int(args.num_training/1000)}K/{args.task}_{seed}_{args.cond_den}.pkl')
     with open(output_file_path, 'rb') as f:
         saved_data = pickle.load(f)
@@ -110,6 +114,7 @@ def main(args):
         tmp, _ =  transform.forward(Y_abc.to(device), context = embed(X_abc.to(device)) )
         new_theta, _ = transform.inverse(tmp, context = embed(x0.expand((tmp.size(0),x0.size(1))).to(device)))    
 
+    new_theta = new_theta.cpu()
     # 4) Now call your fast function (or sbi’s sample_batched) on GPU
     end_time = time.time()
     
