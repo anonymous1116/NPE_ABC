@@ -50,9 +50,9 @@ class true_Posteriors:
         elif self.task in ["bernoulli_glm2"]:
             return self.bernoulli_glm2(kwargs.get('j', 0))
         elif self.task in ["my_twomoons"]:
-            return self.my_twomoons(obs, n_samples, bounds)
+            return self.my_twomoons(obs, n_samples)
         elif self.task in ["my_five_twomoons"]:    
-            return self.my_five_twomoons(obs, n_samples, bounds)
+            return self.my_five_twomoons(obs, n_samples)
         
     def apply_bounds(self, samples, bounds):
         # Apply bounds to filter the samples
