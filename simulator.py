@@ -40,8 +40,12 @@ class true_Posteriors:
         if self.task == "two_moons":
             return self.two_moons(kwargs.get('j', 0))
         elif self.task in ["bernoulli_glm2"]:
-            return self.bernoulli_glm2(kwargs.get('j', 0))    
-
+            return self.bernoulli_glm2(kwargs.get('j', 0))
+        elif self.task in ["my_twomoons"]:
+            return self.my_twomoons(obs, n_samples, bounds)
+        elif self.task in ["my_five_twomoons"]:    
+            return self.my_five_twomoons(obs, n_samples, bounds)
+        
     def apply_bounds(self, samples, bounds):
         # Apply bounds to filter the samples
         if bounds is not None:
@@ -54,7 +58,9 @@ class true_Posteriors:
             samples = samples[index]
         return samples
 
-    def my_twomoons(self, obs = torch.tensor([0.0,0.0]), n_samples = 100):
+    def my_twomoons(self, obs, n_samples):
+        if obs.ndim == 2:
+            obs = obs.flatten()
         c = 1/np.sqrt(2)
         theta = torch.zeros((n_samples, 2))
         for i in range(n_samples):
@@ -65,11 +71,23 @@ class true_Posteriors:
             
             if np.random.rand() < 0.5:
                 q[0] = -q[0]
-                
             theta[i, 0] = c * (q[0] - q[1])
             theta[i, 1] = c * (q[0] + q[1])
         return theta
     
+    def my_five_twomoons(self, obs, n_samples):
+        if obs.ndim == 2:
+            obs = obs.flatten()
+        posterior = []
+        for i in range(5):
+            obs_tmp = obs[2*i, 2*i +1]
+            tmp2 = self.my_twomoons(obs = obs_tmp, n_samples = n_samples)
+            posterior.append(tmp2)
+        return torch.cat(posterior, dim = 1)
+
+        
+        
+
     def two_moons(self, j):
         task = sbibm.get_task("two_moons")
         return task.get_reference_posterior_samples(num_observation=j)
@@ -276,6 +294,17 @@ def simulator_my_twomoons(theta):
 
     return torch.stack([x, y], dim=1).to("cpu")
     
+
+def my_five_twomoons(theta):
+    # theta: N * 10 dimensions
+    X = []
+    for i in range(5):
+        tmp = torch.clone(theta[:, torch.tensor([2*i, 2*i + 1] )])
+        tmp2 = simulator_my_twomoons(tmp)
+        X.append(tmp2)
+    return torch.cat(X, dim = 1)
+
+
 def Simulators(task_name: str):
     task_name = task_name.lower()
     if task_name in ["bernoulli_glm2"]:
