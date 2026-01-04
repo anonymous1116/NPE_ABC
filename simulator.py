@@ -309,7 +309,7 @@ def simulator_my_twomoons(theta):
     return torch.stack([x, y], dim=1).to("cpu")
     
 
-def my_five_twomoons(theta):
+def simulator_my_five_twomoons(theta):
     # theta: N * 10 dimensions
     X = []
     for i in range(5):
@@ -325,6 +325,11 @@ def Simulators(task_name: str):
         return simulator_bernoulli
     elif task_name in ["two_moons"]:
         return simulator_my_twomoons
+    elif task_name in ["my_twomoons"]:
+        return simulator_my_twomoons
+    elif task_name in ["my_five_twomoons"]:
+        return simulator_my_five_twomoons
+    
     else:
         raise ValueError(f"Unknown task name for simulator: {task_name}")
     
