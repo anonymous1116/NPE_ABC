@@ -138,7 +138,7 @@ def observation_lists(task_name:str):
                              dtype = torch.float32)
     elif task_name in ["my_five_twomoons"]:
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        obs = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/my_five_twomoon_obs.pt")    
+        obs = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/my_five_twomoons_obs.pt")    
         return obs
     else:
         raise ValueError(f"Unknown task name for observation_lists: {task_name}")

@@ -107,6 +107,8 @@ def main(args):
     task_benchmark = ["two_moons", "bernoulli_glm2"]
     if args.task in task_benchmark:
         post_sample = true_posteriors(j = args.x0_ind+1)
+    elif args.task in ["my_five_twomoons"]:    
+        post_sample = torch.load(f"../depot_hyun/hyun/NPE_ABC/seeds/my_five_twomoons_post_{args.x0_ind}.pt")
     else:
         post_sample = true_posteriors(torch.tensor(x0), n_samples=10_000, bounds=bounds)
     
