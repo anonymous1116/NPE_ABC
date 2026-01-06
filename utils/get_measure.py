@@ -45,7 +45,7 @@ def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, c
 def get_args():
     parser = argparse.ArgumentParser(description="Run SLURM job for simulation.")
     parser.add_argument('--task', type=str, required=True, help='Task type')
-    parser.add_argument('--measure', type=str, required=True, default = "c2st", help='Measurement type (c2st, SW)')
+    parser.add_argument('--measure', type=str, default = "c2st", help='Measurement type (c2st, SW)')
     parser.add_argument('--x0_ind', type=int, required=True, help='x0 index')
     parser.add_argument('--seed', type=int, required=True, help='seed num')
     parser.add_argument('--post_n_samples', type=int, default=10_000, help='Number of samples from posterior distributions')
