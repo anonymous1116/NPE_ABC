@@ -7,7 +7,7 @@ from sbi.utils import BoxUniform
 import sbibm
 # Optional: you can use this from torch.distributions if available
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
-
+from help_functions import SLCP_summary_transform2
 
 def Bounds(task_name: str):
     task_name = task_name.lower()
@@ -19,6 +19,8 @@ def Bounds(task_name: str):
         return [[-5, 5]] * 2
     elif task_name in ["my_five_twomoons"]:
         return [[-5, 5]] * 10
+    elif task_name in ["slcp_summary_transform2"]:
+        return [[-3, 3]] * 5
     else:
         raise ValueError(f"Unknown task name for bounds: {task_name}")
 
@@ -36,6 +38,8 @@ def Priors(task_name: str):
         return BoxUniform(low = -5*torch.ones(2), high = 5*torch.ones(2))
     elif task_name in ["my_five_twomoons"]:
         return BoxUniform(low = -5*torch.ones(10), high = 5*torch.ones(10))
+    elif task_name in ["slcp_summary_transform2"]:
+        return BoxUniform(low = -3*torch.ones(5), high = 3*torch.ones(5))
     else:
         raise ValueError(f"Unknown task name for prior: {task_name}")
     
@@ -49,6 +53,9 @@ class true_Posteriors:
             return self.two_moons(kwargs.get('j', 0))
         elif self.task in ["bernoulli_glm2"]:
             return self.bernoulli_glm2(kwargs.get('j', 0))
+        elif self.task in ["slcp_summary_transform2"]:
+            return self.slcp(kwargs.get('j', 0))
+        
         elif self.task in ["my_twomoons"]:
             return self.my_twomoons(obs, n_samples)
         elif self.task in ["my_five_twomoons"]:    
@@ -105,6 +112,20 @@ class true_Posteriors:
         task = sbibm.get_task("gaussian_linear_uniform")  # See sbibm.get_available_tasks() for all tasks
         return task.get_reference_posterior_samples(num_observation=j)
     
+    def slcp(self, j):
+        try:
+            # Get the directory of the current file (simulator.py)
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            file_path = os.path.join(current_dir, f"../depot_hyun/NeuralABC_R/slcp_benchmark/benchmark_post_sample_x0_{j}.pt")
+            post_sample = torch.load(file_path)
+            if post_sample.size(0) >12000:
+                burn_in = int(post_sample.size(0) * 0.2)
+                sam_ind = np.random.choice(np.arange(burn_in, post_sample.size(0)), 10_000, replace = False)
+                post_sample = post_sample[sam_ind,:]
+        except FileNotFoundError:
+            raise ValueError(f"File for posterior not found.")
+        return post_sample
+    
     def bernoulli_glm2(self, j):
         try:
             # Get the directory of the current file (simulator.py)
@@ -115,6 +136,7 @@ class true_Posteriors:
             raise ValueError(f"File for posterior not found.")
         return post_sample
     
+
 def observation_lists(task_name:str):
     task_name = task_name.lower()
     if task_name in ["two_moons"]:
@@ -140,9 +162,16 @@ def observation_lists(task_name:str):
         current_dir = os.path.dirname(os.path.abspath(__file__))
         obs = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/my_five_twomoons_obs.pt")    
         return obs
+    elif task_name in ["slcp_summary_transform2"]:
+        obs_list = []
+        for j in range(1, 11):
+            task = sbibm.get_task("bernoulli_glm")
+            observation = task.get_observation(num_observation=j)  # 10 per task
+            obs_list.append(observation[0].tolist())
+        return SLCP_summary_transform2(torch.tensor(obs_list))
     else:
         raise ValueError(f"Unknown task name for observation_lists: {task_name}")
-    
+
 
 def simulator_bernoulli(thetas, batch_size=100_000):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -317,6 +346,37 @@ def simulator_my_five_twomoons(theta):
         X.append(tmp2)
     return torch.cat(X, dim = 1)
 
+def simulator_slcp3(theta):
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    theta = theta.to(device)
+
+    n = theta.shape[0]
+
+    mu0 = theta[:, 0].unsqueeze(1)
+    mu1 = theta[:, 1].unsqueeze(1)
+    sigma0 = theta[:, 2].unsqueeze(1)
+    sigma1 = theta[:, 3].unsqueeze(1)
+    r = torch.tanh(theta[:, 4]).unsqueeze(1)
+
+    # Repeat for 4 blocks
+    eps0 = torch.randn(n, 4, device=theta.device)
+    eps1 = torch.randn(n, 4, device=theta.device)
+
+    # Broadcast params
+    mu0 = mu0.repeat(1, 4)
+    mu1 = mu1.repeat(1, 4)
+    sigma0 = sigma0.repeat(1, 4)
+    sigma1 = sigma1.repeat(1, 4)
+    r = r.repeat(1, 4)
+
+    x0 = mu0 + sigma0**2 * eps0
+    x1 = mu1 + sigma1**2 * (r * eps0 + torch.sqrt(1 - r ** 2) * eps1)
+
+    out = torch.stack([x0, x1], dim=2).reshape(n, -1)
+    return out.cpu()
+
+
+
 def Simulators(task_name: str):
     task_name = task_name.lower()
     if task_name in ["bernoulli_glm2"]:
@@ -327,6 +387,11 @@ def Simulators(task_name: str):
         return simulator_my_twomoons
     elif task_name in ["my_five_twomoons"]:
         return simulator_my_five_twomoons
+    elif task_name in ["slcp_summary_transform2"]:
+        def summary_generator(theta):
+            x = simulator_slcp3(theta)  # [N, 8]
+            return SLCP_summary_transform2(x)  # [N, 5]
+        return summary_generator
     else:
         raise ValueError(f"Unknown task name for simulator: {task_name}")
     

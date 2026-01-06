@@ -62,6 +62,56 @@ def ABC_rej2(x0, X_cal, tol, device, case = None):
 
 
 
+
+def fisher_z(x, eps=1e-6):
+    x = torch.clamp(x, -1+eps, 1-eps)        # or: x = x*(1-eps)
+    z = 0.5 * torch.log((1 + x) / (1 - x))   # = atanh(x)
+    return z
+
+def log1p(x):
+    return torch.log(1+x)
+
+def log1p2(x):
+    return torch.log(.1+x)
+
+
+def SLCP_summary_transform2(X):
+    """
+    Compute summary statistics for SLCP data:
+    - Means and standard deviations for even and odd indexed dimensions
+    - Average correlation between even and odd groups
+
+    Args:
+        X: Tensor of shape [N, 8]
+
+    Returns:
+        Tensor of shape [N, 5] containing m0, m1, s0, s1, and rho
+    """
+
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    X = X.to(device)
+    X0 = X[:, [0, 2, 4, 6]]
+    X1 = X[:, [1, 3, 5, 7]]
+    m0 = X0.mean(dim=1, keepdim=True)
+    m1 = X1.mean(dim=1, keepdim=True)
+    s0 = X0.std(dim=1, correction=0, keepdim=True)
+    s1 = X1.std(dim=1, correction=0, keepdim=True)
+    
+    # Compute correlation per sample
+    cov = ((X0 - m0) * (X1 - m1)).mean(dim=1, keepdim=True)
+    rho = cov / (s0 * s1 + 1e-12)
+    rho = torch.clamp(rho, -1.0, 1.0)
+
+    s0 = log1p2(s0)
+    s1 = log1p2(s1)
+    rho = fisher_z(rho)
+
+    return torch.cat((m0, m1, s0, s1, rho), dim=1).cpu()
+
+
+
+
+
 class UnifSample:
     def __init__(self, bins = 10):
         self.bins = bins
