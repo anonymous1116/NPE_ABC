@@ -165,7 +165,7 @@ def observation_lists(task_name:str):
     elif task_name in ["slcp_summary_transform2"]:
         obs_list = []
         for j in range(1, 11):
-            task = sbibm.get_task("bernoulli_glm")
+            task = sbibm.get_task("slcp")
             observation = task.get_observation(num_observation=j)  # 10 per task
             obs_list.append(observation[0].tolist())
         return SLCP_summary_transform2(torch.tensor(obs_list))
