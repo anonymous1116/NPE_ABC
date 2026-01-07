@@ -21,6 +21,8 @@ def Bounds(task_name: str):
         return [[-5, 5]] * 10
     elif task_name in ["slcp_summary_transform2"]:
         return [[-3, 3]] * 5
+    elif task_name in ["double_slcp_summary_transform2"]:
+        return [[-3, 3]] * 5
     else:
         raise ValueError(f"Unknown task name for bounds: {task_name}")
 
@@ -40,6 +42,8 @@ def Priors(task_name: str):
         return BoxUniform(low = -5*torch.ones(10), high = 5*torch.ones(10))
     elif task_name in ["slcp_summary_transform2"]:
         return BoxUniform(low = -3*torch.ones(5), high = 3*torch.ones(5))
+    elif task_name in ["double_slcp_summary_transform2"]:
+        return BoxUniform(low = -3*torch.ones(5), high = 3*torch.ones(5))
     else:
         raise ValueError(f"Unknown task name for prior: {task_name}")
     
@@ -55,6 +59,9 @@ class true_Posteriors:
             return self.bernoulli_glm2(kwargs.get('j', 0))
         elif self.task in ["slcp_summary_transform2"]:
             return self.slcp(kwargs.get('j', 0))
+        elif self.task in ["double_slcp_summary_transform2"]:
+            return self.double_slcp(kwargs.get('j', 0))
+        
         
         elif self.task in ["my_twomoons"]:
             return self.my_twomoons(obs, n_samples)
@@ -162,6 +169,12 @@ def observation_lists(task_name:str):
         current_dir = os.path.dirname(os.path.abspath(__file__))
         obs = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/my_five_twomoons_obs.pt")    
         return obs
+
+    elif task_name in ["double_slcp_summary_transform2"]:
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        obs = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/double_slcp_summary_transform2_obs.pt")    
+        return obs
+
     elif task_name in ["slcp_summary_transform2"]:
         obs_list = []
         for j in range(1, 11):
@@ -375,7 +388,15 @@ def simulator_slcp3(theta):
     out = torch.stack([x0, x1], dim=2).reshape(n, -1)
     return out.cpu()
 
-
+def simulator_double_slcp_summary(theta):
+    # theta: N * 10 dimensions
+    X = []
+    for i in range(2):
+        tmp = torch.clone(theta[:, 2*i : (2*i + 5 )] )
+        tmp2 = simulator_slcp3(tmp)
+        tmp2 = SLCP_summary_transform2(tmp2)
+        X.append(tmp2)
+    return torch.cat(X, dim = 1)
 
 def Simulators(task_name: str):
     task_name = task_name.lower()
@@ -392,6 +413,8 @@ def Simulators(task_name: str):
             x = simulator_slcp3(theta)  # [N, 8]
             return SLCP_summary_transform2(x)  # [N, 5]
         return summary_generator
+    elif task_name in ["double_slcp_summary_transform2"]:
+        return simulator_double_slcp_summary
     else:
         raise ValueError(f"Unknown task name for simulator: {task_name}")
     
