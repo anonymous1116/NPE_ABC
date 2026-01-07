@@ -392,7 +392,7 @@ def simulator_double_slcp_summary(theta):
     # theta: N * 10 dimensions
     X = []
     for i in range(2):
-        tmp = torch.clone(theta[:, 2*i : (2*i + 5 )] )
+        tmp = torch.clone(theta[:, 5*i : (5*i + 5 )] )
         tmp2 = simulator_slcp3(tmp)
         tmp2 = SLCP_summary_transform2(tmp2)
         X.append(tmp2)
