@@ -143,7 +143,7 @@ class true_Posteriors:
             raise ValueError(f"File for posterior not found.")
         return post_sample
     
-    def doulbe_slcp_summary(self, j):
+    def double_slcp(self, j):
         try:
             # Get the directory of the current file (simulator.py)
             current_dir = os.path.dirname(os.path.abspath(__file__))
