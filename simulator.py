@@ -22,7 +22,7 @@ def Bounds(task_name: str):
     elif task_name in ["slcp_summary_transform2"]:
         return [[-3, 3]] * 5
     elif task_name in ["double_slcp_summary_transform2"]:
-        return [[-3, 3]] * 5
+        return [[-3, 3]] * 10
     else:
         raise ValueError(f"Unknown task name for bounds: {task_name}")
 
@@ -43,7 +43,7 @@ def Priors(task_name: str):
     elif task_name in ["slcp_summary_transform2"]:
         return BoxUniform(low = -3*torch.ones(5), high = 3*torch.ones(5))
     elif task_name in ["double_slcp_summary_transform2"]:
-        return BoxUniform(low = -3*torch.ones(5), high = 3*torch.ones(5))
+        return BoxUniform(low = -3*torch.ones(10), high = 3*torch.ones(10))
     else:
         raise ValueError(f"Unknown task name for prior: {task_name}")
     
