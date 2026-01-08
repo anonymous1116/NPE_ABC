@@ -104,7 +104,7 @@ def main(args):
 
     print("X_abc size", X_abc.size())
 
-    task_benchmark = ["two_moons", "bernoulli_glm2", "slcp_summary_transform2"]
+    task_benchmark = ["two_moons", "bernoulli_glm2", "slcp_summary_transform2", "double_slcp_summary_transform2"]
     if args.task in task_benchmark:
         post_sample = true_posteriors(j = args.x0_ind+1)
     elif args.task in ["my_five_twomoons"]:    
