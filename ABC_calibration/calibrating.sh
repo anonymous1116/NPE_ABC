@@ -37,8 +37,8 @@ x0_ind=$((SLURM_ARRAY_TASK_ID % 10))
 
 echo "[$(date)] Starting job: x0_ind=$x0_ind, seed=$seed, L=$L"
 
-#python ABC_calibration/calibrating_flow.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol
-python ABC_calibration/calibrating_flow_experiment.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol
+python ABC_calibration/calibrating_flow.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol
+#python ABC_calibration/calibrating_flow_experiment.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol
 #python ABC_calibration/calibrating_flow.py --x0_ind 1 --seed 1 --L 10000000 --task "double_slcp_summary_transform2" --num_training 100000 --tol 1e-3
 #python ABC_calibration/calibrating_flow_experiment.py --x0_ind 1 --seed 1 --L 10000000 --task "my_five_twomoons" --num_training 100000 --tol 1e-3
 
