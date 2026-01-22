@@ -38,7 +38,7 @@ def Priors(task_name: str):
         return BoxUniform(low = -1*torch.ones(2), high = 1*torch.ones(2))
     elif task_name in ["my_twomoons"]:
         return BoxUniform(low = -5*torch.ones(2), high = 5*torch.ones(2))
-    elif task_name in ["my_five_twomoons", "my_five_twomoons_err2"]:
+    elif task_name in ["my_five_twomoons", "my_five_twomoons_err2", "my_five_twomoons_err5" ]:
         return BoxUniform(low = -5*torch.ones(10), high = 5*torch.ones(10))
     elif task_name in ["slcp_summary_transform2"]:
         return BoxUniform(low = -3*torch.ones(5), high = 3*torch.ones(5))
