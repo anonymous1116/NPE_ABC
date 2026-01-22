@@ -432,6 +432,8 @@ def Simulators(task_name: str):
         return simulator_my_twomoons
     elif task_name in ["my_five_twomoons"]:
         return simulator_my_five_twomoons
+    elif task_name in ["my_five_twomoons_err2"]:
+        return simulator_my_five_twomoons_err2
     elif task_name in ["slcp_summary_transform2"]:
         def summary_generator(theta):
             x = simulator_slcp3(theta)  # [N, 8]
