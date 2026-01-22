@@ -2,12 +2,14 @@ import sys, os
 import torch
 import torch.nn as nn
 import numpy as np
-from sbi.inference import SNPE
+from sbi.inference import NPE
 import pickle, argparse
 import time
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from simulator import Simulators, Priors, observation_lists, Bounds
 from utils.evaluate import create_c2st_job_script
+from sbi.neural_nets import posterior_nn
+
 
 class EmbeddingNet(nn.Module):
     def __init__(self, x_dim: int, c_dim: int, hidden: int = 64, use_layernorm: bool = True):
@@ -39,8 +41,10 @@ def main(args):
     X = simulators(theta)
 
     embedding_net = EmbeddingNet(x_dim = X.size(1), c_dim = theta.size(1))
+    
+    neural_posterior = posterior_nn(model=args.cond_den, embedding_net=embedding_net)
     # Create inference object
-    inference = SNPE(prior=priors, density_estimator=args.cond_den, embedding_net = embedding_net)
+    inference = NPE(prior=priors, density_estimator = neural_posterior)
     inference = inference.append_simulations(theta, X)
 
     # Train the density estimator and build the posterior
