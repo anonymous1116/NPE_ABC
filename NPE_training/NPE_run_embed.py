@@ -2,7 +2,7 @@ import sys, os
 import torch
 import torch.nn as nn
 import numpy as np
-from sbi.inference import NPE
+from sbi.inference import SNPE
 import pickle, argparse
 import time
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
@@ -40,7 +40,7 @@ def main(args):
 
     embedding_net = EmbeddingNet(x_dim = X.size(1), c_dim = theta.size(1))
     # Create inference object
-    inference = NPE(prior=priors, density_estimator=args.cond_den, embedding_net = embedding_net)
+    inference = SNPE(prior=priors, density_estimator=args.cond_den, embedding_net = embedding_net)
     inference = inference.append_simulations(theta, X)
 
     # Train the density estimator and build the posterior
