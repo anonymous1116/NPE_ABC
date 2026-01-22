@@ -163,6 +163,7 @@ def observation_lists(task_name:str):
             observation = task.get_observation(num_observation=j)  # 10 per task
             obs_list.append(observation[0].tolist())
         return torch.tensor(obs_list)
+    
     elif task_name in ["bernoulli_glm2"]:
         obs_list = []
         for j in range(1, 11):
@@ -170,21 +171,17 @@ def observation_lists(task_name:str):
             observation = task.get_observation(num_observation=j)  # 10 per task
             obs_list.append(observation[0].tolist())
         return torch.tensor(obs_list)
+    
     elif task_name in ["my_twomoons"]:
         return torch.tensor([[0.0, 0.0], [0.0, 1.0], [0.0, 2.0], [0.1, 0.1], 
                              [-0.1, -0.1], [-3.0, 3.0], [-2.0, 3.0], 
                              [-1.0, 1.0], [-0.5, 1.0], [-0.25, 0.5]], 
                              dtype = torch.float32)
-    elif task_name in ["my_five_twomoons"]:
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        obs = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/my_five_twomoons_obs.pt")    
-        return obs
     
-    elif task_name in ["my_five_twomoons_err2"]:
+    elif task_name in ["my_five_twomoons", "my_five_twomoons_err2"]:
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        obs = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/my_five_twomoons_obs.pt")    
-        return obs
-    
+        obs = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{task_name}_obs.pt")    
+        return obs 
 
     elif task_name in ["double_slcp_summary_transform2"]:
         current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -386,9 +383,6 @@ def simulator_my_five_twomoons_err2(theta):
     X.append(torch.randn( (batch_size,2)) * np.sqrt(2.0))
     return torch.cat(X, dim = 1)
 
-
-
-
 def simulator_slcp3(theta):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     theta = theta.to(device)
@@ -448,7 +442,6 @@ def Simulators(task_name: str):
     else:
         raise ValueError(f"Unknown task name for simulator: {task_name}")
     
-
 def MoG_posterior(obs, n_samples, bounds = None):
     obs = torch.tensor(obs)
     if obs.ndim == 1:
