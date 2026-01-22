@@ -8,7 +8,7 @@ import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from simulator import observation_lists
 
-def create_c2st_job_script(task, num_training, measure, x0_ind, seed, post_n_samples, cond_den, use_gpu=False):
+def create_c2st_job_script(task, num_training, measure, x0_ind, seed, post_n_samples, cond_den, use_gpu=False, embed=False):
     sbatch_gpu_options = """
 #SBATCH --gpus-per-node=1
 #SBATCH --nodes=1
@@ -22,6 +22,10 @@ def create_c2st_job_script(task, num_training, measure, x0_ind, seed, post_n_sam
 conda activate /depot/wangxiao/apps/hyun18/NPE_NABC
 """ if use_gpu else """
 conda activate /depot/wangxiao/apps/hyun18/NPE_NABC
+"""
+    implement_options = """
+get_measure_embed.py
+""" if embed else """get_measure.py
 """
 
     job_script = f"""#!/bin/bash
@@ -47,7 +51,8 @@ cd $SLURM_SUBMIT_DIR
 
 # Run the Python script for the current simulation
 echo "Running simulation for task '{task}', '{num_training}', x0_ind={x0_ind}, seed={seed}..."
-python ./utils/get_measure.py --task {task} --num_training {num_training} --measure {measure} --x0_ind {x0_ind} --seed {seed} --post_n_samples {post_n_samples} --cond_den {cond_den}
+
+python ./utils/{implement_options} --task {task} --num_training {num_training} --measure {measure} --x0_ind {x0_ind} --seed {seed} --post_n_samples {post_n_samples} --cond_den {cond_den}
 echo "## Job completed for task '{task}', x0_ind={x0_ind}, seed={seed}" ##"
 """
     # Create the directory for SLURM files if it doesn't exist
@@ -61,7 +66,6 @@ echo "## Job completed for task '{task}', x0_ind={x0_ind}, seed={seed}" ##"
     # Submit the job immediately
     subprocess.run(['sbatch', job_file_path])
     print(f"Job {job_file_path} submitted.")
-
 
 
 def get_args():
