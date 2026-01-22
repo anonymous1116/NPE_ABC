@@ -27,10 +27,10 @@ cd $SLURM_SUBMIT_DIR
 # Calculate seed and dim_out
 seed=$((SLURM_ARRAY_TASK_ID / 10 + 1))
 #L=100000000
-L=10000000
+L=100000000
 task="my_five_twomoons"
 num_training=2000000
-tol=1e-3
+tol=1e-4
 
 # Run the calibrate_amor.py
 x0_ind=$((SLURM_ARRAY_TASK_ID % 10)) 
