@@ -3,7 +3,7 @@ import os, sys, torch,pickle, argparse
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from simulator import observation_lists, Bounds, true_Posteriors
 from sbibm.metrics.c2st import c2st
-from NPE_run_embed import EmbeddingNet
+from NPE_training.NPE_run_embed import EmbeddingNet
 
 def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, cond):
     x0_list = observation_lists(task)
