@@ -17,7 +17,7 @@ def Bounds(task_name: str):
         return [[-1, 1]] * 2
     elif task_name in ["my_twomoons"]:
         return [[-5, 5]] * 2
-    elif task_name in ["my_five_twomoons", "my_five_twomoons_err2"]:
+    elif task_name in ["my_five_twomoons", "my_five_twomoons_err2", "my_five_twomoons_err5"]:
         return [[-5, 5]] * 10
     elif task_name in ["slcp_summary_transform2"]:
         return [[-3, 3]] * 5
@@ -65,7 +65,7 @@ class true_Posteriors:
         
         elif self.task in ["my_twomoons"]:
             return self.my_twomoons(obs, n_samples)
-        elif self.task in ["my_five_twomoons", "my_five_twomoons_err2"]:    
+        elif self.task in ["my_five_twomoons", "my_five_twomoons_err2", "my_five_twomoons_err5"]:    
             return self.my_five_twomoons(obs, n_samples)
         
     def apply_bounds(self, samples, bounds):
@@ -178,7 +178,7 @@ def observation_lists(task_name:str):
                              [-1.0, 1.0], [-0.5, 1.0], [-0.25, 0.5]], 
                              dtype = torch.float32)
     
-    elif task_name in ["my_five_twomoons", "my_five_twomoons_err2"]:
+    elif task_name in ["my_five_twomoons", "my_five_twomoons_err2", "my_five_twomoons_err5"]:
         current_dir = os.path.dirname(os.path.abspath(__file__))
         obs = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{task_name}_obs.pt")    
         return obs 
@@ -383,6 +383,18 @@ def simulator_my_five_twomoons_err2(theta):
     X.append(torch.randn( (batch_size,2)) * np.sqrt(2.0))
     return torch.cat(X, dim = 1)
 
+def simulator_my_five_twomoons_err5(theta):
+    # theta: N * 10 dimensions
+    X = []
+    for i in range(5):
+        tmp = torch.clone(theta[:, 2*i : (2*i + 2 )] )
+        tmp2 = simulator_my_twomoons(tmp)
+        X.append(tmp2)
+    batch_size  = theta.size(0)
+    X.append(torch.randn( (batch_size,5)) * np.sqrt(2.0))
+    return torch.cat(X, dim = 1)
+
+
 def simulator_slcp3(theta):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     theta = theta.to(device)
@@ -434,6 +446,9 @@ def Simulators(task_name: str):
         return simulator_my_five_twomoons
     elif task_name in ["my_five_twomoons_err2"]:
         return simulator_my_five_twomoons_err2
+    elif task_name in ["my_five_twomoons_err5"]:
+        return simulator_my_five_twomoons_err5
+    
     elif task_name in ["slcp_summary_transform2"]:
         def summary_generator(theta):
             x = simulator_slcp3(theta)  # [N, 8]
