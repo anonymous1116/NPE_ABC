@@ -23,11 +23,7 @@ conda activate /depot/wangxiao/apps/hyun18/NPE_NABC
 """ if use_gpu else """
 conda activate /depot/wangxiao/apps/hyun18/NPE_NABC
 """
-    implement_options = """
-get_measure_embed
-""" if embed else """get_measure
-"""
-
+    implement_options = """get_measure_embed""" if embed else """get_measure"""
     job_script = f"""#!/bin/bash
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
