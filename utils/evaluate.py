@@ -24,8 +24,8 @@ conda activate /depot/wangxiao/apps/hyun18/NPE_NABC
 conda activate /depot/wangxiao/apps/hyun18/NPE_NABC
 """
     implement_options = """
-get_measure_embed.py
-""" if embed else """get_measure.py
+get_measure_embed
+""" if embed else """get_measure
 """
 
     job_script = f"""#!/bin/bash
@@ -52,7 +52,7 @@ cd $SLURM_SUBMIT_DIR
 # Run the Python script for the current simulation
 echo "Running simulation for task '{task}', '{num_training}', x0_ind={x0_ind}, seed={seed}..."
 
-python ./utils/{implement_options} --task {task} --num_training {num_training} --measure {measure} --x0_ind {x0_ind} --seed {seed} --post_n_samples {post_n_samples} --cond_den {cond_den}
+python ./utils/{implement_options}.py --task {task} --num_training {num_training} --measure {measure} --x0_ind {x0_ind} --seed {seed} --post_n_samples {post_n_samples} --cond_den {cond_den}
 echo "## Job completed for task '{task}', x0_ind={x0_ind}, seed={seed}" ##"
 """
     # Create the directory for SLURM files if it doesn't exist
