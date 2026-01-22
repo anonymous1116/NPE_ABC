@@ -9,7 +9,6 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from simulator import Simulators, Priors, observation_lists, Bounds
 from utils.evaluate import create_c2st_job_script
 
-
 class EmbeddingNet(nn.Module):
     def __init__(self, x_dim: int, c_dim: int, hidden: int = 64, use_layernorm: bool = True):
         super().__init__()
@@ -55,7 +54,7 @@ def main(args):
     print(f"Training with {args.cond_den}")
 
     # Define the output directory
-    output_dir = f"../depot_hyun/hyun/NPE_ABC/nets/{args.task}/J_{int(args.num_training/1000)}K"
+    output_dir = f"../depot_hyun/hyun/NPE_ABC/nets_embed/{args.task}/J_{int(args.num_training/1000)}K"
 
     # Create the directory if it doesn't exist
     if not os.path.exists(output_dir):
