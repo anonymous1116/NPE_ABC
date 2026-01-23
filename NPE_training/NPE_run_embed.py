@@ -12,9 +12,11 @@ from sbi.neural_nets import posterior_nn
 
 
 class EmbeddingNet(nn.Module):
-    def __init__(self, x_dim: int, c_dim: int, hidden: int = 64, use_layernorm: bool = True):
+    def __init__(self, x_dim: int, c_dim: int, hidden: int = 128, use_layernorm: bool = False):
         super().__init__()
         layers = [
+            nn.Linear(x_dim, hidden),
+            nn.ReLU(),
             nn.Linear(x_dim, hidden),
             nn.ReLU(),
             nn.Linear(hidden, c_dim),
