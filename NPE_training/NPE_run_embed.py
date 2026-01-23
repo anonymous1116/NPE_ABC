@@ -8,7 +8,7 @@ import time
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from simulator import Simulators, Priors, observation_lists, Bounds
 from utils.evaluate import create_c2st_job_script
-from sbi.utils.get_nn_models import posterior_nn
+from sbi.neural_nets import posterior_nn
 
 
 class EmbeddingNet(nn.Module):
