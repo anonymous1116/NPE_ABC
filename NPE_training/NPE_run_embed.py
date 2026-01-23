@@ -48,8 +48,8 @@ def main(args):
     X = simulators(theta)
 
     #embedding_net = EmbeddingNet(x_dim = X.size(1), c_dim = theta.size(1))
-    embedding_net = embedding_net = SelectFirst10()
-    
+    embedding_net =SelectFirst10()
+
     neural_posterior = posterior_nn(model=args.cond_den, embedding_net=embedding_net)
     # Create inference object
     inference = NPE(prior=priors, density_estimator = neural_posterior)
