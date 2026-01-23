@@ -36,7 +36,7 @@ class SelectFirst10(nn.Module):
         return x[:, :10]
 
 class LinearEmbedding(nn.Module):
-    def __init__(self, x_dim=20, c_dim=10):
+    def __init__(self, x_dim=12, c_dim=10):
         super().__init__()
         self.lin = nn.Linear(x_dim, c_dim, bias=True)
     def forward(self, x):
