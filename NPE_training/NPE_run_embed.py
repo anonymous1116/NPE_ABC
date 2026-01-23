@@ -35,6 +35,12 @@ class SelectFirst10(nn.Module):
     def forward(self, x):
         return x[:, :10]
 
+class LinearEmbedding(nn.Module):
+    def __init__(self, x_dim=20, c_dim=10):
+        super().__init__()
+        self.lin = nn.Linear(x_dim, c_dim, bias=True)
+    def forward(self, x):
+        return self.lin(x)
 
 def main(args):
     # Set the random seed
@@ -50,8 +56,8 @@ def main(args):
     # Run the simulator
     X = simulators(theta)
 
-    embedding_net = EmbeddingNet(x_dim = X.size(1), c_dim = theta.size(1))
-    #embedding_net = SelectFirst10()
+    #embedding_net = EmbeddingNet(x_dim = X.size(1), c_dim = theta.size(1))
+    embedding_net = LinearEmbedding()
 
     neural_posterior = posterior_nn(model=args.cond_den, embedding_net=embedding_net)
     # Create inference object
