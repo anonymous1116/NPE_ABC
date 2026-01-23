@@ -28,6 +28,11 @@ class EmbeddingNet(nn.Module):
     def forward(self, x):
         return self.net(x)
 
+class SelectFirst10(nn.Module):
+    def forward(self, x):
+        return x[:, :10]
+
+
 def main(args):
     # Set the random seed
     torch.manual_seed(args.seed)
@@ -42,7 +47,8 @@ def main(args):
     # Run the simulator
     X = simulators(theta)
 
-    embedding_net = EmbeddingNet(x_dim = X.size(1), c_dim = theta.size(1))
+    #embedding_net = EmbeddingNet(x_dim = X.size(1), c_dim = theta.size(1))
+    embedding_net = embedding_net = SelectFirst10()
     
     neural_posterior = posterior_nn(model=args.cond_den, embedding_net=embedding_net)
     # Create inference object
