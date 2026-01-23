@@ -17,7 +17,7 @@ class EmbeddingNet(nn.Module):
         layers = [
             nn.Linear(x_dim, hidden),
             nn.ReLU(),
-            nn.Linear(x_dim, hidden),
+            nn.Linear(hidden, hidden),
             nn.ReLU(),
             nn.Linear(hidden, c_dim),
         ]
