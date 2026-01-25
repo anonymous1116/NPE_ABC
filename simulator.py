@@ -375,36 +375,48 @@ def simulator_my_five_twomoons(theta):
 def simulator_my_five_twomoons_err2(theta):
     # theta: N * 10 dimensions
     X = []
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    
     for i in range(5):
         tmp = torch.clone(theta[:, 2*i : (2*i + 2 )] )
         tmp2 = simulator_my_twomoons(tmp)
         X.append(tmp2)
     batch_size  = theta.size(0)
-    X.append(torch.randn( (batch_size,2)) * np.sqrt(2.0))
+    tmp = torch.randn( (batch_size,2), device = device) * 2.0 
+    X.append(tmp.cpu())
     return torch.cat(X, dim = 1)
 
 def simulator_my_five_twomoons_err5(theta):
     # theta: N * 10 dimensions
     X = []
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    
     for i in range(5):
         tmp = torch.clone(theta[:, 2*i : (2*i + 2 )] )
         tmp2 = simulator_my_twomoons(tmp)
         X.append(tmp2)
     batch_size  = theta.size(0)
-    X.append(torch.randn( (batch_size,5)) * np.sqrt(2.0))
+    tmp = torch.randn( (batch_size,5), device = device) * 2.0 
+    X.append(tmp.cpu())
     return torch.cat(X, dim = 1)
 
+    
 def simulator_my_five_twomoons_err10(theta):
     # theta: N * 10 dimensions
     X = []
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    
     for i in range(5):
         tmp = torch.clone(theta[:, 2*i : (2*i + 2 )] )
         tmp2 = simulator_my_twomoons(tmp)
         X.append(tmp2)
     batch_size  = theta.size(0)
-    X.append(torch.randn( (batch_size,10)) * np.sqrt(2.0))
+    tmp = torch.randn( (batch_size,10), device = device) * 2.0 
+    X.append(tmp.cpu())
     return torch.cat(X, dim = 1)
 
+    
+    
 
 def simulator_slcp3(theta):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
