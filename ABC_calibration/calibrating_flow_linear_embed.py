@@ -93,10 +93,10 @@ def main(args):
             Y_chunk = param_box(UnifSample(bins = 10), adj, num=nums)
         
         X_chunk = simulators(Y_chunk)
+        with torch.no_grad():
+            x0_embed = embed(x0.to(device))
+            X_chunk_embed = embed(X_chunk.to(device))
         
-        x0_embed = embed(x0.to(device))
-        X_chunk_embed = embed(X_chunk.to(device))
-    
 
         index_ABC = ABC_rej2(x0_embed, X_chunk_embed, args.tol, device, args.task)
         X_chunk, Y_chunk = X_chunk[index_ABC], Y_chunk[index_ABC]
