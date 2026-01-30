@@ -87,7 +87,7 @@ def main(args):
 
     # Define the output directory
     #output_dir = f"../depot_hyun/hyun/NPE_ABC/nets_embed/{args.task}/J_{int(args.num_training/1000)}K"
-    output_dir = f"../depot_hyun/hyun/NPE_ABC/nets_embed2/{args.task}/J_{int(args.num_training/1000)}K"
+    output_dir = f"../depot_hyun/hyun/NPE_ABC/nets_embed/{args.task}/J_{int(args.num_training/1000)}K"
 
     # Create the directory if it doesn't exist
     if not os.path.exists(output_dir):
