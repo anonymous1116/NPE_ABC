@@ -42,15 +42,6 @@ class LinearEmbedding(nn.Module):
     def forward(self, x):
         return self.lin(x)
 
-class GatedLinearEmbedding(nn.Module):
-    def __init__(self, x_dim: int, c_dim: int):
-        super().__init__()
-        self.logits = nn.Parameter(torch.zeros(x_dim))   # gates, learned
-        self.lin = nn.Linear(x_dim, c_dim, bias=True)
-
-    def forward(self, x):
-        g = torch.sigmoid(self.logits)                   # (x_dim,)
-        return self.lin(x * g)                           # broadcast
 
 def main(args):
     # Set the random seed
@@ -67,8 +58,8 @@ def main(args):
     X = simulators(theta)
 
     #embedding_net = EmbeddingNet(x_dim = X.size(1), c_dim = theta.size(1))
-    #embedding_net = LinearEmbedding(x_dim = X.size(1), c_dim = theta.size(1))
-    embedding_net = GatedLinearEmbedding(x_dim = X.size(1), c_dim = theta.size(1))
+    embedding_net = LinearEmbedding(x_dim = X.size(1), c_dim = 5)
+    #embedding_net = GatedLinearEmbedding(x_dim = X.size(1), c_dim = theta.size(1))
 
     neural_posterior = posterior_nn(model=args.cond_den, embedding_net=embedding_net)
     # Create inference object
