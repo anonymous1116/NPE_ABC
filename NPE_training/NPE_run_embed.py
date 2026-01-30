@@ -28,13 +28,6 @@ class EmbeddingNet(nn.Module):
     def forward(self, x):
         return self.net(x)
 
-class SelectFirst10(nn.Module):
-    def __init__(self):
-        super().__init__()
-
-    def forward(self, x):
-        return x[:, :10]
-
 class LinearEmbedding(nn.Module):
     def __init__(self, x_dim=12, c_dim=10):
         super().__init__()
