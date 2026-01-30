@@ -3,7 +3,7 @@ import os, sys, torch,pickle, argparse
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from simulator import observation_lists, Bounds, true_Posteriors
 from sbibm.metrics.c2st import c2st
-from NPE_training.NPE_run_embed import EmbeddingNet, LinearEmbedding
+from NPE_training.NPE_run_embed import EmbeddingNet, LinearEmbedding, GatedLinearEmbedding
 
 def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, cond):
     x0_list = observation_lists(task)
@@ -19,7 +19,7 @@ def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, c
     else:
         true_sample = posterior(torch.tensor(x0), n_samples=post_n_samples, bounds=limits)
     
-    output_file_path = f"../depot_hyun/hyun/NPE_ABC/nets_embed/{task}/J_{int(num_training/1000)}K/{task}_{seed}_{cond}.pkl"    
+    output_file_path = f"../depot_hyun/hyun/NPE_ABC/nets_embed2/{task}/J_{int(num_training/1000)}K/{task}_{seed}_{cond}.pkl"    
     
     if not os.path.exists(output_file_path):
         raise FileNotFoundError(f"NPE results file not found: {output_file_path}")
