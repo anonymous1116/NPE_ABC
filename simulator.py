@@ -413,6 +413,7 @@ def simulator_my_five_twomoons_err10(theta):
     batch_size  = theta.size(0)
     tmp = torch.randn( (batch_size,5), device = device) * 2.0 
     X.append(tmp.cpu())
+    del tmp
     tmp = torch.randn( (batch_size,5), device = device) * 2.0 
     X.append(tmp.cpu())
     return torch.cat(X, dim = 1)
