@@ -42,6 +42,15 @@ class LinearEmbedding(nn.Module):
     def forward(self, x):
         return self.lin(x)
 
+class LinearEmbedding2(nn.Module):
+    def __init__(self, x_dim=12, c_dim=10):
+        super().__init__()
+        self.lin = nn.Linear(x_dim, c_dim, bias=True)
+    def forward(self, x):
+        return self.lin(x)
+
+
+
 def main(args):
     # Set the random seed
     torch.manual_seed(args.seed)
@@ -75,7 +84,8 @@ def main(args):
     print(f"Training with {args.cond_den}")
 
     # Define the output directory
-    output_dir = f"../depot_hyun/hyun/NPE_ABC/nets_embed/{args.task}/J_{int(args.num_training/1000)}K"
+    #output_dir = f"../depot_hyun/hyun/NPE_ABC/nets_embed2/{args.task}/J_{int(args.num_training/1000)}K"
+    output_dir = f"../depot_hyun/hyun/NPE_ABC/nets_embed2/{args.task}/J_{int(args.num_training/1000)}K"
 
     # Create the directory if it doesn't exist
     if not os.path.exists(output_dir):
