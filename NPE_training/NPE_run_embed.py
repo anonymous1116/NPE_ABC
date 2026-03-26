@@ -35,6 +35,13 @@ class LinearEmbedding(nn.Module):
     def forward(self, x):
         return self.lin(x)
 
+class NonlinearEmbedding(nn.Module):
+    def __init__(self, x_dim=12, c_dim=10):
+        super().__init__()
+        self.lin = nn.Linear(x_dim, c_dim, bias=True)
+    def forward(self, x):
+        return self.lin(x)
+
 
 def main(args):
     # Set the random seed
