@@ -19,7 +19,6 @@ def main(args):
     torch.manual_seed(seed)
     np.random.seed(seed)
 
-    L = args.L
     NABC_results = []
     
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
