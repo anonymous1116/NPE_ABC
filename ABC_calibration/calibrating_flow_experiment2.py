@@ -78,10 +78,6 @@ def main(args):
     
     NABC_results.append(tmp)
     
-    sci_str = format(args.tol, ".0e")
-    print(sci_str)  # Output: '1e-02'
-    
-
     output_dir = f"../depot_hyun/hyun/NPE_ABC/flow_c2st_results_exp2/{args.task}_context/J_{int(args.num_training/1000)}K"
     ## Create the directory if it doesn't exist
     if not os.path.exists(output_dir):
