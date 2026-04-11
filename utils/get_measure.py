@@ -17,7 +17,6 @@ def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, c
         true_sample = posterior(j = x0_ind+1)
     else:
         true_sample = posterior(torch.tensor(x0), n_samples=post_n_samples, bounds=limits)
-    
 
     if method == "FMPE":
         output_file_path = f"../depot_hyun/hyun/NPE_ABC/FMPE_nets/{task}/J_{int(num_training/1000)}K/{task}_{seed}.pkl"    
