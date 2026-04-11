@@ -81,8 +81,8 @@ if __name__ == "__main__":
                                x0_ind = i, 
                                seed = args.seed, 
                                post_n_samples =10_000, 
-                               cond_den = "nothing"
+                               cond_den = "nothing",
                                method = "FMPE", 
-                               use_gpu = gpu_ind
+                               use_gpu = gpu_ind,
                                embed = False)
         
