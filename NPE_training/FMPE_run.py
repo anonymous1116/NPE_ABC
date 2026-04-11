@@ -75,5 +75,14 @@ if __name__ == "__main__":
     gpu_ind = True if torch.cuda.is_available() else False
 
     for i in range(len(x0_list.tolist())):
-        create_c2st_job_script(args.task, args.num_training, "c2st", i, args.seed, 10_000, "FMPE", gpu_ind)
-    
+        create_c2st_job_script(task = args.task, 
+                               num_training = args.num_training, 
+                               measure = "c2st", 
+                               x0_ind = i, 
+                               seed = args.seed, 
+                               post_n_samples =10_000, 
+                               cond_den = "nothing"
+                               method = "FMPE", 
+                               use_gpu = gpu_ind
+                               embed = False)
+        
