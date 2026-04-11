@@ -8,7 +8,7 @@ import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from simulator import observation_lists
 
-def create_c2st_job_script(task, num_training, measure, x0_ind, seed, post_n_samples, cond_den, method, use_gpu=False, embed=False):
+def create_c2st_job_script(task, num_training, measure, x0_ind, seed, post_n_samples, cond_den, method = "NPE", use_gpu=False, embed=False):
     sbatch_gpu_options = """
 #SBATCH --gpus-per-node=1
 #SBATCH --nodes=1
@@ -54,7 +54,7 @@ echo "## Job completed for task '{task}', x0_ind={x0_ind}, seed={seed}" ##"
     # Create the directory for SLURM files if it doesn't exist
     output_dir = f"NPE_ABC/{measure}/{task}/slurm_files"
     os.makedirs(output_dir, exist_ok=True)
-    job_file_path = os.path.join(output_dir, f"{task}_NPE_{int(num_training/1000)}K_c2st_x0_ind{x0_ind}_seed{seed}.sh")
+    job_file_path = os.path.join(output_dir, f"{task}_{method}_{int(num_training/1000)}K_c2st_x0_ind{x0_ind}_seed{seed}.sh")
     with open(job_file_path, 'w') as f:
         f.write(job_script)
     print(f"Job script created: {job_file_path}")
