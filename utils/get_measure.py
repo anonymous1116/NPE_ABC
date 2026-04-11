@@ -4,7 +4,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from simulator import observation_lists, Bounds, true_Posteriors
 from sbibm.metrics.c2st import c2st
 
-def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, cond):
+def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, cond, method):
     x0_list = observation_lists(task)
     x0 = x0_list[x0_ind]
     torch.manual_seed(seed)
@@ -18,7 +18,11 @@ def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, c
     else:
         true_sample = posterior(torch.tensor(x0), n_samples=post_n_samples, bounds=limits)
     
-    output_file_path = f"../depot_hyun/hyun/NPE_ABC/nets/{task}/J_{int(num_training/1000)}K/{task}_{seed}_{cond}.pkl"    
+
+    if method == "FMPE":
+        output_file_path = f"../depot_hyun/hyun/NPE_ABC/FMPE_nets/{task}/J_{int(num_training/1000)}K/{task}_{seed}.pkl"    
+    else:    
+        output_file_path = f"../depot_hyun/hyun/NPE_ABC/nets/{task}/J_{int(num_training/1000)}K/{task}_{seed}_{cond}.pkl"    
     
     if not os.path.exists(output_file_path):
         raise FileNotFoundError(f"NPE results file not found: {output_file_path}")
@@ -37,7 +41,8 @@ def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, c
         dist = c2st(true_sample[:sample_post_size], sample_post[:sample_post_size])
     print("c2st: ", dist)  
     # Save
-    output_dir = f"../depot_hyun/hyun/NPE_ABC/NPE_{measure}_results/{task}/J_{int(num_training/1000)}K"   
+    
+    output_dir = f"../depot_hyun/hyun/NPE_ABC/{method}_{measure}_results/{task}/J_{int(num_training/1000)}K"   
     os.makedirs(output_dir, exist_ok=True)
     torch.save(dist, os.path.join(output_dir, f"result_x0_{x0_ind}_seed_{seed}.pt"))  # Customize filename as needed
     
@@ -53,11 +58,12 @@ def get_args():
                         help="Number of simulations for training (default: 500_000)")
     parser.add_argument('--cond_den', type=str, default='nsf', 
                         help='Conditional density estimator type: mdn, maf, nsf')
+    parser.add_argument('--method', type=str, default='NPE', 
+                        help='method_type: NPE, FMPE')
     return parser.parse_args()
-
     
 if __name__ == "__main__":
     args = get_args()  # Parse command-line arguments    
-    run_similiarity(args.task, args.measure, args.x0_ind, args.seed, args.post_n_samples, args.num_training, args.cond_den)
+    run_similiarity(args.task, args.measure, args.x0_ind, args.seed, args.post_n_samples, args.num_training, args.cond_den, args.method)
 
 
