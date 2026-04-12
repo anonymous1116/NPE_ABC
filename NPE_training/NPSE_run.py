@@ -7,8 +7,9 @@ import os
 import argparse
 import time
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
-from simulator import Simulators, Priors, observation_lists, Bounds
+from simulator import Simulators, Priors, observation_lists, Bounds, true_Posteriors
 from utils.evaluate import create_c2st_job_script
+from sbibm.metrics.c2st import c2st
 
 def main(args):
     # Set the random seed
@@ -58,12 +59,12 @@ def main(args):
 
     torch.save(elapsed_time, f"{output_dir}/{args.task}_{args.seed}_time.pt")
 
-    task_params = get_task_parameters(args.task)
-    limits = task_params["limits"]
-    x0 = task_params["x0_list"]
-    posterior = Posteriors(args.task)
-    for j in range(len(x0)):
-        x_o = x0[j]
+    x0_list = observation_lists(args.task)
+    limits = Bounds(args.task)
+    posterior = true_Posteriors(args.task)
+    
+    for j in range(len(x0_list)):
+        x_o = x0_list[j]
         x_o = torch.tensor(x_o, dtype = torch.float32)
 
         posterior_NPSE = inference.build_posterior().set_default_x(x_o)
@@ -73,19 +74,18 @@ def main(args):
 
         elapsed_time =time1-time0
         # Get true posterior      
-        task_benchmark = ["slcp", "slcp_summary", "slcp_KL", "two_moons", "two_moons2", "gaussian_mixture", "gaussian_linear_uniform", 
-                      "GL_U2", "my_five_twomoons", "g_and_k", "g_and_k2","g_and_k3","g_and_k4","g_and_k5",
-                        "OU", "OU2", "OU3", "OU4", "OU5", "OU6", "OU7", "OU8", "OU9", "CIR", "bernoulli_glm2", "MoG_dim5", 
-                        "slcp2_summary", "slcp3_summary"]
+        task_benchmark = ["two_moons", "bernoulli_glm2", "slcp_summary_transform2", "double_slcp_summary_transform2"]
         if args.task in task_benchmark:
             true_sample = posterior(j = j+1)
         else:
-            true_sample = posterior(x_o, n_samples=10_000, bounds=limits)
-      
+            true_sample = posterior(torch.tensor(x_o), n_samples=10_000, bounds=limits)
+
+        
         measure = "c2st"
 
         dist = c2st(true_sample, sample_post)
-        output_dir = f"../depot_hyun/NABC_results/{measure}/{args.task}_results/NPSE/J_{int(args.num_training/1000)}K"   
+        output_dir = f"../depot_hyun/hyun/NPE_ABC/NPSE_{measure}_results/{args.task}/J_{int(args.num_training/1000)}K"   
+        
         os.makedirs(output_dir, exist_ok=True)
         torch.save(dist, os.path.join(output_dir, f"result_x0_{j}_seed_{args.seed}.pt"))  # Customize filename as needed
         torch.save(elapsed_time, os.path.join(output_dir, f"result_x0_{j}_seed_{args.seed}_time.pt"))  # Customize filename as needed
@@ -103,10 +103,4 @@ def get_args():
 
 if __name__ == "__main__":
     args = get_args()  # Parse command-line arguments
-    main(args)  # Pass the entire args object to the main function
-
-    gpu_ind = True if torch.cuda.is_available() else False
-
-    for i in range(len(x0)):
-        create_c2st_job_script("NPSE", args.task, "c2st", 10000, args.num_training, i, args.seed, use_gpu = gpu_ind)
-    
+    main(args)  # Pass the entire args object to the main function    
