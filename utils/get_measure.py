@@ -18,8 +18,8 @@ def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, c
     else:
         true_sample = posterior(torch.tensor(x0), n_samples=post_n_samples, bounds=limits)
 
-    if method == "FMPE":
-        output_file_path = f"../depot_hyun/hyun/NPE_ABC/FMPE_nets/{task}/J_{int(num_training/1000)}K/{task}_{seed}.pkl"    
+    if method in ["FMPE", "NPSE"]:
+        output_file_path = f"../depot_hyun/hyun/NPE_ABC/{method}_nets/{task}/J_{int(num_training/1000)}K/{task}_{seed}.pkl"    
     else:    
         output_file_path = f"../depot_hyun/hyun/NPE_ABC/nets/{task}/J_{int(num_training/1000)}K/{task}_{seed}_{cond}.pkl"    
     
@@ -58,7 +58,7 @@ def get_args():
     parser.add_argument('--cond_den', type=str, default='nsf', 
                         help='Conditional density estimator type: mdn, maf, nsf')
     parser.add_argument('--method', type=str, default='NPE', 
-                        help='method_type: NPE, FMPE')
+                        help='method_type: NPE, FMPE, NPSE')
     return parser.parse_args()
     
 if __name__ == "__main__":

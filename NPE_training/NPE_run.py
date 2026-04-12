@@ -1,7 +1,7 @@
 import sys, os
 import torch
 import numpy as np
-from sbi.inference import NPE
+from sbi.inference import NPE, FMPE, NPSE
 import pickle
 import os
 import argparse
@@ -25,7 +25,12 @@ def main(args):
     X = simulators(theta)
 
     # Create inference object
-    inference = NPE(prior=priors, density_estimator=args.cond_den)
+    if args.method == "FMPE":
+        inference = FMPE(prior=priors)
+    elif args.method == "NPSE":
+        inference = NPSE(prior = priors)
+    else:
+        inference = NPE(prior=priors, density_estimator=args.cond_den)
     inference = inference.append_simulations(theta, X)
 
     # Train the density estimator and build the posterior
@@ -39,7 +44,10 @@ def main(args):
     print(f"Training with {args.cond_den}")
 
     # Define the output directory
-    output_dir = f"../depot_hyun/hyun/NPE_ABC/nets/{args.task}/J_{int(args.num_training/1000)}K"
+    if args.method in ["FMPE", "NPSE"]:
+        output_dir = f"../depot_hyun/hyun/NPE_ABC/{args.method}_nets/{args.task}/J_{int(args.num_training/1000)}K"
+    else:    
+        output_dir = f"../depot_hyun/hyun/NPE_ABC/nets/{args.task}/J_{int(args.num_training/1000)}K"
 
     # Create the directory if it doesn't exist
     if not os.path.exists(output_dir):
@@ -64,6 +72,7 @@ def get_args():
     parser.add_argument('--seed', type=int, default=1, help='Random seed for reproducibility')
     parser.add_argument('--num_training', type=int, default=500_000, help='Number of simulations to run')
     parser.add_argument('--cond_den', type=str, default='nsf', help='Conditional density estimator type: mdn, maf, nsf')
+    parser.add_argument('--method', type=str, default='NPE', help='Method type: NPE, FMPE, NPSE')
     return parser.parse_args()
 
 
@@ -77,5 +86,14 @@ if __name__ == "__main__":
     gpu_ind = True if torch.cuda.is_available() else False
 
     for i in range(len(x0_list.tolist())):
-        create_c2st_job_script(args.task, args.num_training, "c2st", i, args.seed, 10_000, "NPE", args.cond_den, gpu_ind)
-    
+        create_c2st_job_script(task = args.task, 
+                               num_training = args.num_training, 
+                               measure = "c2st", 
+                               x0_ind = i, 
+                               seed = args.seed, 
+                               post_n_samples =10_000, 
+                               cond_den = args.cond_den,
+                               method = args.method, 
+                               use_gpu = gpu_ind,
+                               embed = False)
+        
