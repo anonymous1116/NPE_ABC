@@ -84,6 +84,7 @@ def main(args):
         measure = "c2st"
 
         dist = c2st(true_sample, sample_post)
+        print(f"{measure}: {dist}")
         output_dir = f"../depot_hyun/hyun/NPE_ABC/NPSE_{measure}_results/{args.task}/J_{int(args.num_training/1000)}K"   
         
         os.makedirs(output_dir, exist_ok=True)
