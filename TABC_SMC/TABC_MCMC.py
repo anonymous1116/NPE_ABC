@@ -39,9 +39,7 @@ def main(args):
     if x0.ndim == 1:
         x0 = torch.reshape(x0, (1,x0.size(0)))
         
-    chunk_size_cal = 10_000
     print("x0_size", x0.size(), flush = True)
-    #print("X_cal size", X_cal.size(), flush = True)
     
     Y_cal = priors.sample((1_000_000,))
     X_cal = simulators(Y_cal)
