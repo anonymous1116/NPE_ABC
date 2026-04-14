@@ -18,6 +18,8 @@ def main(args):
         current_dir = os.path.dirname(os.path.abspath(__file__))
         torch.save(x0_list, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/my_ten_twomoons_obs.pt")    
         print(x0_list)
+    else:
+        print("Task not recognized.")
 
 def get_args():
     # Create an argument parser
