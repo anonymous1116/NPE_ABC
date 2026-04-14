@@ -18,11 +18,11 @@ def main(args):
         current_dir = os.path.dirname(os.path.abspath(__file__))
         torch.save(x0_list, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/my_ten_twomoons_obs.pt")    
         print(x0_list)
-        
+
 def get_args():
     # Create an argument parser
     parser = argparse.ArgumentParser(description="Run simulations and inference.")
-    parser.add_argument('--task', type=str, default='twomoons', help='Simulation type: twomoons, MoG, Lapl, GL_U or SLCP')
+    parser.add_argument('--task', type=str, default='my_ten_twomoons', help='Simulation type: my_ten_twomoons')
     return parser.parse_args()
 
 
