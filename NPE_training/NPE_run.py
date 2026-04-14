@@ -27,8 +27,6 @@ def main(args):
     # Create inference object
     if args.method == "FMPE":
         inference = FMPE(prior=priors)
-    elif args.method == "NPSE":
-        inference = NPSE(prior = priors)
     else:
         inference = NPE(prior=priors, density_estimator=args.cond_den)
     inference = inference.append_simulations(theta, X)
