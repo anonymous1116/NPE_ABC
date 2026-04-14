@@ -13,7 +13,7 @@ def main(args):
             sample = np.random.choice(np.arange(0, 10), size=10, replace=True)
             tmp = observation_lists("my_twomoons")
             tmp = np.array(tmp)
-            print(tmp[sample])
+            print(np.concatenate(tmp[sample],0))
             #x0_list.append(tmp)
 
 def get_args():
