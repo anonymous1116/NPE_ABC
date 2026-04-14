@@ -31,7 +31,7 @@ seeds=$((seed_START + SLURM_ARRAY_TASK_ID - 1))
 echo "Running with seed=$seeds"
 #python NPE_training/NPE_run_embed.py --task "my_five_twomoons_err2" --seed $seeds --cond_den "nsf" --num_training 1000000
 #python NPE_training/FMPE_run.py --task "double_slcp_summary_transform2" --seed $seeds --num_training 3000000
-python NPE_training/NPSE_run.py --task "double_slcp_summary_transform2" --seed $seeds --num_training 1000000
+python NPE_training/NPSE_run.py --task "double_slcp_summary_transform2" --seed $seeds --num_training 500000
 #python NPE_training/NPE_run.py --task "double_slcp_summary_transform2" --seed $seed --num_training 300000 --cond_den "nsf"
 #python NPE_training/SNPE_run.py --task "two_moons" --seed 1 --num_training 1000 --cond_den "nsf" --x0_ind 0
 echo "## Run Completed for seed=$seeds ##"
