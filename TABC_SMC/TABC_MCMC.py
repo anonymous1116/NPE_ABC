@@ -128,7 +128,7 @@ def main(args):
 
         # ESS check
         if j % CHECK_EVERY == 0:
-            theta_chain = torch.cat(theta_list, dim=0).cpu().numpy()
+            theta_chain = torch.cat(theta_list, dim=1).cpu().numpy()
             print(theta_chain.shape)
             ess = az.ess(theta_chain[None, :, :], method="bulk")
             ess_min = ess.to_array().values.min()
