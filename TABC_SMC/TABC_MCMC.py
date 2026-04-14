@@ -19,7 +19,6 @@ def main(args):
     torch.manual_seed(seed)
     np.random.seed(seed)
 
-    L = args.L
     NABC_results = []
     
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -28,9 +27,6 @@ def main(args):
     true_posteriors = true_Posteriors(args.task)
     simulators = Simulators(args.task)
     bounds = Bounds(args.task)
-    
-    chunk_size = 50_000_000
-    num_chunks = L // chunk_size
     
     start_time = time.time()
     x0 = observation_lists(args.task)[args.x0_ind]
