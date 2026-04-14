@@ -41,6 +41,8 @@ def main(args):
         
     print("x0_size", x0.size(), flush = True)
     
+
+    # For inital value
     Y_cal = priors.sample((1_000_000,))
     X_cal = simulators(Y_cal)
 
@@ -77,34 +79,71 @@ def main(args):
     print("max_vals:", max_vals)   
     print("min_vals:", min_vals)
 
-    for i in range(num_chunks + 1): 
-        start = i * chunk_size
-        end = (i + 1) * chunk_size if (i + 1) * chunk_size < L else L
-        nums = end-start
-
-        if nums == 0:
-            break
-        if args.task == "bernoulli_glm2":
-            Y_chunk = truncated_mvn_sample(nums, priors_mean, priors_std, min_vals, max_vals)
-        else:
-            Y_chunk = param_box(UnifSample(bins = 10), adj, num=nums)
-        
-        X_chunk = simulators(Y_chunk)
-        
-        x0_embed = embed(x0.to(device))
-        X_chunk_embed = embed(X_chunk.to(device))
     
+    ESS_TARGET = 1_000
+    CHECK_EVERY = 100   # do NOT check every iteration
 
-        index_ABC = ABC_rej2(x0_embed, X_chunk_embed, args.tol, device, args.task)
-        X_chunk, Y_chunk = X_chunk[index_ABC], Y_chunk[index_ABC]
-        X_abc.append(X_chunk)
-        Y_abc.append(Y_chunk)
-        print(f"{i}th iteration out of {num_chunks}", flush = True)
+    theta_list = []
+    theta_list.append(adj[0])
+    ess_history = []
+    iter_history = []
+    acc_history = []
 
-    X_abc = torch.cat(X_abc)
-    Y_abc = torch.cat(Y_abc)    
+    accepted_count = 0
 
-    print("X_abc size", X_abc.size())
+    import arviz as az
+    for j in range(1, 100_000):  # large upper bound
+        
+        posterior = saved_data['posterior'].set_default_x(x0)
+        theta_cand = posterior.sample((1000,), x=x0, show_progress_bars=False)
+
+        s_cand = simulators(theta_cand)
+        dist = torch.sqrt(torch.sum((x0 - s_cand) ** 2, 1))
+
+        theta_cand_0 = theta_cand[torch.argmin(dist)]
+        s_cand_0 = s_cand[torch.argmin(dist)]
+
+        alpha = priors.log_prob(theta_cand_0) - priors.log_prob(theta_list[j-1]) \
+                + posterior.log_prob(theta_list[j-1]) - posterior.log_prob(theta_cand_0)
+        alpha = torch.exp(alpha)
+        alpha = torch.min(torch.tensor(1.0), alpha)
+
+        accept = torch.bernoulli(alpha)
+
+        if accept == 1:     
+            accepted_count += 1
+            if s_cand_0.ndim == 1:
+                s_cand_0 = s_cand_0.unsqueeze(0)
+            if theta_cand_0.ndim == 1:
+                theta_cand_0 = theta_cand_0.unsqueeze(0)
+
+            with torch.no_grad():
+                tmp, _ = transform.forward(theta_cand_0.to(device), context=embed(s_cand_0.to(device)))
+                adj, _ = transform.inverse(tmp, context=embed(x0.to(device)))
+
+            theta_list.append(adj[0].cpu())
+
+        else:
+            theta_list.append(theta_list[j-1])
+
+        # ESS check
+        if j % CHECK_EVERY == 0:
+            theta_chain = torch.cat(theta_list, dim=0).cpu().numpy()
+            print(theta_chain.shape)
+            ess = az.ess(theta_chain[None, :, :], method="bulk")
+            ess_min = ess.to_array().values.min()
+
+            acc_rate = accepted_count / j
+
+            ess_history.append(ess_min)
+            iter_history.append(j)
+            acc_history.append(acc_rate)
+
+            print(f"Iter {j}, ESS_min={ess_min:.1f}, acc={acc_rate:.3f}")
+            if ess_min >= ESS_TARGET:
+                break
+        
+
 
     task_benchmark = ["two_moons", "bernoulli_glm2", "slcp_summary_transform2", "double_slcp_summary_transform2"]
     if args.task in task_benchmark:
