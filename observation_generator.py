@@ -12,8 +12,9 @@ def main(args):
         for j in range(10):
             sample = np.random.choice(np.arange(1, 11), size=10, replace=True)
             tmp = observation_lists("my_twomoons")
+            tmp = np.array(tmp)
             print(tmp[sample])
-            #0_list.append(tmp)
+            #x0_list.append(tmp)
 
 def get_args():
     # Create an argument parser
