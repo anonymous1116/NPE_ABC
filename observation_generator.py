@@ -9,7 +9,7 @@ def main(args):
         random.seed(2826)
         torch.manual_seed(2826)
         x0_list = []
-        for j in range(1):
+        for j in range(10):
             sample = np.random.choice(np.arange(0, 10), size=10, replace=True)
             tmp = observation_lists("my_twomoons")
             tmp = np.array(tmp)
