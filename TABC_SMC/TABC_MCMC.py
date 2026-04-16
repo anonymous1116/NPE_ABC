@@ -157,13 +157,15 @@ def main(args):
         end_time = time.time()
         elapsed_time = end_time - start_time
         #print(f"Elapsed time: {elapsed_time:.2f} seconds")
-        if elapsed_time > 4*3600 - 5* 60:  # 3:55 hours
+        if elapsed_time > 4*3600 - 10* 60:  # 3:50 hours
             time_limit_exceeded = True
             print("Time limit exceeded. Stopping the algorithm.")
             break
         else:
             time_limit_exceeded = False
     theta_stack= torch.row_stack(theta_list)
+    elapsed_time = end_time - start_time
+        
     #sample_post_10K = theta_stack[torch.randint(10000, len(theta_list), (10000,))]
     #sample_post_1K = theta_stack[torch.randint(10000, len(theta_list), (1000,))]
     sample_post_10K = theta_stack[torch.randint(0, len(theta_list), (10000,))]
@@ -210,8 +212,7 @@ def main(args):
     plt.close()
     
     torch.save([tmp,tmp2], f"{output_dir}/x0{args.x0_ind}_seed{args.seed}.pt")
-    #torch.save([torch.cuda.get_device_name(0), elapsed_time], f"{output_dir}/x0{args.x0_ind}_seed{args.seed}_info.pt")
-
+    
     torch.save({
         "config": {
         "x0_ind": args.x0_ind,
@@ -223,7 +224,8 @@ def main(args):
         "ess_history_median": ess_history_median,
         "acc_history": acc_history,
         "time_limit_exceeded": time_limit_exceeded,
-        "total_iterations": total_iterations
+        "total_iterations": total_iterations,
+        "elapsed_time": elapsed_time
     }, f"{output_dir}/x0{args.x0_ind}_seed{args.seed}_history.pt")
         
 
