@@ -25,6 +25,8 @@ def Bounds(task_name: str):
         return [[-3, 3]] * 5
     elif task_name in ["double_slcp_summary_transform2"]:
         return [[-3, 3]] * 10
+    elif task_name in ["mog_10"]:
+        return BoxUniform(low = -10*torch.ones(10), high = 10*torch.ones(10))
     else:
         raise ValueError(f"Unknown task name for bounds: {task_name}")
 
@@ -44,7 +46,8 @@ def Priors(task_name: str):
         return BoxUniform(low = -5*torch.ones(10), high = 5*torch.ones(10))
     elif task_name in ["my_ten_twomoons"]:
         return BoxUniform(low = -5*torch.ones(20), high = 5*torch.ones(20))
-
+    elif task_name in ["mog_10"]:
+        return BoxUniform(low = -10*torch.ones(10), high = 10*torch.ones(10))
     elif task_name in ["slcp_summary_transform2"]:
         return BoxUniform(low = -3*torch.ones(5), high = 3*torch.ones(5))
     elif task_name in ["double_slcp_summary_transform2"]:
@@ -70,6 +73,8 @@ class true_Posteriors:
         
         elif self.task in ["my_twomoons"]:
             return self.my_twomoons(obs, n_samples)
+        elif self.task in ["mog_10"]:
+            return self.MoG(obs, n_samples)
         elif self.task in ["my_five_twomoons", "my_five_twomoons_err2", "my_five_twomoons_err5", "my_five_twomoons_err10"]:    
             return self.my_five_twomoons(obs, n_samples)
         
@@ -111,6 +116,27 @@ class true_Posteriors:
             tmp2 = self.my_twomoons(obs = obs_tmp, n_samples = n_samples)
             posterior.append(tmp2)
         return torch.cat(posterior, dim = 1)
+
+
+    def MoG(obs, n_samples, bounds = None):
+        obs = torch.tensor(obs)
+        if obs.ndim == 1:
+            obs = torch.reshape(obs, (1, obs.size(0)))
+        scale = [1.0, 0.1]
+        n_samples2 = n_samples * 1000
+
+        idx =  D.Bernoulli(torch.tensor(1/2)).sample((n_samples2,obs.size(1) )) 
+        idx2 = 1 - idx
+
+        tmp1 = D.Normal(obs[0], torch.tensor(scale[0])).sample((n_samples2,))
+        tmp2 = D.Normal(obs[0], torch.tensor(scale[1])).sample((n_samples2,))
+
+        tmp = tmp1 * idx + tmp2 * idx2
+        if bounds is not None:
+            tmp = torch.clone(apply_bounds(tmp, bounds))
+        sam_ind = np.random.choice(np.arange(0, tmp.size()[0]), n_samples, replace = True)
+        return tmp[sam_ind,:]
+
 
     def two_moons(self, j):
         task = sbibm.get_task("two_moons")

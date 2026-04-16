@@ -18,8 +18,21 @@ def main(args):
         current_dir = os.path.dirname(os.path.abspath(__file__))
         torch.save(x0_list, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/my_ten_twomoons_obs.pt")    
         print(x0_list)
+    elif args.task == "mog_10":
+        random.seed(2826)
+        torch.manual_seed(2826)
+        x0_list = []
+        for j in range(10):
+            obs  = torch.randn(10) * 20 - 10
+            x0_list.append(obs.tolist())
+        x0_list = torch.tensor(x0_list, dtype = torch.float32)
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        torch.save(x0_list, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/mog_10_obs.pt")    
+        print(x0_list)
     else:
         print("Task not recognized.")
+
+
 
 def get_args():
     # Create an argument parser
