@@ -155,8 +155,8 @@ def main(args):
                 break
     
         
-    sample_post_10K = tmp[torch.randint(10000, len(theta_list), (10000,))]
-    sample_post_1K = tmp[torch.randint(10000, len(theta_list), (1000,))]
+    sample_post_10K = tmp[torch.randint(1000, len(theta_list), (10000,))]
+    sample_post_1K = tmp[torch.randint(100, len(theta_list), (1000,))]
 
 
     task_benchmark = ["two_moons", "bernoulli_glm2", "slcp_summary_transform2", "double_slcp_summary_transform2"]
