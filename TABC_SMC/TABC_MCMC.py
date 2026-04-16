@@ -135,7 +135,7 @@ def main(args):
         # ESS check
         if j % CHECK_EVERY == 0:
             theta_chain = torch.row_stack(theta_list).cpu().numpy()
-
+            print(theta_chain.shape)
             ess = az.ess(theta_chain[None, :, :], method="bulk")
             ess_min = ess.min()
 
