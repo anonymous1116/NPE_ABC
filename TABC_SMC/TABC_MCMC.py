@@ -154,6 +154,15 @@ def main(args):
             if ess_median >= ESS_TARGET:
                 break
     
+        end_time = time.time()
+        elapsed_time = end_time - start_time
+        #print(f"Elapsed time: {elapsed_time:.2f} seconds")
+        if elapsed_time > 4*3600 - 5* 60:  # 3:55 hours
+            time_limit_exceeded = True
+            print("Time limit exceeded. Stopping the algorithm.")
+            break
+        else:
+            time_limit_exceeded = False
     theta_stack= torch.row_stack(theta_list)
     sample_post_10K = theta_stack[torch.randint(10000, len(theta_list), (10000,))]
     sample_post_1K = theta_stack[torch.randint(10000, len(theta_list), (1000,))]
@@ -201,7 +210,7 @@ def main(args):
     torch.save([tmp,tmp2], f"{output_dir}/x0{args.x0_ind}_seed{args.seed}.pt")
     torch.save([torch.cuda.get_device_name(0), elapsed_time], f"{output_dir}/x0{args.x0_ind}_seed{args.seed}_info.pt")
 
-    torch.save([tmp,tmp2], f"{output_dir}/x0{args.x0_ind}_seed{args.seed}.pt")
+    torch.save([ESS_TARGET,CHECK_EVERY, ess_history_min, ess_history_median, acc_history, time_limit_exceeded], f"{output_dir}/x0{args.x0_ind}_seed{args.seed}_history.pt")
     
 
 
