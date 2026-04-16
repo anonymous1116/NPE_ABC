@@ -42,4 +42,4 @@ echo "## Run Completed for seed=$seeds ##"
 #python NPE_training/NPE_run_embed.py --task "my_five_twomoons_err2" --seed 1 --num_training 1000 --cond_den "nsf"
 #python utils/get_measure_embed.py --task "my_five_twomoons_err2" --measure "c2st" --x0_ind 1 --seed 1 --post_n_samples 10000 --num_training 10000
 #python utils/evaluate.py --task " bernoulli_glm2" --measure "c2st" --method "NPE" --num_training 3000000
-python utils/get_measure.py --task "my_five_twomoons_err2" --measure "c2st" --x0_ind 1 --seed 1 --post_n_samples 10000 --num_training 10000
+python utils/get_measure.py --task "mog_10" --measure "c2st" --x0_ind 1 --seed 1 --post_n_samples 10000 --num_training 1000
