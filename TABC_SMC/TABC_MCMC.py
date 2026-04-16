@@ -140,7 +140,8 @@ def main(args):
             ess = arviz.ess(theta_chain, method="bulk")
             
             print(ess)
-            ess_min = ess.min()
+            ess_min = ess.x.min().item()
+            ess_medain = ess.x.median().item()
 
             acc_rate = accepted_count / j
 
@@ -148,7 +149,7 @@ def main(args):
             iter_history.append(j)
             acc_history.append(acc_rate)
 
-            print(f"Iter {j}, ESS_min={ess_min:.1f}, acc={acc_rate:.3f}")
+            print(f"Iter {j}, ESS_min={ess_min:.1f}, ESS_median={ess_medain:.1f}, acc={acc_rate:.3f}")
             if ess_min >= ESS_TARGET:
                 break
     
