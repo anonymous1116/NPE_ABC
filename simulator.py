@@ -77,7 +77,8 @@ class true_Posteriors:
             return self.MoG(obs, n_samples, bounds)
         elif self.task in ["my_five_twomoons", "my_five_twomoons_err2", "my_five_twomoons_err5", "my_five_twomoons_err10"]:    
             return self.my_five_twomoons(obs, n_samples)
-        
+        else:
+            raise ValueError(f"Unknown task: {self.task}")
     def apply_bounds(self, samples, bounds):
         # Apply bounds to filter the samples
         if bounds is not None:
@@ -118,7 +119,7 @@ class true_Posteriors:
         return torch.cat(posterior, dim = 1)
 
 
-    def MoG(obs, n_samples, bounds = None):
+    def MoG(self,obs, n_samples, bounds = None):
         obs = torch.tensor(obs)
         if obs.ndim == 1:
             obs = torch.reshape(obs, (1, obs.size(0)))
