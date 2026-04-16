@@ -39,12 +39,12 @@ def main(args):
     
 
     # For inital value
-    Y_cal = priors.sample((1_000_000,))
-    X_cal = simulators(Y_cal)
+    #Y_cal = priors.sample((1_000_000,))
+    #X_cal = simulators(Y_cal)
 
 
-    index_ABC = ABC_rej2(x0, X_cal, 1e-2, device, args.task)
-    X_cal, Y_cal = X_cal[index_ABC], Y_cal[index_ABC]
+    #index_ABC = ABC_rej2(x0, X_cal, 1e-2, device, args.task)
+    #X_cal, Y_cal = X_cal[index_ABC], Y_cal[index_ABC]
 
     output_file_path = os.path.join(f'../depot_hyun/hyun/NPE_ABC/nets/{args.task}/J_{int(args.num_training/1000)}K/{args.task}_{seed}_{args.cond_den}.pkl')
     with open(output_file_path, 'rb') as f:
@@ -54,35 +54,33 @@ def main(args):
     flow = density_estimator_npe_gpu.net
     transform=flow._transform
     embed = flow._embedding_net
-    with torch.no_grad():
-        tmp, _ =  transform.forward(Y_cal.to(device), context = embed(X_cal.to(device)) )
-        adj, _ = transform.inverse(tmp, context = embed(x0.expand((tmp.size(0),x0.size(1))).to(device)))    
-    adj = adj.cpu()
+    #with torch.no_grad():
+    #    tmp, _ =  transform.forward(Y_cal.to(device), context = embed(X_cal.to(device)) )
+    #    adj, _ = transform.inverse(tmp, context = embed(x0.expand((tmp.size(0),x0.size(1))).to(device)))    
+    #adj = adj.cpu()
+    #if bounds is not None:
+    #    adj = torch.clamp(adj, min = torch.tensor(bounds)[:,0], max = torch.tensor(bounds)[:,1])
 
-    X_abc = []
-    Y_abc = []
+    #with torch.no_grad():
+    #    max_vals = torch.max(adj,0).values
+   #     min_vals = torch.min(adj,0).values
     
-    if bounds is not None:
-        adj = torch.clamp(adj, min = torch.tensor(bounds)[:,0], max = torch.tensor(bounds)[:,1])
+    #priors_mean = torch.zeros(10)
+    #priors_std = torch.ones(10) * np.sqrt(2)
 
-    with torch.no_grad():
-        max_vals = torch.max(adj,0).values
-        min_vals = torch.min(adj,0).values
-    
-    priors_mean = torch.zeros(10)
-    priors_std = torch.ones(10) * np.sqrt(2)
-
-    print("max_vals:", max_vals)   
-    print("min_vals:", min_vals)
+    #print("max_vals:", max_vals)   
+   # print("min_vals:", min_vals)
 
     
     ESS_TARGET = 1_000
     CHECK_EVERY = 100   # do NOT check every iteration
 
+    theta_init = posterior.sample((1,), x0, show_progress_bars=False)
+    
     theta_list = []
     s_list = []
-    theta_list.append(adj[0])
-    s_list.append(X_cal[0])
+    theta_list.append(theta_init[0])
+    s_list.append(x0[0])
 
     ess_history = []
     iter_history = []
@@ -135,11 +133,9 @@ def main(args):
         # ESS check
         if j % CHECK_EVERY == 0:
             theta_chain = torch.row_stack(theta_list).cpu().numpy()
-            print(theta_chain.shape)
             theta_chain = arviz.convert_to_dataset(theta_chain[None,:,:])
             ess = arviz.ess(theta_chain, method="bulk")
             
-            print(ess)
             ess_min = ess.x.min().item()
             ess_medain = ess.x.median().item()
 
