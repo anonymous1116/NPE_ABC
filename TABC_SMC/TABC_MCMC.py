@@ -150,7 +150,7 @@ def main(args):
             iter_history.append(j)
             acc_history.append(acc_rate)
 
-            print(f"Iter {j}, ESS_min={ess_min:.1f}, ESS_median={ess_median:.1f}, acc={acc_rate:.3f}")
+            print(f"Iter {j}, ESS_min={ess_min:.1f}, ESS_median={ess_median:.1f}, acc={acc_rate:.3f}", flush=True)
             if ess_median >= ESS_TARGET:
                 break
     

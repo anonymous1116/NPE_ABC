@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
-#SBATCH --time=00:19:00
+#SBATCH --time=00:39:00
 #SBATCH --account=statdept
 #SBATCH --gpus-per-node=1
 #SBATCH --mem=170G
@@ -28,9 +28,9 @@ cd $SLURM_SUBMIT_DIR
 seed=$((SLURM_ARRAY_TASK_ID / 10 + 1))
 #L=100000000
 L=10000000
-task="my_five_twomoons"
-num_training=3000000 
-tol=1e-3
+task="double_slcp_summary_transform2"
+num_training=300000 
+tol=1e-5
 
 # Run the calibrate_amor.py
 x0_ind=$((SLURM_ARRAY_TASK_ID % 10)) 
