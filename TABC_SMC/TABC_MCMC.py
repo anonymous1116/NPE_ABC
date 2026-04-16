@@ -90,8 +90,8 @@ def main(args):
     acc_history = []
 
     accepted_count = 0
-
-    for j in range(1, 1000000):  # large upper bound
+    total_iterations = 1000000
+    for j in range(1, total_iterations):  # large upper bound
         posterior = saved_data['posterior'].set_default_x(x0)
         theta_cand = posterior.sample((int(1/args.tol),), x=x0, show_progress_bars=False)
 
@@ -210,8 +210,20 @@ def main(args):
     torch.save([tmp,tmp2], f"{output_dir}/x0{args.x0_ind}_seed{args.seed}.pt")
     torch.save([torch.cuda.get_device_name(0), elapsed_time], f"{output_dir}/x0{args.x0_ind}_seed{args.seed}_info.pt")
 
-    torch.save([ESS_TARGET,CHECK_EVERY, ess_history_min, ess_history_median, acc_history, time_limit_exceeded], f"{output_dir}/x0{args.x0_ind}_seed{args.seed}_history.pt")
-    
+    torch.save({
+        "config": {
+        "x0_ind": args.x0_ind,
+        "seed": args.seed,
+        },
+        "ESS_TARGET": ESS_TARGET,
+        "CHECK_EVERY": CHECK_EVERY,
+        "ess_history_min": ess_history_min,
+        "ess_history_median": ess_history_median,
+        "acc_history": acc_history,
+        "time_limit_exceeded": time_limit_exceeded,
+        "total_iterations": total_iterations
+    }, f"{output_dir}/x0{args.x0_ind}_seed{args.seed}_history.pt")
+        
 
 
 def get_args():
