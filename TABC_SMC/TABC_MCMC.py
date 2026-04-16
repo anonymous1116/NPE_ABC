@@ -91,7 +91,7 @@ def main(args):
     accepted_count = 0
 
     import arviz as az
-    for j in range(1, 100_000):  # large upper bound
+    for j in range(1, 2):  # large upper bound
         posterior = saved_data['posterior'].set_default_x(x0)
         theta_cand = posterior.sample((int(1/args.tol),), x=x0, show_progress_bars=False)
 
@@ -204,7 +204,7 @@ def get_args():
                         help='Simulation type: Lapl, MoG')
     parser.add_argument("--num_training", type=int, default=1_000_000, 
                         help="Number of training data of NPE (default: 1_000_000)")
-    parser.add_argument("--tol", type=float, default=1e-4,
+    parser.add_argument("--tol", type=float, default=1e-3,
                     help="Tolerance value for ABC (any positive float, default: 1e-4 but less than 1e-2)")
     parser.add_argument('--cond_den', type=str, default='nsf', 
                         help='Conditional density estimator type: mdn, maf, nsf')
