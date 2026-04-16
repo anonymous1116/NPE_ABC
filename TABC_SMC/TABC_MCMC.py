@@ -77,7 +77,7 @@ def main(args):
 
     
     ESS_TARGET = 1_000
-    CHECK_EVERY = 5000   # do NOT check every iteration
+    CHECK_EVERY = 100   # do NOT check every iteration
 
     theta_list = []
     s_list = []
@@ -136,8 +136,9 @@ def main(args):
         # ESS check
         if j % CHECK_EVERY == 0:
             theta_chain = torch.row_stack(theta_list).cpu().numpy()
+
             ess = az.ess(theta_chain[None, :, :], method="bulk")
-            ess_min = ess.to_array().values.min()
+            ess_min = ess.min()
 
             acc_rate = accepted_count / j
 
@@ -148,6 +149,8 @@ def main(args):
             print(f"Iter {j}, ESS_min={ess_min:.1f}, acc={acc_rate:.3f}")
             if ess_min >= ESS_TARGET:
                 break
+    
+        
     sample_post_10K = tmp[torch.randint(10000, len(theta_list), (10000,))]
     sample_post_1K = tmp[torch.randint(10000, len(theta_list), (1000,))]
 
