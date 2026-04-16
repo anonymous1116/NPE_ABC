@@ -74,7 +74,7 @@ class true_Posteriors:
         elif self.task in ["my_twomoons"]:
             return self.my_twomoons(obs, n_samples)
         elif self.task in ["mog_10"]:
-            return self.MoG(obs, n_samples, bounds=bounds)
+            return self.MoG(obs, n_samples, bounds)
         elif self.task in ["my_five_twomoons", "my_five_twomoons_err2", "my_five_twomoons_err5", "my_five_twomoons_err10"]:    
             return self.my_five_twomoons(obs, n_samples)
         
