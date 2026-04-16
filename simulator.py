@@ -213,7 +213,7 @@ def observation_lists(task_name:str):
         current_dir = os.path.dirname(os.path.abspath(__file__))
         obs = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{task_name}_obs.pt")    
         return obs 
-    elif task_name in ["my_ten_twomoons"]:
+    elif task_name in ["my_ten_twomoons", "mog_10"]:
         current_dir = os.path.dirname(os.path.abspath(__file__))
         obs = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{task_name}_obs.pt")    
         return obs 
@@ -521,6 +521,8 @@ def Simulators(task_name: str):
         return simulator_my_five_twomoons_err10
     elif task_name in ["my_ten_twomoons"]:
         return simulator_my_ten_twomoons
+    elif task_name in ["mog_10"]:
+        return simulator_MoG
 
     elif task_name in ["slcp_summary_transform2"]:
         def summary_generator(theta):
