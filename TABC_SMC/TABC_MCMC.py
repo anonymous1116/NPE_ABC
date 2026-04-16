@@ -90,7 +90,7 @@ def main(args):
     acc_history = []
 
     accepted_count = 0
-    total_iterations = 1000000
+    total_iterations = 10000
     for j in range(1, total_iterations):  # large upper bound
         posterior = saved_data['posterior'].set_default_x(x0)
         theta_cand = posterior.sample((int(1/args.tol),), x=x0, show_progress_bars=False)
@@ -164,8 +164,10 @@ def main(args):
         else:
             time_limit_exceeded = False
     theta_stack= torch.row_stack(theta_list)
-    sample_post_10K = theta_stack[torch.randint(10000, len(theta_list), (10000,))]
-    sample_post_1K = theta_stack[torch.randint(10000, len(theta_list), (1000,))]
+    #sample_post_10K = theta_stack[torch.randint(10000, len(theta_list), (10000,))]
+    #sample_post_1K = theta_stack[torch.randint(10000, len(theta_list), (1000,))]
+    sample_post_10K = theta_stack[torch.randint(0, len(theta_list), (10000,))]
+    sample_post_1K = theta_stack[torch.randint(0, len(theta_list), (1000,))]
 
 
     task_benchmark = ["two_moons", "bernoulli_glm2", "slcp_summary_transform2", "double_slcp_summary_transform2"]
