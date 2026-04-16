@@ -93,7 +93,7 @@ def main(args):
 
     for j in range(1, 1000000):  # large upper bound
         posterior = saved_data['posterior'].set_default_x(x0)
-        theta_cand = posterior.sample((1000,), x=x0, show_progress_bars=False)
+        theta_cand = posterior.sample((int(1/args.tol),), x=x0, show_progress_bars=False)
 
         s_cand = simulators(theta_cand)
         mad = compute_mad(s_cand)

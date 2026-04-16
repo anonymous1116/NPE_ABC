@@ -1,0 +1,39 @@
+#!/bin/bash
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=8
+#SBATCH --partition=cpu
+#SBATCH --account=statdept
+#SBATCH --time=04:00:00
+#SBATCH --qos=standby
+#SBATCH --array=1-10               # Create a job array with indices from 1 to 10
+#SBATCH --output=TABC_SMC/output_log/output_log_%A_%a.log
+#SBATCH --error=TABC_SMC/output_log/error_log_%A_%a.txt
+
+# Create the output_log directory if it doesn't exist
+mkdir -p TABC_SMC/output_log
+
+# Load the required Python environment
+module load conda
+conda activate /depot/wangxiao/apps/hyun18/NPE_NABC
+
+# Change to the directory where the job was submitted from
+SLURM_SUBMIT_DIR=/home/hyun18/NPE_ABC
+cd $SLURM_SUBMIT_DIR
+
+# Define the starting point for seed
+seed_START=1
+#TASK="MoG"
+
+# Get the current N_EPOCHS value based on the job array index
+seeds=$((seed_START + SLURM_ARRAY_TASK_ID - 1))
+
+# Run the Python script with the specified N_EPOCHS value
+echo "Running with seed=$seeds"
+python NPE_training/NPSE_run.py --task "bernoulli_glm2" --seed $seeds --x0_ind 1 --num_training 1000000
+echo "## Run Completed for seed=$seeds ##"
+
+# python utils/get_measure_embed.py --task "my_five_twomoons_err2" --measure "c2st" --x0_ind 1 --seed 1 --post_n_samples 10000 --num_training 10000
+#python ABC_calibration/calibrating.py --x0_ind 1 --seed 1 --task "bernoulli_glm2" --L 10000000 --num_training 1000 --tol 1e-3 
+#python NPE_training/NPE_run.py --task "my_five_twomoons_err2" --seed 1 --num_training 10000 --cond_den "nsf"
+#python NPE_training/NPE_run_embed.py --task "my_five_twomoons_err2" --seed 1 --num_training 1000 --cond_den "nsf"
+#python utils/get_measure_embed.py --task "my_five_twomoons_err2" --measure "c2st" --x0_ind 1 --seed 1 --post_n_samples 10000 --num_training 10000
