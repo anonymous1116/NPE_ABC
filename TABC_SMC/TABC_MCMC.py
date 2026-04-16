@@ -91,7 +91,7 @@ def main(args):
 
     accepted_count = 0
 
-    for j in range(1, 10000):  # large upper bound
+    for j in range(1, 1000000):  # large upper bound
         posterior = saved_data['posterior'].set_default_x(x0)
         theta_cand = posterior.sample((1000,), x=x0, show_progress_bars=False)
 
