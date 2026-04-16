@@ -5,7 +5,7 @@ import argparse
 import sbibm
 import time
 import matplotlib.pyplot as plt
-import arviz as az
+import arviz
 
 from pathlib import Path
 from sbi.analysis import pairplot
@@ -136,7 +136,7 @@ def main(args):
         if j % CHECK_EVERY == 0:
             theta_chain = torch.row_stack(theta_list).cpu().numpy()
             print(theta_chain.shape)
-            ess = az.ess(theta_chain[None, :, :], method="bulk")
+            ess = arviz.ess(theta_chain[None, :, :], method="bulk")
             ess_min = ess.min()
 
             acc_rate = accepted_count / j
