@@ -67,7 +67,6 @@ echo "## Job completed for task '{task}', x0_ind={x0_ind}, seed={seed}" ##"
 def get_args():
     # Create an argument parser
     parser = argparse.ArgumentParser(description="Run simulations and inference.")
-    parser.add_argument('--methods', type=str, default='NABC', help='methods type: NABC, NPE_maf, NPE_nsf')
     parser.add_argument('--task', type=str, default='twomoons', help='Simulation type: twomoons, MoG, Lapl or slcp')
     parser.add_argument('--measure', type=str, default='c2st', help='Simulation type: c2st, SW')
     parser.add_argument('--post_n_samples', type=int, default=10_000, help='Number of samples from posterior distributions')
