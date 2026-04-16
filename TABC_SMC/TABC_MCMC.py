@@ -74,8 +74,8 @@ def main(args):
    # print("min_vals:", min_vals)
 
     
-    ESS_TARGET = 1_000
-    CHECK_EVERY = 100   # do NOT check every iteration
+    ESS_TARGET = 10_000
+    CHECK_EVERY = 10000   # do NOT check every iteration
 
     theta_init = posterior.sample((1,), x0, show_progress_bars=False)
     
@@ -84,7 +84,8 @@ def main(args):
     theta_list.append(theta_init[0])
     s_list.append(x0[0])
 
-    ess_history = []
+    ess_history_min = []
+    ess_history_median = []
     iter_history = []
     acc_history = []
 
@@ -139,16 +140,18 @@ def main(args):
             ess = arviz.ess(theta_chain, method="bulk")
             
             ess_min = ess.x.min().item()
-            ess_medain = ess.x.median().item()
+            ess_median = ess.x.median().item()
 
             acc_rate = accepted_count / j
 
-            ess_history.append(ess_min)
+            ess_history_min.append(ess_min)
+            ess_history_median.append(ess_median)
+            
             iter_history.append(j)
             acc_history.append(acc_rate)
 
-            print(f"Iter {j}, ESS_min={ess_min:.1f}, ESS_median={ess_medain:.1f}, acc={acc_rate:.3f}")
-            if ess_min >= ESS_TARGET:
+            print(f"Iter {j}, ESS_min={ess_min:.1f}, ESS_median={ess_median:.1f}, acc={acc_rate:.3f}")
+            if ess_median >= ESS_TARGET:
                 break
     
         
@@ -197,6 +200,10 @@ def main(args):
     
     torch.save([tmp,tmp2], f"{output_dir}/x0{args.x0_ind}_seed{args.seed}.pt")
     torch.save([torch.cuda.get_device_name(0), elapsed_time], f"{output_dir}/x0{args.x0_ind}_seed{args.seed}_info.pt")
+
+    torch.save([tmp,tmp2], f"{output_dir}/x0{args.x0_ind}_seed{args.seed}.pt")
+    
+
 
 def get_args():
     parser = argparse.ArgumentParser(description="Run simulation with customizable parameters.")
