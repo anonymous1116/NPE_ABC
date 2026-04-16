@@ -79,7 +79,6 @@ def main(args):
             true_sample = posterior(j = j+1)
         else:
             true_sample = posterior(torch.tensor(x_o), n_samples=10_000, bounds=limits)
-
         
         measure = "c2st"
 
