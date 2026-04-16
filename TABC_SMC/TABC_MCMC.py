@@ -137,7 +137,7 @@ def main(args):
             theta_chain = torch.row_stack(theta_list).cpu().numpy()
             print(theta_chain.shape)
             theta_chain = arviz.convert_to_dataset(theta_chain)
-            ess = arviz.ess(theta_chain, method="bulk")
+            ess = arviz.ess(theta_chain[None,:,:], method="bulk")
             
             print(ess)
             ess_min = ess.min()
