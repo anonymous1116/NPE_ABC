@@ -29,7 +29,7 @@ seed=$((SLURM_ARRAY_TASK_ID / 10 + 1))
 #L=100000000
 L=10000000
 task="double_slcp_summary_transform2"
-num_training=300000 
+num_training=500000 
 tol=1e-5
 
 # Run the calibrate_amor.py
