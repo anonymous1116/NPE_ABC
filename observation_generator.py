@@ -23,7 +23,7 @@ def main(args):
         torch.manual_seed(2826)
         x0_list = []
         for j in range(10):
-            obs  = torch.randn(10) * 20 - 10
+            obs  = torch.rand(10) * 20 - 10
             x0_list.append(obs.tolist())
         x0_list = torch.tensor(x0_list, dtype = torch.float32)
         current_dir = os.path.dirname(os.path.abspath(__file__))
