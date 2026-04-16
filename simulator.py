@@ -26,7 +26,7 @@ def Bounds(task_name: str):
     elif task_name in ["double_slcp_summary_transform2"]:
         return [[-3, 3]] * 10
     elif task_name in ["mog_10"]:
-        return BoxUniform(low = -10*torch.ones(10), high = 10*torch.ones(10))
+        return [[-10, 10]] * 10
     else:
         raise ValueError(f"Unknown task name for bounds: {task_name}")
 
