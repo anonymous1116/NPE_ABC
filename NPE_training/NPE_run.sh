@@ -31,7 +31,7 @@ seeds=$((seed_START + SLURM_ARRAY_TASK_ID - 1))
 echo "Running with seed=$seeds"
 #python NPE_training/NPE_run_embed.py --task "my_five_twomoons_err2" --seed $seeds --cond_den "nsf" --num_training 1000000
 #python NPE_training/FMPE_run.py --task "double_slcp_summary_transform2" --seed $seeds --num_training 3000000
-python NPE_training/NPE_run.py --task "double_slcp_summary_transform2" --seed $seeds --num_training 300000
+python NPE_training/NPE_run.py --task "mog_10" --seed $seeds --num_training 300000
 #python NPE_training/NPE_run.py --task "double_slcp_summary_transform2" --seed $seed --num_training 300000 --cond_den "nsf"
 #python NPE_training/SNPE_run.py --task "two_moons" --seed 1 --num_training 1000 --cond_den "nsf" --x0_ind 0
 echo "## Run Completed for seed=$seeds ##"
@@ -42,4 +42,4 @@ echo "## Run Completed for seed=$seeds ##"
 #python NPE_training/NPE_run_embed.py --task "my_five_twomoons_err2" --seed 1 --num_training 1000 --cond_den "nsf"
 #python utils/get_measure_embed.py --task "my_five_twomoons_err2" --measure "c2st" --x0_ind 1 --seed 1 --post_n_samples 10000 --num_training 10000
 #python utils/evaluate.py --task " bernoulli_glm2" --measure "c2st" --method "NPE" --num_training 3000000
-python utils/get_measure.py --task "mog_10" --measure "c2st" --x0_ind 1 --seed 1 --post_n_samples 10000 --num_training 1000
+#python utils/get_measure.py --task "mog_10" --measure "c2st" --x0_ind 1 --seed 1 --post_n_samples 10000 --num_training 1000
