@@ -202,8 +202,8 @@ def get_args():
                         help = "See number (default: 1)")
     parser.add_argument('--task', type=str, default='twomoons', 
                         help='Simulation type: Lapl, MoG')
-    parser.add_argument("--num_training", type=int, default=100_000, 
-                        help="Number of training data of NPE (default: 100_000)")
+    parser.add_argument("--num_training", type=int, default=1_000_000, 
+                        help="Number of training data of NPE (default: 1_000_000)")
     parser.add_argument("--tol", type=float, default=1e-4,
                     help="Tolerance value for ABC (any positive float, default: 1e-4 but less than 1e-2)")
     parser.add_argument('--cond_den', type=str, default='nsf', 
@@ -215,7 +215,6 @@ if __name__ == "__main__":
     main(args)
     print(f"x0_ind: {args.x0_ind}")
     print(f"seed: {args.seed}")
-    print(f"L: {args.L}")
     print(f"task: {args.task}")
     print(f"num_training: {args.num_training}")
     print(f"tol: {args.tol}")
