@@ -75,7 +75,7 @@ def main(args):
 
     
     ESS_TARGET = 10_000
-    CHECK_EVERY = 10000   # do NOT check every iteration
+    CHECK_EVERY = 5000   # do NOT check every iteration
 
     theta_init = posterior.sample((1,), x0, show_progress_bars=False)
     
