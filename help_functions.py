@@ -61,6 +61,28 @@ def ABC_rej2(x0, X_cal, tol, device, case = None):
     return wt1.cpu()
 
 
+def TABC_Jacobian(s, theta, sobs, density_estimator, device = "cpu"):
+    density_estimator = density_estimator.to(device).eval()
+    flow = density_estimator.net
+    transform = flow._transform
+    embed = flow._embedding_net
+
+    
+    if theta.ndim == 1:
+        theta  = torch.reshape(theta, (1, theta.size(0)))
+    if s.ndim == 1:
+        s = torch.reshape(s, (1, s.size(0)))
+    if sobs.ndim == 1:
+        sobs = torch.reshape(sobs, (1, sobs.size(0)))
+    
+    with torch.no_grad():
+        
+        z, _ = transform.forward(theta.to(device), context = embed(s.to(device)))
+
+        _, numerator = transform.inverse(z, context = embed(sobs.to(device)))
+        _, denominator = transform.inverse(z, context = embed(s.to(device)))
+
+    return numerator/denominator
 
 
 def fisher_z(x, eps=1e-6):

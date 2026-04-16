@@ -5,12 +5,14 @@ import argparse
 import sbibm
 import time
 import matplotlib.pyplot as plt
+import arviz as az
+
 from pathlib import Path
 from sbi.analysis import pairplot
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from sbibm.metrics.c2st import c2st
 from simulator import Priors, Simulators, Bounds, observation_lists, true_Posteriors
-from help_functions import UnifSample, param_box, truncated_mvn_sample, ABC_rej2
+from help_functions import UnifSample, param_box, truncated_mvn_sample, ABC_rej2, compute_mad, TABC_Jacobian
 
 def main(args):
     seed = args.seed
@@ -18,8 +20,6 @@ def main(args):
     
     torch.manual_seed(seed)
     np.random.seed(seed)
-
-    NABC_results = []
     
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -77,10 +77,13 @@ def main(args):
 
     
     ESS_TARGET = 1_000
-    CHECK_EVERY = 100   # do NOT check every iteration
+    CHECK_EVERY = 5000   # do NOT check every iteration
 
     theta_list = []
+    s_list = []
     theta_list.append(adj[0])
+    s_list.append(X_cal[0])
+
     ess_history = []
     iter_history = []
     acc_history = []
@@ -89,18 +92,24 @@ def main(args):
 
     import arviz as az
     for j in range(1, 100_000):  # large upper bound
-        
         posterior = saved_data['posterior'].set_default_x(x0)
-        theta_cand = posterior.sample((1000,), x=x0, show_progress_bars=False)
+        theta_cand = posterior.sample((int(1/args.tol),), x=x0, show_progress_bars=False)
 
         s_cand = simulators(theta_cand)
-        dist = torch.sqrt(torch.sum((x0 - s_cand) ** 2, 1))
+        mad = compute_mad(s_cand)
+        mad = torch.reshape(mad, (1, s_cand.size(1))).to(device)
+        dist = torch.sqrt(torch.mean(torch.abs(s_cand.to(device) - x0.to(device))**2/mad**2, 1))        
 
         theta_cand_0 = theta_cand[torch.argmin(dist)]
         s_cand_0 = s_cand[torch.argmin(dist)]
 
+        
         alpha = priors.log_prob(theta_cand_0) - priors.log_prob(theta_list[j-1]) \
-                + posterior.log_prob(theta_list[j-1]) - posterior.log_prob(theta_cand_0)
+            + posterior.log_prob(theta_list[j-1]) - posterior.log_prob(theta_cand_0) \
+            + TABC_Jacobian(s_list[j-1], theta_list[j-1], x0, density_estimator_npe) \
+            - TABC_Jacobian(s_cand_0, theta_cand_0, x0, density_estimator_npe) 
+    
+        
         alpha = torch.exp(alpha)
         alpha = torch.min(torch.tensor(1.0), alpha)
 
@@ -118,10 +127,12 @@ def main(args):
                 adj, _ = transform.inverse(tmp, context=embed(x0.to(device)))
 
             theta_list.append(adj[0].cpu())
-
+            s_list.append(s_cand_0.cpu())
+        
         else:
             theta_list.append(theta_list[j-1])
-
+            s_list.append(s_list[j-1])
+    
         # ESS check
         if j % CHECK_EVERY == 0:
             theta_chain = torch.row_stack(theta_list).cpu().numpy()
@@ -137,7 +148,8 @@ def main(args):
             print(f"Iter {j}, ESS_min={ess_min:.1f}, acc={acc_rate:.3f}")
             if ess_min >= ESS_TARGET:
                 break
-        
+    sample_post_10K = tmp[torch.randint(10000, len(theta_list), (10000,))]
+    sample_post_1K = tmp[torch.randint(10000, len(theta_list), (1000,))]
 
 
     task_benchmark = ["two_moons", "bernoulli_glm2", "slcp_summary_transform2", "double_slcp_summary_transform2"]
@@ -148,30 +160,21 @@ def main(args):
     else:
         post_sample = true_posteriors(torch.tensor(x0), n_samples=10_000, bounds=bounds)
     
-    with torch.no_grad():
-        tmp, _ =  transform.forward(Y_abc.to(device), context = embed(X_abc.to(device)) )
-        new_theta, _ = transform.inverse(tmp, context = embed(x0.expand((tmp.size(0),x0.size(1))).to(device)))    
-
-    new_theta = new_theta.cpu()
     # 4) Now call your fast function (or sbi’s sample_batched) on GPU
     end_time = time.time()
     
     
     elapsed_time = end_time - start_time  # Calculate elapsed time
     
-    print("NABC sample size: ", new_theta.size())
-    results_size = min(10_000, new_theta.size(0))
-
-    tmp = c2st(post_sample[:results_size].cpu(), new_theta[:results_size] )
-    print(tmp)    
-    
-    NABC_results.append(tmp)
+    tmp = c2st(post_sample.cpu(), sample_post_10K.cpu())
+    tmp2 = c2st(post_sample[:1000].cpu(), sample_post_1K.cpu())
+    print(f"c2st_10K: {tmp}, c2st_1K: {tmp2}")
     
     sci_str = format(args.tol, ".0e")
     print(sci_str)  # Output: '1e-02'
     
 
-    output_dir = f"../depot_hyun/hyun/NPE_ABC/flow_c2st_results/{args.task}_context/J_{int(args.num_training/1000)}K/{int(args.L/1_000_000)}M_eta{sci_str}"
+    output_dir = f"../depot_hyun/hyun/NPE_ABC/MCMC_c2st_results/{args.task}/J_{int(args.num_training/1000)}K/eta{sci_str}"
     ## Create the directory if it doesn't exist
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -184,11 +187,11 @@ def main(args):
     plt.savefig(Path(output_dir) / f"x0{args.x0_ind}_seed{args.seed}_reference.png")
     plt.close()
 
-    pairplot(new_theta[:10000], figsize=(6,6), limits = bounds)
+    pairplot(sample_post_10K[:10000], figsize=(6,6), limits = bounds)
     plt.savefig(Path(output_dir) / f"x0{args.x0_ind}_seed{args.seed}_calibrated.png")
     plt.close()
     
-    torch.save(NABC_results, f"{output_dir}/x0{args.x0_ind}_seed{args.seed}.pt")
+    torch.save([tmp,tmp2], f"{output_dir}/x0{args.x0_ind}_seed{args.seed}.pt")
     torch.save([torch.cuda.get_device_name(0), elapsed_time], f"{output_dir}/x0{args.x0_ind}_seed{args.seed}_info.pt")
 
 def get_args():
