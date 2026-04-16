@@ -136,7 +136,8 @@ def main(args):
         if j % CHECK_EVERY == 0:
             theta_chain = torch.row_stack(theta_list).cpu().numpy()
             print(theta_chain.shape)
-            ess = arviz.ess(theta_chain[None, :, :], method="bulk")
+            theta_chain = arviz.convert_to_dataset(theta_chain)
+            ess = arviz.ess(theta_chain, method="bulk")
             ess_min = ess.min()
 
             acc_rate = accepted_count / j
