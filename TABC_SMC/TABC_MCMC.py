@@ -138,6 +138,8 @@ def main(args):
             print(theta_chain.shape)
             theta_chain = arviz.convert_to_dataset(theta_chain)
             ess = arviz.ess(theta_chain, method="bulk")
+            
+            print(ess)
             ess_min = ess.min()
 
             acc_rate = accepted_count / j
