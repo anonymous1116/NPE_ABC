@@ -50,6 +50,8 @@ def main(args):
     with open(output_file_path, 'rb') as f:
         saved_data = pickle.load(f)
     density_estimator_npe = saved_data["density_estimator"]
+    posterior = saved_data['posterior'].set_default_x(x0)
+    
     density_estimator_npe_gpu = density_estimator_npe.to(device).eval()
     flow = density_estimator_npe_gpu.net
     transform=flow._transform
