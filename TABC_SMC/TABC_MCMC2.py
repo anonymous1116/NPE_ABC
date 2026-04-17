@@ -157,7 +157,7 @@ def main(args):
         end_time = time.time()
         elapsed_time = end_time - start_time
         #print(f"Elapsed time: {elapsed_time:.2f} seconds")
-        if elapsed_time > 4*3600 - 10* 60:  # 3:50 hours
+        if elapsed_time > 4*3600 - 20* 60:  # 3:40 hours
             time_limit_exceeded = True
             print("Time limit exceeded. Stopping the algorithm.")
             break
@@ -201,6 +201,11 @@ def main(args):
     
     elapsed_time = end_time - start_time  # Calculate elapsed time
     
+    NPE_post_sample = posterior.sample((10000,), x0, show_progress_bars=False).cpu()
+    c2st_NPE = c2st(post_sample.cpu(), NPE_post_sample.cpu())
+    c2st_NPE_1K = c2st(post_sample[:1000].cpu(), NPE_post_sample[:1000].cpu())
+    print(f"c2st_NPE: {c2st_NPE}, c2st_NPE_1K: {c2st_NPE_1K}")
+
     tmp = c2st(post_sample.cpu(), sample_post_10K.cpu())
     tmp2 = c2st(post_sample[:1000].cpu(), sample_post_1K.cpu())
     c2st_MCMC = c2st(post_sample.cpu(), sample_post_10K_MCMC.cpu())
