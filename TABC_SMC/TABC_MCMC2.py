@@ -204,7 +204,9 @@ def main(args):
     tmp = c2st(post_sample.cpu(), sample_post_10K.cpu())
     tmp2 = c2st(post_sample[:1000].cpu(), sample_post_1K.cpu())
     c2st_MCMC = c2st(post_sample.cpu(), sample_post_10K_MCMC.cpu())
-    print(f"c2st_10K: {tmp}, c2st_1K: {tmp2}, c2st_MCMC: {c2st_MCMC}")
+    c2st_MCMC_1K = c2st(post_sample[:1000].cpu(), sample_post_10K_MCMC[ran2].cpu())
+    
+    print(f"c2st_10K: {tmp}, c2st_1K: {tmp2}, c2st_MCMC: {c2st_MCMC}, c2st_MCMC_1K: {c2st_MCMC_1K}")
     
     sci_str = format(args.tol, ".0e")
     print(sci_str)  # Output: '1e-02'
