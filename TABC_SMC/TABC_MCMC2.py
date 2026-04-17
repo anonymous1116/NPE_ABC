@@ -75,7 +75,7 @@ def main(args):
 
     
     ESS_TARGET = 10_000
-    CHECK_EVERY = 100#5000   # do NOT check every iteration
+    CHECK_EVERY = 5000   # do NOT check every iteration
 
     theta_init = posterior.sample((1,), x0, show_progress_bars=False)
     
@@ -90,7 +90,7 @@ def main(args):
     acc_history = []
 
     accepted_count = 0
-    total_iterations = 10000# 1000000
+    total_iterations = 1000000
     for j in range(1, total_iterations):  # large upper bound
         posterior = saved_data['posterior'].set_default_x(x0)
         theta_cand = posterior.sample((int(1/args.tol),), x=x0, show_progress_bars=False)
