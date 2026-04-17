@@ -71,7 +71,7 @@ class true_Posteriors:
             return self.double_slcp(kwargs.get('j', 0))
         
         elif self.task in ["mog_10"]:
-            return self.MoG(kwargs.get('j', 0))
+            return self.mog_10(kwargs.get('j', 0))
         
         elif self.task in ["my_twomoons"]:
             return self.my_twomoons(obs, n_samples)
