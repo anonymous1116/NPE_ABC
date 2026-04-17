@@ -30,7 +30,7 @@ def main(args):
         torch.save(x0_list, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/mog_10_obs.pt")    
         print(x0_list)
 
-        # Postgerior
+        # Posteriors
         bounds = Bounds("mog_10")
         for j in range(10):
             x0 = x0_list[j][None, :]

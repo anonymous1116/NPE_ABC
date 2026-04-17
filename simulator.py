@@ -70,11 +70,11 @@ class true_Posteriors:
         elif self.task in ["double_slcp_summary_transform2"]:
             return self.double_slcp(kwargs.get('j', 0))
         
+        elif self.task in ["mog_10"]:
+            return self.MoG(kwargs.get('j', 0))
         
         elif self.task in ["my_twomoons"]:
             return self.my_twomoons(obs, n_samples)
-        elif self.task in ["mog_10"]:
-            return self.MoG(obs, n_samples, bounds)
         elif self.task in ["my_five_twomoons", "my_five_twomoons_err2", "my_five_twomoons_err5", "my_five_twomoons_err10"]:    
             return self.my_five_twomoons(obs, n_samples)
         else:
@@ -180,6 +180,15 @@ class true_Posteriors:
             # Get the directory of the current file (simulator.py)
             current_dir = os.path.dirname(os.path.abspath(__file__))
             file_path = os.path.join(current_dir, f"../depot_hyun/hyun/NPE_ABC/seeds/double_slcp_summary_transform2_post_{j}.pt")
+            post_sample = torch.load(file_path)
+        except FileNotFoundError:
+            raise ValueError(f"File for posterior not found.")
+        return post_sample
+    def mog_10(self, j):
+        try:
+            # Get the directory of the current file (simulator.py)
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            file_path = os.path.join(current_dir, f"../depot_hyun/hyun/NPE_ABC/seeds/mog_10_post_{j}.pt")
             post_sample = torch.load(file_path)
         except FileNotFoundError:
             raise ValueError(f"File for posterior not found.")
