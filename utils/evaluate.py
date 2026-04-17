@@ -98,4 +98,4 @@ if __name__ == "__main__":
     main(args)  # Pass the entire args object to the main function
 
 
-
+#python utils/evaluate.py --task "mog_10" --measure "c2st" --num_training 300000 --method "NPE"
