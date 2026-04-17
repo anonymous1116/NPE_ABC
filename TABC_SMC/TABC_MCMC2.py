@@ -168,9 +168,9 @@ def main(args):
     elapsed_time = end_time - start_time
     
 
-    ran =torch.randint(0, len(theta_list), (10000,))
+    ran =torch.randint(10000, len(theta_list), (10000,))
     #ran =torch.randint(0, len(theta_list), (10000,))
-    sample_post_10K = theta_stack[ran]
+    sample_post_10K_MCMC = theta_stack[ran]
     s_10K = s_stack[ran]
 
     
@@ -178,7 +178,7 @@ def main(args):
 
     # calibrate
     with torch.no_grad():
-        tmp, _ =  transform.forward(sample_post_10K.to(device), context = embed(s_10K.to(device)) )
+        tmp, _ =  transform.forward(sample_post_10K_MCMC.to(device), context = embed(s_10K.to(device)) )
         adj, _ = transform.inverse(tmp, context = embed(x0.expand((tmp.size(0),x0.size(1))).to(device)))    
     
     adj = adj.cpu()
@@ -203,7 +203,8 @@ def main(args):
     
     tmp = c2st(post_sample.cpu(), sample_post_10K.cpu())
     tmp2 = c2st(post_sample[:1000].cpu(), sample_post_1K.cpu())
-    print(f"c2st_10K: {tmp}, c2st_1K: {tmp2}")
+    c2st_MCMC = c2st(post_sample.cpu(), sample_post_10K_MCMC.cpu())
+    print(f"c2st_10K: {tmp}, c2st_1K: {tmp2}, c2st_MCMC: {c2st_MCMC}")
     
     sci_str = format(args.tol, ".0e")
     print(sci_str)  # Output: '1e-02'
@@ -222,7 +223,7 @@ def main(args):
     plt.savefig(Path(output_dir) / f"x0{args.x0_ind}_seed{args.seed}_reference.png")
     plt.close()
 
-    pairplot(sample_post_10K[:10000], figsize=(6,6), limits = bounds)
+    pairplot(sample_post_10K, figsize=(6,6), limits = bounds)
     plt.savefig(Path(output_dir) / f"x0{args.x0_ind}_seed{args.seed}_calibrated.png")
     plt.close()
     
