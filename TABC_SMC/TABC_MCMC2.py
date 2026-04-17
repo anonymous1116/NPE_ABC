@@ -168,8 +168,8 @@ def main(args):
     elapsed_time = end_time - start_time
     
 
-    #ran =torch.randint(10000, len(theta_list), (10000,))
-    ran =torch.randint(0, len(theta_list), (10000,))
+    ran =torch.randint(10000, len(theta_list), (10000,))
+    #ran =torch.randint(0, len(theta_list), (10000,))
     sample_post_10K = theta_stack[ran]
     s_10K = s_stack[ran]
 
@@ -182,7 +182,7 @@ def main(args):
         adj, _ = transform.inverse(tmp, context = embed(x0.expand((tmp.size(0),x0.size(1))).to(device)))    
     
     adj = adj.cpu()
-        
+    sample_post_10K = torch.clone(adj)
     ran2 = torch.randint(0, 10000, (1000,))
     sample_post_1K = adj[ran2]
 
