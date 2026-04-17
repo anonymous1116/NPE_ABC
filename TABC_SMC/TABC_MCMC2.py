@@ -106,8 +106,8 @@ def main(args):
         
         alpha = priors.log_prob(theta_cand_0) - priors.log_prob(theta_list[j-1]) \
             + posterior.log_prob(theta_list[j-1]) - posterior.log_prob(theta_cand_0) \
-            + TABC_Jacobian(s_list[j-1], theta_list[j-1], x0, density_estimator_npe) \
-            - TABC_Jacobian(s_cand_0, theta_cand_0, x0, density_estimator_npe) 
+    #        + TABC_Jacobian(s_list[j-1], theta_list[j-1], x0, density_estimator_npe) \
+    #        - TABC_Jacobian(s_cand_0, theta_cand_0, x0, density_estimator_npe) 
     
         
         alpha = torch.exp(alpha)
@@ -117,16 +117,16 @@ def main(args):
 
         if accept == 1:     
             accepted_count += 1
-            if s_cand_0.ndim == 1:
-                s_cand_0 = s_cand_0.unsqueeze(0)
-            if theta_cand_0.ndim == 1:
-                theta_cand_0 = theta_cand_0.unsqueeze(0)
+            #if s_cand_0.ndim == 1:
+            #    s_cand_0 = s_cand_0.unsqueeze(0)
+            #if theta_cand_0.ndim == 1:
+            #    theta_cand_0 = theta_cand_0.unsqueeze(0)
 
-            with torch.no_grad():
-                tmp, _ = transform.forward(theta_cand_0.to(device), context=embed(s_cand_0.to(device)))
-                adj, _ = transform.inverse(tmp, context=embed(x0.to(device)))
+            #with torch.no_grad():
+            #    tmp, _ = transform.forward(theta_cand_0.to(device), context=embed(s_cand_0.to(device)))
+            #    adj, _ = transform.inverse(tmp, context=embed(x0.to(device)))
 
-            theta_list.append(adj[0].cpu())
+            theta_list.append(theta_cand_0.cpu())
             s_list.append(s_cand_0.cpu())
         
         else:
@@ -164,12 +164,26 @@ def main(args):
         else:
             time_limit_exceeded = False
     theta_stack= torch.row_stack(theta_list)
+    s_stack= torch.row_stack(s_list)
     elapsed_time = end_time - start_time
+    
+
+    ran =torch.randint(10000, len(theta_list), (10000,))
+    sample_post_10K = theta_stack[ran]
+    s_10K = s_stack[ran]
+
+    
+    
+
+    # calibrate
+    with torch.no_grad():
+        tmp, _ =  transform.forward(sample_post_10K.to(device), context = embed(s_10K.to(device)) )
+        adj, _ = transform.inverse(tmp, context = embed(x0.expand((tmp.size(0),x0.size(1))).to(device)))    
+    
+    adj = adj.cpu()
         
-    sample_post_10K = theta_stack[torch.randint(int(len(theta_list)*0.1), len(theta_list), (10000,))]
-    sample_post_1K = theta_stack[torch.randint(int(len(theta_list)*0.1), len(theta_list), (1000,))]
-    #sample_post_10K = theta_stack[torch.randint(0, len(theta_list), (10000,))]
-    #sample_post_1K = theta_stack[torch.randint(0, len(theta_list), (1000,))]
+    ran2 = torch.randint(0, 10000, (1000,))
+    sample_post_1K = adj[ran2]
 
 
     task_benchmark = ["two_moons", "bernoulli_glm2", "slcp_summary_transform2", "double_slcp_summary_transform2"]
@@ -194,7 +208,7 @@ def main(args):
     print(sci_str)  # Output: '1e-02'
     
 
-    output_dir = f"../depot_hyun/hyun/NPE_ABC/MCMC_c2st_results/{args.task}/J_{int(args.num_training/1000)}K/eta{sci_str}"
+    output_dir = f"../depot_hyun/hyun/NPE_ABC/MCMC2_c2st_results/{args.task}/J_{int(args.num_training/1000)}K/eta{sci_str}"
     ## Create the directory if it doesn't exist
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
