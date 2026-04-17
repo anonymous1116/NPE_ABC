@@ -2,7 +2,7 @@ import torch, argparse, sys, random
 import numpy as np
 import os, pickle
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
-from simulator import Simulators, observation_lists
+from simulator import Simulators, observation_lists, MoG_posterior, Bounds
 
 def main(args):
     if args.task == "my_ten_twomoons":
@@ -29,6 +29,14 @@ def main(args):
         current_dir = os.path.dirname(os.path.abspath(__file__))
         torch.save(x0_list, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/mog_10_obs.pt")    
         print(x0_list)
+
+        # Postgerior
+        bounds = Bounds("mog_10")
+        for j in range(10):
+            x0 = x0_list[j][None, :]
+            post_sample = MoG_posterior(x0, n_samples=10_000, bounds=bounds)
+            torch.save(post_sample, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/mog_10_post_{j+1}.pt")
+            print(post_sample)
     else:
         print("Task not recognized.")
 
