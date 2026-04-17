@@ -168,7 +168,8 @@ def main(args):
     elapsed_time = end_time - start_time
     
 
-    ran =torch.randint(10000, len(theta_list), (10000,))
+    #ran =torch.randint(10000, len(theta_list), (10000,))
+    ran =torch.randint(0, len(theta_list), (10000,))
     sample_post_10K = theta_stack[ran]
     s_10K = s_stack[ran]
 
