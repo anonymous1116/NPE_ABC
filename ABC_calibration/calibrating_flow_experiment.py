@@ -97,7 +97,7 @@ def main(args):
         X_chunk_embed = embed(X_chunk.to(device))
     
 
-        index_ABC = ABC_rej2(x0_embed, X_chunk_embed, args.tol, device, args.task)
+        index_ABC = ABC_rej2(x0_embed, X_chunk_embed, args.tol, device)
         X_chunk, Y_chunk = X_chunk[index_ABC], Y_chunk[index_ABC]
         X_abc.append(X_chunk)
         Y_abc.append(Y_chunk)

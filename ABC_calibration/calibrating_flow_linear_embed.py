@@ -98,7 +98,7 @@ def main(args):
             X_chunk_embed = embed(X_chunk.to(device))
         
 
-        index_ABC = ABC_rej2(x0_embed, X_chunk_embed, args.tol, device, args.task)
+        index_ABC = ABC_rej2(x0_embed, X_chunk_embed, args.tol, device)
         X_chunk, Y_chunk = X_chunk[index_ABC], Y_chunk[index_ABC]
         X_abc.append(X_chunk)
         Y_abc.append(Y_chunk)
@@ -109,7 +109,7 @@ def main(args):
 
     print("X_abc size", X_abc.size())
 
-    task_benchmark = ["two_moons", "bernoulli_glm2", "slcp_summary_transform2", "double_slcp_summary_transform2"]
+    task_benchmark = ["two_moons", "bernoulli_glm2", "slcp_summary_transform2", "double_slcp_summary_transform2", "mog_10"]
     if args.task in task_benchmark:
         post_sample = true_posteriors(j = args.x0_ind+1)
     elif args.task in ["my_five_twomoons"]:    
