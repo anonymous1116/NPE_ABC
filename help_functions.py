@@ -55,7 +55,6 @@ def ABC_rej2(x0, X_cal, tol, device, dist_output = None):
     # Create mask and filter based on the threshold distance
     wt1 = (dist <= ds)
     torch.cuda.empty_cache()
-    del mad
     # Select points within tolerance and return to CPU if needed
     if dist_output is not None:
         return wt1.cpu(), ds, mad.cpu()
