@@ -94,7 +94,7 @@ def main(args):
         x0_embed = embed(x0.to(device))
         X_chunk_embed = embed(X_chunk.to(device))
     
-        index_ABC = ABC_rej2(x0_embed, X_chunk_embed, args.tol, device, args.task)
+        index_ABC = ABC_rej2(x0_embed, X_chunk_embed, args.tol, device)
         X_chunk, Y_chunk = X_chunk[index_ABC], Y_chunk[index_ABC]
         X_abc.append(X_chunk)
         Y_abc.append(Y_chunk)
@@ -110,7 +110,7 @@ def main(args):
     _, dist_max = ABC_rej2(x0_embed, X_abc_embed, args.tol, device, dist = True)
     dist_max = dist_max.cpu()
     print("dist_max:", dist_max)
-    
+
     task_benchmark = ["two_moons", "bernoulli_glm2", "slcp_summary_transform2", "double_slcp_summary_transform2", "mog_10"]
     if args.task in task_benchmark:
         post_sample = true_posteriors(j = args.x0_ind+1)
