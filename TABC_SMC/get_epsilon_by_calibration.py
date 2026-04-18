@@ -106,7 +106,11 @@ def main(args):
     print("X_abc size", X_abc.size())
     
     # get epsilon by calibration
-    (x0 - X_abc) ** 2
+    x0_embed = embed(x0.to(device))
+    X_abc_embed = embed(X_abc.to(device))
+    _, dist_max = ABC_rej2(x0_embed, X_abc_embed, args.tol, device, dist = True)
+    dist_max = dist_max.cpu()
+    
 
     task_benchmark = ["two_moons", "bernoulli_glm2", "slcp_summary_transform2", "double_slcp_summary_transform2", "mog_10"]
     if args.task in task_benchmark:
@@ -131,10 +135,10 @@ def main(args):
     results_size = min(10_000, new_theta.size(0))
 
     tmp = c2st(post_sample[:results_size].cpu(), new_theta[:results_size] )
+    tmp2 = c2st(post_sample[:1000].cpu(), new_theta[:1000] )
     print(tmp)    
-    
-    NABC_results.append(tmp)
-    
+    print(tmp2)
+
     sci_str = format(args.tol, ".0e")
     print(sci_str)  # Output: '1e-02'
     
@@ -148,17 +152,19 @@ def main(args):
         print(f"Directory '{output_dir}' already exists.")
 
     # Save to output_dir
-    pairplot(post_sample, figsize=(6,6), limits = bounds)
-    plt.savefig(Path(output_dir) / f"x0{args.x0_ind}_seed{args.seed}_reference.png")
-    plt.close()
-
-    pairplot(new_theta[:10000], figsize=(6,6), limits = bounds)
-    plt.savefig(Path(output_dir) / f"x0{args.x0_ind}_seed{args.seed}_calibrated.png")
-    plt.close()
+    torch.save({
+        "config": {
+        "x0_ind": args.x0_ind,
+        "seed": args.seed,
+        "tol": args.tol
+        },
+        "dist_max": dist_max,
+        "elapsed_time": elapsed_time,
+        "c2st_10K": tmp,
+        "c2st_1K": tmp2
+    }, f"{output_dir}/x0{args.x0_ind}_seed{args.seed}_result.pt")
     
-    torch.save(NABC_results, f"{output_dir}/x0{args.x0_ind}_seed{args.seed}.pt")
-    torch.save([torch.cuda.get_device_name(0), elapsed_time], f"{output_dir}/x0{args.x0_ind}_seed{args.seed}_info.pt")
-
+    
 def get_args():
     parser = argparse.ArgumentParser(description="Run simulation with customizable parameters.")
     parser.add_argument("--x0_ind", type = int, default = 1,

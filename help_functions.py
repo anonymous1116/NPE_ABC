@@ -41,7 +41,6 @@ def compute_mad(X):
 
 def ABC_rej2(x0, X_cal, tol, device, dist = None):
     # Move all tensors to the target device at once
-    
     x0 = x0.to(device)
     X_cal = X_cal.to(device)
     mad = compute_mad(X_cal)
@@ -59,7 +58,7 @@ def ABC_rej2(x0, X_cal, tol, device, dist = None):
     del mad
     # Select points within tolerance and return to CPU if needed
     if dist is not None:
-        return wt1.cpu(), dist.cpu()
+        return wt1.cpu(), ds
     else:
         return wt1.cpu()
 
