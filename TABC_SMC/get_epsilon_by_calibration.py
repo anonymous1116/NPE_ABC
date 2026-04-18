@@ -20,7 +20,6 @@ def main(args):
     np.random.seed(seed)
 
     L = args.L
-    NABC_results = []
     
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -110,7 +109,8 @@ def main(args):
     X_abc_embed = embed(X_abc.to(device))
     _, dist_max = ABC_rej2(x0_embed, X_abc_embed, args.tol, device, dist = True)
     dist_max = dist_max.cpu()
-
+    print("dist_max:", dist_max)
+    
     task_benchmark = ["two_moons", "bernoulli_glm2", "slcp_summary_transform2", "double_slcp_summary_transform2", "mog_10"]
     if args.task in task_benchmark:
         post_sample = true_posteriors(j = args.x0_ind+1)
