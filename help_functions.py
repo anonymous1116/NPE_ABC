@@ -57,7 +57,7 @@ def ABC_rej2(x0, X_cal, tol, device, dist_output = None):
     torch.cuda.empty_cache()
     del mad
     # Select points within tolerance and return to CPU if needed
-    if dist_output is None:
+    if dist_output is not None:
         return wt1.cpu(), ds
     else:
         return wt1.cpu()
