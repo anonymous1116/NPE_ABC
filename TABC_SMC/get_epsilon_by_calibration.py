@@ -46,7 +46,6 @@ def main(args):
 
 
     index_ABC = ABC_rej2(x0, X_cal, 1e-2, device)
-    print(index_ABC)
     X_cal, Y_cal = X_cal[index_ABC], Y_cal[index_ABC]
     
 
@@ -109,7 +108,7 @@ def main(args):
     # get epsilon by calibration
     x0_embed = embed(x0.to(device))
     X_abc_embed = embed(X_abc.to(device))
-    _, dist_max = ABC_rej2(x0_embed, X_abc_embed, args.tol, device, dist = True)
+    _, dist_max = ABC_rej2(x0_embed, X_abc_embed, args.tol, device, dist_output = True)
     dist_max = dist_max.cpu()
     print("dist_max:", dist_max)
 
