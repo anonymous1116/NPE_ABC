@@ -38,14 +38,6 @@ def main(args):
     print("x0_size", x0.size(), flush = True)
     
 
-    # For inital value
-    #Y_cal = priors.sample((1_000_000,))
-    #X_cal = simulators(Y_cal)
-
-
-    #index_ABC = ABC_rej2(x0, X_cal, 1e-2, device, args.task)
-    #X_cal, Y_cal = X_cal[index_ABC], Y_cal[index_ABC]
-
     output_file_path = os.path.join(f'../depot_hyun/hyun/NPE_ABC/nets/{args.task}/J_{int(args.num_training/1000)}K/{args.task}_{seed}_{args.cond_den}.pkl')
     with open(output_file_path, 'rb') as f:
         saved_data = pickle.load(f)
@@ -91,8 +83,9 @@ def main(args):
 
     accepted_count = 0
     total_iterations = 1000000
+    posterior = saved_data['posterior'].set_default_x(x0)
+
     for j in range(1, total_iterations):  # large upper bound
-        posterior = saved_data['posterior'].set_default_x(x0)
         theta_cand = posterior.sample((int(1/args.tol),), x=x0, show_progress_bars=False)
 
         s_cand = simulators(theta_cand)

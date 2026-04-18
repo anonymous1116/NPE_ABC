@@ -213,6 +213,7 @@ def main(args):
     
     torch.save([tmp,tmp2], f"{output_dir}/x0{args.x0_ind}_seed{args.seed}.pt")
     
+
     torch.save({
         "config": {
         "x0_ind": args.x0_ind,
