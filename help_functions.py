@@ -39,7 +39,7 @@ def compute_mad(X):
     return mad.cpu()
 
 
-def ABC_rej2(x0, X_cal, tol, device, case = None):
+def ABC_rej2(x0, X_cal, tol, device, dist = None):
     # Move all tensors to the target device at once
     
     x0 = x0.to(device)
@@ -58,7 +58,7 @@ def ABC_rej2(x0, X_cal, tol, device, case = None):
     torch.cuda.empty_cache()
     del mad
     # Select points within tolerance and return to CPU if needed
-    if case is not None:
+    if dist is not None:
         return wt1.cpu(), dist.cpu()
     else:
         return wt1.cpu()
