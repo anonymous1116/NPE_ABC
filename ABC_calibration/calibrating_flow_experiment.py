@@ -47,7 +47,7 @@ def main(args):
     X_cal = simulators(Y_cal)
 
 
-    index_ABC = ABC_rej2(x0, X_cal, 1e-2, device, args.task)
+    index_ABC = ABC_rej2(x0, X_cal, 1e-2, device)
     X_cal, Y_cal = X_cal[index_ABC], Y_cal[index_ABC]
 
     output_file_path = os.path.join(f'../depot_hyun/hyun/NPE_ABC/nets/{args.task}/J_{int(args.num_training/1000)}K/{args.task}_{seed}_{args.cond_den}.pkl')
