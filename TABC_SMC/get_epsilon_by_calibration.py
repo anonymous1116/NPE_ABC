@@ -110,7 +110,6 @@ def main(args):
     X_abc_embed = embed(X_abc.to(device))
     _, dist_max = ABC_rej2(x0_embed, X_abc_embed, args.tol, device, dist = True)
     dist_max = dist_max.cpu()
-    
 
     task_benchmark = ["two_moons", "bernoulli_glm2", "slcp_summary_transform2", "double_slcp_summary_transform2", "mog_10"]
     if args.task in task_benchmark:
@@ -143,7 +142,7 @@ def main(args):
     print(sci_str)  # Output: '1e-02'
     
 
-    output_dir = f"../depot_hyun/hyun/NPE_ABC/flow_c2st_results/{args.task}_context/J_{int(args.num_training/1000)}K/{int(args.L/1_000_000)}M_eta{sci_str}"
+    output_dir = f"../depot_hyun/hyun/NPE_ABC/MCMC2/{args.task}/J_{int(args.num_training/1000)}K/{int(args.L/1_000_000)}M_eta{sci_str}"
     ## Create the directory if it doesn't exist
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
