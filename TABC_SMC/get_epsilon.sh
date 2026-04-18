@@ -26,9 +26,9 @@ cd $SLURM_SUBMIT_DIR
 seed=$((SLURM_ARRAY_TASK_ID / 10 + 1))
 #L=100000000
 
-L=1000000
+L=10000000
 task="bernoulli_glm2"
-num_training=10000000 
+num_training=1000000
 tol=1e-3
 
 # Run the calibrate_amor.py
