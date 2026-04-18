@@ -48,6 +48,7 @@ def main(args):
     flow = density_estimator_npe_gpu.net
     transform=flow._transform
     embed = flow._embedding_net
+
     #with torch.no_grad():
     #    tmp, _ =  transform.forward(Y_cal.to(device), context = embed(X_cal.to(device)) )
     #    adj, _ = transform.inverse(tmp, context = embed(x0.expand((tmp.size(0),x0.size(1))).to(device)))    
@@ -82,7 +83,7 @@ def main(args):
     acc_history = []
 
     accepted_count = 0
-    total_iterations = 1000000
+    total_iterations = 1000000 # 12000
     posterior = saved_data['posterior'].set_default_x(x0)
 
     for j in range(1, total_iterations):  # large upper bound
@@ -161,13 +162,10 @@ def main(args):
     elapsed_time = end_time - start_time
     
 
-    ran =torch.randint(10000, len(theta_list), (10000,))
+    ran =torch.randint(int(len(theta_list)/5), len(theta_list), (10000,))
     #ran =torch.randint(0, len(theta_list), (10000,))
     sample_post_10K_MCMC = theta_stack[ran]
     s_10K = s_stack[ran]
-
-    
-    
 
     # calibrate
     with torch.no_grad():

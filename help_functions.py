@@ -56,9 +56,12 @@ def ABC_rej2(x0, X_cal, tol, device, case = None):
     # Create mask and filter based on the threshold distance
     wt1 = (dist <= ds)
     torch.cuda.empty_cache()
-    del mad, dist
+    del mad
     # Select points within tolerance and return to CPU if needed
-    return wt1.cpu()
+    if case is not None:
+        return wt1.cpu(), dist.cpu()
+    else:
+        return wt1.cpu()
 
 
 def TABC_Jacobian(s, theta, sobs, density_estimator, device = "cpu"):
