@@ -130,7 +130,6 @@ def main(args):
     
     
     elapsed_time = end_time - start_time  # Calculate elapsed time
-    
     print("NABC sample size: ", new_theta.size())
     results_size = min(10_000, new_theta.size(0))
 
@@ -164,6 +163,7 @@ def main(args):
         "c2st_10K": tmp,
         "c2st_1K": tmp2
     }, f"{output_dir}/x0{args.x0_ind}_seed{args.seed}_result.pt")
+    print("Elapsed time (min):", np.floor(elapsed_time/60), "min", np.round(elapsed_time%60, 2), "sec")
     
     
 def get_args():

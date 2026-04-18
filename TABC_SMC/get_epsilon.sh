@@ -1,20 +1,18 @@
 #!/bin/bash
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
-#SBATCH --time=00:39:00
+#SBATCH --partition=cpu
 #SBATCH --account=statdept
-#SBATCH --gpus-per-node=1
-#SBATCH --mem=170G
-#SBATCH --qos=normal
-#SBATCH --partition=a10
-#SBATCH --array=0-99
-#SBATCH --output=ABC_calibration/log/output_log_%A_%a.out
-#SBATCH --error=ABC_calibration/log/error_log_%A_%a.txt
+#SBATCH --time=02:00:00
+#SBATCH --qos=standby
+#SBATCH --array=0-99               # Create a job array with indices from 1 to 10
+#SBATCH --output=TABC_SMC/get_epsilon_output_log/output_log_%A_%a.log
+#SBATCH --error=TABC_SMC/get_epsilon_output_log/error_log_%A_%a.txt
 
 # #SBATCH --partition=a10,a100-40gb,a100-80gb
 
 # Create the output_log directory if it doesn't exist
-mkdir -p ABC_calibration/output_log
+mkdir -p TABC_SMC/get_epsilon_output_log
 
 # Load the required Python environment
 module load conda
@@ -28,10 +26,10 @@ cd $SLURM_SUBMIT_DIR
 seed=$((SLURM_ARRAY_TASK_ID / 10 + 1))
 #L=100000000
 
-L=1000000000
-task="mog_10"
-num_training=3000000 
-tol=1e-5
+L=10000000
+task="bernoulli_glm2"
+num_training=10000000 
+tol=1e-3
 
 # Run the calibrate_amor.py
 x0_ind=$((SLURM_ARRAY_TASK_ID % 10)) 
