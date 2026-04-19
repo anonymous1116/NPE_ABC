@@ -96,7 +96,7 @@ def main(args):
     n_generated_total = 0
 
     accepted_count = 0
-    total_iterations = 1000000 # 12000
+    total_iterations = 12000 # 12000
 
     print("iteration started", flush=True)
     for j in range(1, total_iterations):  # large upper bound
