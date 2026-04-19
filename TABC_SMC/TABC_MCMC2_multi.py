@@ -249,7 +249,7 @@ def main(args):
     plt.savefig(Path(output_dir) / f"x0{args.x0_ind}_seed{args.seed}_calibrated.png")
     plt.close()
 
-    torch.save([tmp, tmp2], f"{output_dir}/x0{args.x0_ind}_seed{args.seed}.pt")
+    torch.save([tmp, tmp2, c2st_MCMC, c2st_MCMC_1K], f"{output_dir}/x0{args.x0_ind}_seed{args.seed}.pt")
 
     torch.save({
         "config": {"x0_ind": args.x0_ind, "seed": args.seed},
