@@ -78,7 +78,7 @@ def run_single_chain(chain_args):
     ess_history_min, ess_history_median, iter_history, acc_history = [], [], [], []
 
     start_time = time.time()
-
+    print(f"[Chain {chain_id}] started on PID {os.getpid()}", flush=True)
     for j in range(1, total_iterations):
         theta_cand_0, s_cand_0, n_generated = sample_until_close(
             epsilon=dist_max, mad=mad, posterior=posterior, embed=embed,
@@ -237,7 +237,7 @@ def main(args):
     print(f"c2st_10K: {tmp}, c2st_1K: {tmp2}, c2st_MCMC: {c2st_MCMC}, c2st_MCMC_1K: {c2st_MCMC_1K}")
 
     # ── Save ───────────────────────────────────────────────────────────────
-    output_dir = f"../depot_hyun/hyun/NPE_ABC/MCMC2_c2st_results/{args.task}/J_{int(args.num_training/1000)}K/eta{sci_str}"
+    output_dir = f"../depot_hyun/hyun/NPE_ABC/MCMC2_multi_results/{args.task}/J_{int(args.num_training/1000)}K/eta{sci_str}"
     os.makedirs(output_dir, exist_ok=True)
 
     pairplot(post_sample, figsize=(6, 6), limits=bounds)
