@@ -74,7 +74,7 @@ def main(args):
     input_dir = f"../depot_hyun/hyun/NPE_ABC/MCMC/{args.task}/J_{int(args.num_training/1000)}K/eta{sci_str}/x0{args.x0_ind}_seed{args.seed}_result.pt"
     get_epsilon = torch.load(input_dir)    
     dist_max =get_epsilon["dist_max"]
-    get_epsilon["mad"]
+    mad = get_epsilon["mad"]
     
     ESS_TARGET = 10_000
     CHECK_EVERY = 5000   # do NOT check every iteration

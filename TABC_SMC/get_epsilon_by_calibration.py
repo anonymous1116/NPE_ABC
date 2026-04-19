@@ -171,6 +171,8 @@ def get_args():
                         help = "See number (default: 1)")
     parser.add_argument("--seed", type = int, default = 1,
                         help = "See number (default: 1)")
+    parser.add_argument("--L", type = int, default = 10_000_000,
+                        help = "Calibration data size (default: 10M)")
     parser.add_argument('--task', type=str, default='twomoons', 
                         help='Simulation type: Lapl, MoG')
     parser.add_argument("--num_training", type=int, default=100_000, 
