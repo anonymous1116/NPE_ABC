@@ -80,7 +80,7 @@ def main(args):
     mad = get_epsilon["mad"]
     print(mad, "mad")
     ESS_TARGET = 10_000
-    CHECK_EVERY = 50   # do NOT check every iteration
+    CHECK_EVERY = 1_000   # do NOT check every iteration
 
     theta_init = posterior.sample((1,), x0, show_progress_bars=False)
     
@@ -96,7 +96,7 @@ def main(args):
     n_generated_total = 0
 
     accepted_count = 0
-    total_iterations = 12000 # 12000
+    total_iterations = 1000000 # 12000
 
     print("iteration started", flush=True)
     for j in range(1, total_iterations):  # large upper bound
