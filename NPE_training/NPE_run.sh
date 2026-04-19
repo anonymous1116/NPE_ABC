@@ -21,7 +21,7 @@ SLURM_SUBMIT_DIR=/home/hyun18/NPE_ABC
 cd $SLURM_SUBMIT_DIR
 
 # Define the starting point for seed
-seed_START=1s
+seed_START=1
 #TASK="MoG"
 
 # Get the current N_EPOCHS value based on the job array index
