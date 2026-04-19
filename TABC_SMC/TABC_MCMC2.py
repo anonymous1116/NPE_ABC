@@ -77,7 +77,7 @@ def main(args):
     mad = get_epsilon["mad"]
     
     ESS_TARGET = 10_000
-    CHECK_EVERY = 5000   # do NOT check every iteration
+    CHECK_EVERY = 50   # do NOT check every iteration
 
     theta_init = posterior.sample((1,), x0, show_progress_bars=False)
     
