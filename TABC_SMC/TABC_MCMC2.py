@@ -77,7 +77,7 @@ def main(args):
     mad = get_epsilon["mad"]
     
     ESS_TARGET = 10_000
-    CHECK_EVERY = 50   # do NOT check every iteration
+    CHECK_EVERY = 5   # do NOT check every iteration
 
     theta_init = posterior.sample((1,), x0, show_progress_bars=False)
     
@@ -99,7 +99,7 @@ def main(args):
     
 
     for j in range(1, total_iterations):  # large upper bound
-        theta_cand_0, s_cand_0, n_generated = sample_until_close(epsilon=dist_max, mad=mad, posterior=posterior, simulators=simulators,x0=x0,device=device,batch_size =100)
+        theta_cand_0, s_cand_0, n_generated = sample_until_close(epsilon=dist_max, mad=mad, posterior=posterior, simulators=simulators,x0=x0,device=device,batch_size =1000)
         n_generated_total += n_generated
         alpha = priors.log_prob(theta_cand_0) - priors.log_prob(theta_list[j-1]) \
             + posterior.log_prob(theta_list[j-1]) - posterior.log_prob(theta_cand_0) \
