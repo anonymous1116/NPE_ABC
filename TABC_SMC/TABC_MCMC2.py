@@ -198,9 +198,9 @@ def main(args):
     elapsed_time = end_time - start_time  # Calculate elapsed time
     
     NPE_post_sample = posterior.sample((10000,), x0, show_progress_bars=False).cpu()
-    c2st_NPE = c2st(post_sample.cpu(), NPE_post_sample.cpu())
-    c2st_NPE_1K = c2st(post_sample[:1000].cpu(), NPE_post_sample[:1000].cpu())
-    print(f"c2st_NPE: {c2st_NPE}, c2st_NPE_1K: {c2st_NPE_1K}")
+    #c2st_NPE = c2st(post_sample.cpu(), NPE_post_sample.cpu())
+    #c2st_NPE_1K = c2st(post_sample[:1000].cpu(), NPE_post_sample[:1000].cpu())
+    #print(f"c2st_NPE: {c2st_NPE}, c2st_NPE_1K: {c2st_NPE_1K}")
 
     tmp = c2st(post_sample.cpu(), sample_post_10K.cpu())
     tmp2 = c2st(post_sample[:1000].cpu(), sample_post_1K.cpu())
