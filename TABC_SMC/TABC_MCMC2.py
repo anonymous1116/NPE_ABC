@@ -22,7 +22,7 @@ def sample_until_close(epsilon, mad, posterior, embed,simulators, x0, device, ba
     """
     n_generated = 0
     while True:
-        theta_cand = posterior.sample((batch_size,), x=x0, show_progress_bars=True)
+        theta_cand = posterior.sample((batch_size,), x=x0, show_progress_bars=False)
         s_cand = simulators(theta_cand)
         n_generated += batch_size
         x0_embed = embed(x0.to(device))
@@ -34,7 +34,7 @@ def sample_until_close(epsilon, mad, posterior, embed,simulators, x0, device, ba
         ))
         
         min_idx = torch.argmin(dist)
-        print("n_generated:", n_generated, flush=True)
+        print("n_generated:", n_generated, flush=False)
         if dist[min_idx] < epsilon:
             return theta_cand[min_idx], s_cand[min_idx], n_generated
 
@@ -81,7 +81,7 @@ def main(args):
     mad = get_epsilon["mad"]
     print(mad, "mad")
     ESS_TARGET = 10_000
-    CHECK_EVERY = 5   # do NOT check every iteration
+    CHECK_EVERY = 50   # do NOT check every iteration
 
     theta_init = posterior.sample((1,), x0, show_progress_bars=False)
     
