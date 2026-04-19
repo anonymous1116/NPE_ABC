@@ -56,22 +56,11 @@ def main(args):
     flow = density_estimator_npe_gpu.net
     transform=flow._transform
     embed = flow._embedding_net
-    #with torch.no_grad():
-    #    tmp, _ =  transform.forward(Y_cal.to(device), context = embed(X_cal.to(device)) )
-    #    adj, _ = transform.inverse(tmp, context = embed(x0.expand((tmp.size(0),x0.size(1))).to(device)))    
-    #adj = adj.cpu()
-    #if bounds is not None:
-    #    adj = torch.clamp(adj, min = torch.tensor(bounds)[:,0], max = torch.tensor(bounds)[:,1])
-
-    #with torch.no_grad():
-    #    max_vals = torch.max(adj,0).values
-   #     min_vals = torch.min(adj,0).values
     
-    #priors_mean = torch.zeros(10)
-    #priors_std = torch.ones(10) * np.sqrt(2)
-
-    #print("max_vals:", max_vals)   
-   # print("min_vals:", min_vals)
+    input_dir = f"../depot_hyun/hyun/NPE_ABC/MCMC/{args.task}/J_{int(args.num_training/1000)}K/eta{sci_str}/x0{args.x0_ind}_seed{args.seed}_result.pt"
+    get_epsilon = torch.load(input_dir)    
+    dist_max =get_epsilon["dist_max"]
+    get_epsilon["mad"]
 
     
     ESS_TARGET = 10_000

@@ -140,9 +140,8 @@ def main(args):
 
     sci_str = format(args.tol, ".0e")
     print(sci_str)  # Output: '1e-02'
-    
 
-    output_dir = f"../depot_hyun/hyun/NPE_ABC/MCMC/{args.task}/J_{int(args.num_training/1000)}K/{int(args.L/1_000_000)}M_eta{sci_str}"
+    output_dir = f"../depot_hyun/hyun/NPE_ABC/MCMC/{args.task}/J_{int(args.num_training/1000)}K/eta{sci_str}"
     ## Create the directory if it doesn't exist
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -172,8 +171,6 @@ def get_args():
                         help = "See number (default: 1)")
     parser.add_argument("--seed", type = int, default = 1,
                         help = "See number (default: 1)")
-    parser.add_argument("--L", type = int, default = 10_000_000,
-                        help = "Calibration data size (default: 10M)")
     parser.add_argument('--task', type=str, default='twomoons', 
                         help='Simulation type: Lapl, MoG')
     parser.add_argument("--num_training", type=int, default=100_000, 

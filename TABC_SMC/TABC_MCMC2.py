@@ -14,6 +14,26 @@ from sbibm.metrics.c2st import c2st
 from simulator import Priors, Simulators, Bounds, observation_lists, true_Posteriors
 from help_functions import UnifSample, param_box, truncated_mvn_sample, ABC_rej2, compute_mad, TABC_Jacobian
 
+
+def sample_until_close(epsilon, mad, posterior, simulators, x0, device, batch_size=100):
+    """
+    Sample (theta, s) pairs until we find one with dist < epsilon.
+    Returns the first accepted (theta, s) pair.
+    """
+    n_generated = 0
+    while True:
+        theta_cand = posterior.sample((batch_size,), x=x0, show_progress_bars=False)
+        s_cand = simulators(theta_cand)
+        n_generated += batch_size
+
+        dist = torch.sqrt(torch.mean(
+            torch.abs(s_cand.to(device) - x0.to(device))**2 / mad**2, 1
+        ))
+        
+        min_idx = torch.argmin(dist)
+        if dist[min_idx] < epsilon:
+            return theta_cand[min_idx], s_cand[min_idx], n_generated
+
 def main(args):
     seed = args.seed
     torch.set_default_device("cpu")
@@ -49,23 +69,10 @@ def main(args):
     transform=flow._transform
     embed = flow._embedding_net
 
-    #with torch.no_grad():
-    #    tmp, _ =  transform.forward(Y_cal.to(device), context = embed(X_cal.to(device)) )
-    #    adj, _ = transform.inverse(tmp, context = embed(x0.expand((tmp.size(0),x0.size(1))).to(device)))    
-    #adj = adj.cpu()
-    #if bounds is not None:
-    #    adj = torch.clamp(adj, min = torch.tensor(bounds)[:,0], max = torch.tensor(bounds)[:,1])
-
-    #with torch.no_grad():
-    #    max_vals = torch.max(adj,0).values
-   #     min_vals = torch.min(adj,0).values
-    
-    #priors_mean = torch.zeros(10)
-    #priors_std = torch.ones(10) * np.sqrt(2)
-
-    #print("max_vals:", max_vals)   
-   # print("min_vals:", min_vals)
-
+    input_dir = f"../depot_hyun/hyun/NPE_ABC/MCMC/{args.task}/J_{int(args.num_training/1000)}K/eta{sci_str}/x0{args.x0_ind}_seed{args.seed}_result.pt"
+    get_epsilon = torch.load(input_dir)    
+    dist_max =get_epsilon["dist_max"]
+    get_epsilon["mad"]
     
     ESS_TARGET = 10_000
     CHECK_EVERY = 5000   # do NOT check every iteration
@@ -81,23 +88,17 @@ def main(args):
     ess_history_median = []
     iter_history = []
     acc_history = []
+    n_generated_total = 0
 
     accepted_count = 0
     total_iterations = 1000000 # 12000
     posterior = saved_data['posterior'].set_default_x(x0)
 
+    
+
     for j in range(1, total_iterations):  # large upper bound
-        theta_cand = posterior.sample((int(1/args.tol),), x=x0, show_progress_bars=False)
-
-        s_cand = simulators(theta_cand)
-        mad = compute_mad(s_cand)
-        mad = torch.reshape(mad, (1, s_cand.size(1))).to(device)
-        dist = torch.sqrt(torch.mean(torch.abs(s_cand.to(device) - x0.to(device))**2/mad**2, 1))        
-
-        theta_cand_0 = theta_cand[torch.argmin(dist)]
-        s_cand_0 = s_cand[torch.argmin(dist)]
-
-        
+        theta_cand_0, s_cand_0, n_generated = sample_until_close(epsilon=dist_max, mad=mad, posterior=posterior, simulators=simulators,x0=x0,device=device,batch_size =100)
+        n_generated_total += n_generated
         alpha = priors.log_prob(theta_cand_0) - priors.log_prob(theta_list[j-1]) \
             + posterior.log_prob(theta_list[j-1]) - posterior.log_prob(theta_cand_0) \
     #        + TABC_Jacobian(s_list[j-1], theta_list[j-1], x0, density_estimator_npe) \
@@ -137,14 +138,14 @@ def main(args):
             ess_median = ess.x.median().item()
 
             acc_rate = accepted_count / j
-
+            ABC_acc_size = n_generated_total / j # average number of generated samples per iteration
             ess_history_min.append(ess_min)
             ess_history_median.append(ess_median)
             
             iter_history.append(j)
             acc_history.append(acc_rate)
 
-            print(f"Iter {j}, ESS_min={ess_min:.1f}, ESS_median={ess_median:.1f}, acc={acc_rate:.3f}", flush=True)
+            print(f"Iter {j}, ESS_min={ess_min:.1f}, ESS_median={ess_median:.1f}, acc={acc_rate:.3f}, ABC_acc_size={ABC_acc_size:.3f}", flush=True)
             if ess_median >= ESS_TARGET:
                 break
     
