@@ -31,6 +31,7 @@ def sample_until_close(epsilon, mad, posterior, simulators, x0, device, batch_si
         ))
         
         min_idx = torch.argmin(dist)
+        print("n_generated:", n_generated, flush=True)
         if dist[min_idx] < epsilon:
             return theta_cand[min_idx], s_cand[min_idx], n_generated
 
