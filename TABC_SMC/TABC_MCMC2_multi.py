@@ -199,7 +199,8 @@ def main(args):
     ran_indices = [torch.randint(0, len(t), (samples_per_chain,)) for t in all_theta_burned]
     sample_post_10K_MCMC = torch.cat([t[idx] for t, idx in zip(all_theta_burned, ran_indices)])
     s_10K                = torch.cat([s[idx] for s, idx in zip(all_s_burned,     ran_indices)])
-
+    
+    s_10K = s_10K[torch.randint(0,s_10K.size(0), (10000,))]
     # R-hat diagnostic across chains
     min_len = min(len(t) for t in all_theta_burned)
     theta_chains_np = np.stack([t[:min_len].cpu().numpy() for t in all_theta_burned])  # (C, N, D)

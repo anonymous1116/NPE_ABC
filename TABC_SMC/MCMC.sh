@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=8
+#SBATCH --cpus-per-task=16
 #SBATCH --partition=cpu
 #SBATCH --account=statdept
 #SBATCH --time=04:00:00
@@ -31,5 +31,5 @@ x0_ind=$((SLURM_ARRAY_TASK_ID % 10))
 # Run the Python script with the specified N_EPOCHS value
 echo "Running with seed=$seeds"
 #python TABC_SMC/TABC_MCMC2.py --task "bernoulli_glm2" --seed 1 --x0_ind 1 --num_training 1000000 --tol 1e-3 --cond_den "nsf"
-python TABC_SMC/TABC_MCMC2.py --task "bernoulli_glm2" --seed $seed --x0_ind $x0_ind --num_training 1000000 --tol 1e-3 --cond_den "nsf"
+python TABC_SMC/TABC_MCMC2_multi.py --task "bernoulli_glm2" --seed $seed --x0_ind $x0_ind --num_training 1000000 --tol 1e-3 --cond_den "nsf"
 echo "## Run Completed for seed=$seeds ##"
