@@ -97,8 +97,7 @@ def main(args):
     total_iterations = 1000000 # 12000
     posterior = saved_data['posterior'].set_default_x(x0)
 
-    
-
+    print("iteration started", flush=True)
     for j in range(1, total_iterations):  # large upper bound
         theta_cand_0, s_cand_0, n_generated = sample_until_close(epsilon=dist_max, mad=mad, posterior=posterior, simulators=simulators,x0=x0,device=device,batch_size =1000)
         n_generated_total += n_generated
