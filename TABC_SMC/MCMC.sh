@@ -31,5 +31,5 @@ x0_ind=$((SLURM_ARRAY_TASK_ID % 10))
 # Run the Python script with the specified N_EPOCHS value
 echo "Running with seed=$seeds"
 #python TABC_SMC/TABC_MCMC2.py --task "bernoulli_glm2" --seed 1 --x0_ind 1 --num_training 1000000 --tol 1e-3 --cond_den "nsf"
-python TABC_SMC/TABC_MCMC2.py --task "bernoulli_glm2" --seed $seeds --x0_ind $x0_ind --num_training 1000000 --tol 1e-3 --cond_den "nsf"
+python TABC_SMC/TABC_MCMC2.py --task "bernoulli_glm2" --seed $seed --x0_ind $x0_ind --num_training 1000000 --tol 1e-3 --cond_den "nsf"
 echo "## Run Completed for seed=$seeds ##"
