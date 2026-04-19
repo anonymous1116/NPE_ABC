@@ -22,7 +22,7 @@ def sample_until_close(epsilon, mad, posterior, simulators, x0, device, batch_si
     """
     n_generated = 0
     while True:
-        theta_cand = posterior.sample((batch_size,), x=x0, show_progress_bars=False)
+        theta_cand = posterior.sample((batch_size,), x=x0, show_progress_bars=True)
         s_cand = simulators(theta_cand)
         n_generated += batch_size
 
@@ -76,7 +76,7 @@ def main(args):
     get_epsilon = torch.load(input_dir)    
     dist_max =get_epsilon["dist_max"]
     mad = get_epsilon["mad"]
-    
+    print(mad, "mad")
     ESS_TARGET = 10_000
     CHECK_EVERY = 5   # do NOT check every iteration
 
@@ -95,7 +95,6 @@ def main(args):
 
     accepted_count = 0
     total_iterations = 1000000 # 12000
-    posterior = saved_data['posterior'].set_default_x(x0)
 
     print("iteration started", flush=True)
     for j in range(1, total_iterations):  # large upper bound
