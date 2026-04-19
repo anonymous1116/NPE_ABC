@@ -75,7 +75,7 @@ def main(args):
     sci_str = format(args.tol, ".0e")
     print(sci_str)  # Output: '1e-02'
     input_dir = f"../depot_hyun/hyun/NPE_ABC/MCMC/{args.task}/J_{int(args.num_training/1000)}K/eta{sci_str}/x0{args.x0_ind}_seed{args.seed}_result.pt"
-    get_epsilon = torch.load(input_dir)    
+    get_epsilon = torch.load(input_dir, weights_only=True)    
     dist_max =get_epsilon["dist_max"]
     mad = get_epsilon["mad"]
     print(mad, "mad")
