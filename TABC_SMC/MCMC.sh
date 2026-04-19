@@ -29,11 +29,6 @@ seeds=$((seed_START + SLURM_ARRAY_TASK_ID - 1))
 
 # Run the Python script with the specified N_EPOCHS value
 echo "Running with seed=$seeds"
+#python TABC_SMC/TABC_MCMC2.py --task "bernoulli_glm2" --seed 1 --x0_ind 1 --num_training 1000000 --tol 1e-3 --cond_den "nsf"
 python TABC_SMC/TABC_MCMC2.py --task "bernoulli_glm2" --seed $seeds --x0_ind 1 --num_training 1000000 --tol 1e-3 --cond_den "nsf"
 echo "## Run Completed for seed=$seeds ##"
-
-# python utils/get_measure_embed.py --task "my_five_twomoons_err2" --measure "c2st" --x0_ind 1 --seed 1 --post_n_samples 10000 --num_training 10000
-#python ABC_calibration/calibrating.py --x0_ind 1 --seed 1 --task "bernoulli_glm2" --L 10000000 --num_training 1000 --tol 1e-3 
-#python NPE_training/NPE_run.py --task "my_five_twomoons_err2" --seed 1 --num_training 10000 --cond_den "nsf"
-#python NPE_training/NPE_run_embed.py --task "my_five_twomoons_err2" --seed 1 --num_training 1000 --cond_den "nsf"
-#python utils/get_measure_embed.py --task "my_five_twomoons_err2" --measure "c2st" --x0_ind 1 --seed 1 --post_n_samples 10000 --num_training 10000
