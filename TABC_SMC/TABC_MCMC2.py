@@ -15,7 +15,7 @@ from simulator import Priors, Simulators, Bounds, observation_lists, true_Poster
 from help_functions import UnifSample, param_box, truncated_mvn_sample, ABC_rej2, compute_mad, TABC_Jacobian
 
 
-def sample_until_close(epsilon, mad, posterior, simulators, x0, device, batch_size=100):
+def sample_until_close(epsilon, mad, posterior, embed,simulators, x0, device, batch_size=100):
     """
     Sample (theta, s) pairs until we find one with dist < epsilon.
     Returns the first accepted (theta, s) pair.
@@ -25,9 +25,12 @@ def sample_until_close(epsilon, mad, posterior, simulators, x0, device, batch_si
         theta_cand = posterior.sample((batch_size,), x=x0, show_progress_bars=True)
         s_cand = simulators(theta_cand)
         n_generated += batch_size
+        x0_embed = embed(x0.to(device))
+        s_cand_embed = embed(s_cand.to(device))
+    
 
         dist = torch.sqrt(torch.mean(
-            torch.abs(s_cand.to(device) - x0.to(device))**2 / mad**2, 1
+            torch.abs(s_cand_embed.to(device) - x0_embed.to(device))**2 / mad**2, 1
         ))
         
         min_idx = torch.argmin(dist)
@@ -98,7 +101,8 @@ def main(args):
 
     print("iteration started", flush=True)
     for j in range(1, total_iterations):  # large upper bound
-        theta_cand_0, s_cand_0, n_generated = sample_until_close(epsilon=dist_max, mad=mad, posterior=posterior, simulators=simulators,x0=x0,device=device,batch_size =1000)
+        theta_cand_0, s_cand_0, n_generated = sample_until_close(epsilon=dist_max, mad=mad, posterior=posterior, embed = embed,
+                                                                 simulators=simulators,x0=x0,device=device,batch_size =1000)
         n_generated_total += n_generated
         alpha = priors.log_prob(theta_cand_0) - priors.log_prob(theta_list[j-1]) \
             + posterior.log_prob(theta_list[j-1]) - posterior.log_prob(theta_cand_0) \
