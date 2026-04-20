@@ -63,7 +63,7 @@ def run_single_chain(chain_args):
     embed = flow._embedding_net
 
     # Per-chain ESS target: divide total target across chains
-    NUM_CHAINS = 10
+    NUM_CHAINS = 16
     ESS_TARGET_PER_CHAIN = 10_000 // NUM_CHAINS  # = 1000 per chain
     CHECK_EVERY = 1_000
 
@@ -137,9 +137,8 @@ def run_single_chain(chain_args):
     theta_list = theta_list[burn_in:]
     s_store     = s_list[burn_in:]
 
-
     # Randomly select 1000 samples per chain (10 chains × 1000 = 10K total)
-    ran = torch.randint(0, len(theta_list), (ESS_TARGET_PER_CHAIN,))
+    ran = torch.randint(0, len(theta_list), (1000,))
     theta_selected = theta_list[ran]
     s_selected     = s_store[ran]
 
@@ -154,6 +153,7 @@ def run_single_chain(chain_args):
         "iter_history": iter_history,
         "time_limit_exceeded": time_limit_exceeded,
         "n_generated_total": n_generated_total,
+        "final_ess": ess_median
     }
 
 
@@ -206,20 +206,17 @@ def main(args):
     all_theta = [torch.row_stack(r["theta_list"]) for r in results]
     all_s     = [torch.row_stack(r["s_list"])     for r in results]
 
-    # Burn-in: discard first 20% of each chain
-    all_theta_burned = [t[int(len(t) * 0.2):] for t in all_theta]
-    all_s_burned     = [s[int(len(s) * 0.2):] for s in all_s]
-
+    
     # Sample 1000 from each chain → 10K total
     samples_per_chain = 1000
-    ran_indices = [torch.randint(0, len(t), (samples_per_chain,)) for t in all_theta_burned]
-    sample_post_10K_MCMC = torch.cat([t[idx] for t, idx in zip(all_theta_burned, ran_indices)])
-    s_10K                = torch.cat([s[idx] for s, idx in zip(all_s_burned,     ran_indices)])
+    ran_indices = [torch.randint(0, len(t), (samples_per_chain,)) for t in all_theta]
+    sample_post_10K_MCMC = torch.cat([t[idx] for t, idx in zip(all_theta, ran_indices)])
+    s_10K                = torch.cat([s[idx] for s, idx in zip(all_s,     ran_indices)])
     
     s_10K = s_10K[torch.randint(0,s_10K.size(0), (10000,))]
     # R-hat diagnostic across chains
-    min_len = min(len(t) for t in all_theta_burned)
-    theta_chains_np = np.stack([t[:min_len].cpu().numpy() for t in all_theta_burned])  # (C, N, D)
+    min_len = min(len(t) for t in all_theta)
+    theta_chains_np = np.stack([t[:min_len].cpu().numpy() for t in all_theta])  # (C, N, D)
     rhat_data = arviz.convert_to_dataset(theta_chains_np)
     rhat = arviz.rhat(rhat_data)
     print("R-hat:", rhat)
@@ -254,7 +251,7 @@ def main(args):
     print(f"c2st_10K: {tmp}, c2st_1K: {tmp2}, c2st_MCMC: {c2st_MCMC}, c2st_MCMC_1K: {c2st_MCMC_1K}")
 
     # ── Save ───────────────────────────────────────────────────────────────
-    output_dir = f"../depot_hyun/hyun/NPE_ABC/MCMC2_multi_results/{args.task}/J_{int(args.num_training/1000)}K/eta{sci_str}"
+    output_dir = f"../depot_hyun/hyun/NPE_ABC/MCMC2_multis_results/{args.task}/J_{int(args.num_training/1000)}K/eta{sci_str}"
     os.makedirs(output_dir, exist_ok=True)
 
     pairplot(post_sample, figsize=(6, 6), limits=bounds)
