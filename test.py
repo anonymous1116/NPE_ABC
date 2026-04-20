@@ -17,7 +17,7 @@ def main():
     X = simulator_slcp_distractors(theta)
     end_time = time.time()
     elapsed_time = end_time - start_time
-    print(f"Simulated {int(num/1000)K} samples in {elapsed_time/60:.2f} minutes")
+    print(f"Simulated {int(num/1000)}K samples in {elapsed_time/60:.2f} minutes")
     print("Simulated data X:")
     print(X.size())
 
