@@ -35,14 +35,6 @@ class LinearEmbedding(nn.Module):
     def forward(self, x):
         return self.lin(x)
 
-class NonlinearEmbedding(nn.Module):
-    def __init__(self, x_dim=12, c_dim=10):
-        super().__init__()
-        self.lin = nn.Linear(x_dim, c_dim, bias=True)
-    def forward(self, x):
-        return self.lin(x)
-
-
 def main(args):
     # Set the random seed
     torch.manual_seed(args.seed)
@@ -58,7 +50,7 @@ def main(args):
     X = simulators(theta)
 
     #embedding_net = EmbeddingNet(x_dim = X.size(1), c_dim = theta.size(1))
-    embedding_net = LinearEmbedding(x_dim = X.size(1), c_dim = 5)
+    embedding_net = LinearEmbedding(x_dim = X.size(1), c_dim = args.cdim)
     #embedding_net = GatedLinearEmbedding(x_dim = X.size(1), c_dim = theta.size(1))
 
     neural_posterior = posterior_nn(model=args.cond_den, embedding_net=embedding_net)
@@ -78,7 +70,7 @@ def main(args):
 
     # Define the output directory
     #output_dir = f"../depot_hyun/hyun/NPE_ABC/nets_embed/{args.task}/J_{int(args.num_training/1000)}K"
-    output_dir = f"../depot_hyun/hyun/NPE_ABC/nets_embed/{args.task}/J_{int(args.num_training/1000)}K"
+    output_dir = f"../depot_hyun/hyun/NPE_ABC/nets/{args.task}_cdim{args.cdim}/J_{int(args.num_training/1000)}K"
 
     # Create the directory if it doesn't exist
     if not os.path.exists(output_dir):
@@ -103,6 +95,7 @@ def get_args():
     parser.add_argument('--seed', type=int, default=1, help='Random seed for reproducibility')
     parser.add_argument('--num_training', type=int, default=500_000, help='Number of simulations to run')
     parser.add_argument('--cond_den', type=str, default='nsf', help='Conditional density estimator type: mdn, maf, nsf')
+    parser.add_argument('--cdim', type=int, default=10, help='Dimension of the conditional density')
     return parser.parse_args()
 
 

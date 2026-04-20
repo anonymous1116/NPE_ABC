@@ -23,10 +23,10 @@ def main(args):
     
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-    priors = Priors(args.task)
+    priors          = Priors(args.task)
     true_posteriors = true_Posteriors(args.task)
-    simulators = Simulators(args.task)
-    bounds = Bounds(args.task)
+    simulators      = Simulators(args.task)
+    bounds          = Bounds(args.task)
     
     start_time = time.time()
     x0 = observation_lists(args.task)[args.x0_ind]
@@ -37,15 +37,6 @@ def main(args):
         
     print("x0_size", x0.size(), flush = True)
     
-
-    # For inital value
-    #Y_cal = priors.sample((1_000_000,))
-    #X_cal = simulators(Y_cal)
-
-
-    #index_ABC = ABC_rej2(x0, X_cal, 1e-2, device, args.task)
-    #X_cal, Y_cal = X_cal[index_ABC], Y_cal[index_ABC]
-
     output_file_path = os.path.join(f'../depot_hyun/hyun/NPE_ABC/nets/{args.task}/J_{int(args.num_training/1000)}K/{args.task}_{seed}_{args.cond_den}.pkl')
     with open(output_file_path, 'rb') as f:
         saved_data = pickle.load(f)
@@ -56,12 +47,6 @@ def main(args):
     flow = density_estimator_npe_gpu.net
     transform=flow._transform
     embed = flow._embedding_net
-    
-    input_dir = f"../depot_hyun/hyun/NPE_ABC/MCMC/{args.task}/J_{int(args.num_training/1000)}K/eta{sci_str}/x0{args.x0_ind}_seed{args.seed}_result.pt"
-    get_epsilon = torch.load(input_dir)    
-    dist_max =get_epsilon["dist_max"]
-    get_epsilon["mad"]
-
     
     ESS_TARGET = 10_000
     CHECK_EVERY = 5000   # do NOT check every iteration
@@ -97,7 +82,6 @@ def main(args):
             + posterior.log_prob(theta_list[j-1]) - posterior.log_prob(theta_cand_0) \
             + TABC_Jacobian(s_list[j-1], theta_list[j-1], x0, density_estimator_npe) \
             - TABC_Jacobian(s_cand_0, theta_cand_0, x0, density_estimator_npe) 
-    
         
         alpha = torch.exp(alpha)
         alpha = torch.min(torch.tensor(1.0), alpha)
@@ -157,9 +141,6 @@ def main(args):
         
     sample_post_10K = theta_stack[torch.randint(int(len(theta_list)*0.1), len(theta_list), (10000,))]
     sample_post_1K = theta_stack[torch.randint(int(len(theta_list)*0.1), len(theta_list), (1000,))]
-    #sample_post_10K = theta_stack[torch.randint(0, len(theta_list), (10000,))]
-    #sample_post_1K = theta_stack[torch.randint(0, len(theta_list), (1000,))]
-
 
     task_benchmark = ["two_moons", "bernoulli_glm2", "slcp_summary_transform2", "double_slcp_summary_transform2"]
     if args.task in task_benchmark:

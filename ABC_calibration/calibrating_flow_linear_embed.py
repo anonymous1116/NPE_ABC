@@ -40,9 +40,7 @@ def main(args):
     if x0.ndim == 1:
         x0 = torch.reshape(x0, (1,x0.size(0)))
         
-    chunk_size_cal = 10_000
     print("x0_size", x0.size(), flush = True)
-    #print("X_cal size", X_cal.size(), flush = True)
     
     Y_cal = priors.sample((1_000_000,))
     X_cal = simulators(Y_cal)
@@ -96,8 +94,7 @@ def main(args):
         with torch.no_grad():
             x0_embed = embed(x0.to(device))
             X_chunk_embed = embed(X_chunk.to(device))
-        
-
+    
         index_ABC = ABC_rej2(x0_embed, X_chunk_embed, args.tol, device)
         X_chunk, Y_chunk = X_chunk[index_ABC], Y_chunk[index_ABC]
         X_abc.append(X_chunk)
