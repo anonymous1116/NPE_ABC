@@ -206,7 +206,7 @@ def main(args):
     sample_post_MCMC = torch.cat([r["theta_selected"] for r in results])
     s_MCMC           = torch.cat([r["s_selected"] for r in results])
 
-    ind = torch.randint(0,s_10K.size(0), (10000,))
+    ind = torch.randint(0,s_MCMC.size(0), (10000,))
     sample_post_10K_MCMC = sample_post_MCMC[ind]
     s_10K = s_MCMC[ind]
     
