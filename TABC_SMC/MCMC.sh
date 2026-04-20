@@ -5,7 +5,7 @@
 #SBATCH --account=statdept
 #SBATCH --time=04:00:00
 #SBATCH --qos=standby
-#SBATCH --array=0-99               # Create a job array with indices from 1 to 10
+#SBATCH --array=0-9               # Create a job array with indices from 1 to 10
 #SBATCH --output=TABC_SMC/output_log/output_log_%A_%a.log
 #SBATCH --error=TABC_SMC/output_log/error_log_%A_%a.txt
 
@@ -31,5 +31,6 @@ x0_ind=$((SLURM_ARRAY_TASK_ID % 10))
 # Run the Python script with the specified N_EPOCHS value
 echo "Running with seed=$seeds"
 #python TABC_SMC/TABC_MCMC2.py --task "bernoulli_glm2" --seed 1 --x0_ind 1 --num_training 1000000 --tol 1e-3 --cond_den "nsf"
-python TABC_SMC/TABC_MCMC2_multi.py --task "bernoulli_glm2" --seed $seed --x0_ind $x0_ind --num_training 1000000 --tol 1e-3 --cond_den "nsf"
+python TABC_SMC/TABC_MCMC2_multi.py --task "bernoulli_glm2" --seed $seed --x0_ind 1 --num_training 1000000 --tol 1e-3 --cond_den "nsf"
+#python TABC_SMC/TABC_MCMC2_multi.py --task "bernoulli_glm2" --seed $seed --x0_ind $x0_ind --num_training 1000000 --tol 1e-3 --cond_den "nsf"
 echo "## Run Completed for seed=$seeds ##"
