@@ -5,6 +5,8 @@ import torch.distributions as D
 from torch.distributions import MultivariateNormal, Dirichlet, Multinomial
 from sbi.utils import BoxUniform
 import sbibm
+import pyro.distributions as dist
+
 # Optional: you can use this from torch.distributions if available
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from help_functions import SLCP_summary_transform2
@@ -267,6 +269,68 @@ def simulator_bernoulli(thetas, batch_size=100_000):
 
     return torch.cat(output, dim=0)
 
+def simulator_slcp_distractors(thetas, batch_size=100_000):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    thetas = thetas.to(device)
+
+    N = thetas.size(0)
+    output = []
+    path = "/home/hyun18/NPE_ABC/utils/files"
+    permutation_idx = torch.load(f"{path}/permutation_idx.torch", weights_only = False)
+
+    for start in range(0, N, batch_size):
+        end = min(start + batch_size, N)
+        theta_batch = thetas[start:end].to(device)
+
+        # Simulate SLCP summary statistics
+        slcp_stats = simulator_slcp3(theta_batch)
+
+        # Add distractor noise
+        noise = _sample_distractor(nums=slcp_stats.size(0), batch_size=1_000, device=device)
+        slcp_stats = torch.cat([slcp_stats, noise], dim=1)
+
+        del theta_batch, noise
+        output.append(slcp_stats[:, permutation_idx].cpu())  # Permute and move to CPU
+        torch.cuda.empty_cache()  # Optional: free memory aggressively
+
+    return torch.cat(output, dim=0)
+
+def _sample_distractor(N: int, batch_size: int = 1000, device="cpu") -> torch.Tensor:
+    """
+    Sample in batches to avoid OOM for large N.
+    Returns (N, 92) on CPU.
+    """
+    results = []
+    remaining = N
+    path = "/home/hyun18/NPE_ABC/utils/files/gmm.torch"
+    gmm = torch.load(path, weights_only = False)
+
+    # Extract parameters from the loaded gmm
+    base = gmm.component_distribution.base_dist  # MultivariateStudentT
+
+    df    = base.df.to(device)          # (20,)
+    loc   = base.loc.to(device)         # (20, 92)
+    scale = base.scale_tril.to(device)  # (20, 92, 92) — or covariance_matrix
+
+    # Rebuild on GPU
+    component_dist = dist.Independent(
+        dist.MultivariateStudentT(df=df, loc=loc, scale_tril=scale),
+        reinterpreted_batch_ndims=0
+    )
+
+    mixture_logits = gmm.mixture_distribution.logits.to(device)  # (20,)
+    categorical = torch.distributions.Categorical(logits=mixture_logits)
+
+    gmm_gpu = dist.MixtureSameFamily(categorical, component_dist)
+
+    while remaining > 0:
+        current_batch = min(batch_size, remaining)
+        batch = gmm_gpu.sample((current_batch,))   # (current_batch, 92)
+        results.append(batch.cpu().to(torch.float32))
+        remaining -= current_batch
+
+    return torch.cat(results, dim=0)   # (N, 92)
+
 def simulator_MoG(thetas, batch_size=1_000_000):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     N = thetas.size(0)
@@ -455,7 +519,6 @@ def simulator_my_five_twomoons_err5(theta):
     tmp = torch.randn( (batch_size,5), device = device) * 2.0 
     X.append(tmp.cpu())
     return torch.cat(X, dim = 1)
-
     
 def simulator_my_five_twomoons_err10(theta):
     # theta: N * 10 dimensions
