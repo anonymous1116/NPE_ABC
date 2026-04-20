@@ -286,7 +286,7 @@ def simulator_slcp_distractors(thetas, batch_size=100_000):
         slcp_stats = simulator_slcp3(theta_batch)
 
         # Add distractor noise
-        noise = _sample_distractor(nums=slcp_stats.size(0), batch_size=1_000, device=device)
+        noise = _sample_distractor(N=slcp_stats.size(0), batch_size=1_000, device=device)
         slcp_stats = torch.cat([slcp_stats, noise], dim=1)
 
         del theta_batch, noise
