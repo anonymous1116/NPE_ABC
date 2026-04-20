@@ -10,14 +10,14 @@ def main():
     
     start_time = time.time()
     # Sample theta from the prior
-    num = 1_000_000
+    num = 10_000
     theta = priors.sample((num,))  # Sample 5 parameter sets
 
     # Run the simulator
     X = simulator_slcp_distractors(theta)
     end_time = time.time()
     elapsed_time = end_time - start_time
-    print(f"Simulated {int(num/1000)}K samples in {elapsed_time/60:.2f} minutes")
+    print(f"Simulated {int(num/1000)}K samples in {elapsed_time/60:.2f} minutes") #GPU: 0.11minutes for 1M samples, CPU: 2.5 minutes for 1M samples
     print("Simulated data X:")
     print(X.size())
 

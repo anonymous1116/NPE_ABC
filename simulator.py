@@ -23,7 +23,7 @@ def Bounds(task_name: str):
         return [[-5, 5]] * 10
     elif task_name in ["my_ten_twomoons"]:
         return [[-5,5]] * 20
-    elif task_name in ["slcp_summary_transform2"]:
+    elif task_name in ["slcp_summary_transform2", "slcp_distractors"]:
         return [[-3, 3]] * 5
     elif task_name in ["double_slcp_summary_transform2"]:
         return [[-3, 3]] * 10
@@ -50,7 +50,7 @@ def Priors(task_name: str):
         return BoxUniform(low = -5*torch.ones(20), high = 5*torch.ones(20))
     elif task_name in ["mog_10"]:
         return BoxUniform(low = -10*torch.ones(10), high = 10*torch.ones(10))
-    elif task_name in ["slcp_summary_transform2"]:
+    elif task_name in ["slcp_summary_transform2", "slcp_distractors"]:
         return BoxUniform(low = -3*torch.ones(5), high = 3*torch.ones(5))
     elif task_name in ["double_slcp_summary_transform2"]:
         return BoxUniform(low = -3*torch.ones(10), high = 3*torch.ones(10))
@@ -67,7 +67,7 @@ class true_Posteriors:
             return self.two_moons(kwargs.get('j', 0))
         elif self.task in ["bernoulli_glm2"]:
             return self.bernoulli_glm2(kwargs.get('j', 0))
-        elif self.task in ["slcp_summary_transform2"]:
+        elif self.task in ["slcp_summary_transform2", "slcp_distractors"]:
             return self.slcp(kwargs.get('j', 0))
         elif self.task in ["double_slcp_summary_transform2"]:
             return self.double_slcp(kwargs.get('j', 0))
@@ -243,6 +243,13 @@ def observation_lists(task_name:str):
             observation = task.get_observation(num_observation=j)  # 10 per task
             obs_list.append(observation[0].tolist())
         return SLCP_summary_transform2(torch.tensor(obs_list))
+    elif task_name in ["slcp_distractors"]:
+        obs_list = []
+        for j in range(1, 11):
+            task = sbibm.get_task("slcp_distractors")
+            observation = task.get_observation(num_observation=j)  # 10 per task
+            obs_list.append(observation[0].tolist())
+        return torch.tensor(obs_list).to(torch.float32)
     else:
         raise ValueError(f"Unknown task name for observation_lists: {task_name}")
 
@@ -294,6 +301,7 @@ def simulator_slcp_distractors(thetas, batch_size=100_000):
         torch.cuda.empty_cache()  # Optional: free memory aggressively
 
     return torch.cat(output, dim=0)
+
 
 def _sample_distractor(N: int, batch_size: int = 1000, device="cpu") -> torch.Tensor:
     """
