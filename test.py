@@ -10,7 +10,7 @@ def main():
     
     start_time = time.time()
     # Sample theta from the prior
-    num = 10_000
+    num = 100_000
     theta = priors.sample((num,))  # Sample 5 parameter sets
 
     # Run the simulator
