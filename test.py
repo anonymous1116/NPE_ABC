@@ -18,3 +18,6 @@ def main():
     print("Simulated data X:")
     print(X)    
     print(X.size())
+
+if __name__ == "__main__":
+    main()  # Pass the entire args object to the main function
