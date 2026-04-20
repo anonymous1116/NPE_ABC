@@ -26,7 +26,7 @@ def main(args):
 
     true = true_posteriors(j = args.x0_ind+1)
     
-    task_benchmark = ["two_moons", "bernoulli_glm2", "slcp_summary_transform2", "double_slcp_summary_transform2", "mog_10"]
+    task_benchmark = ["two_moons", "bernoulli_glm2", "slcp_summary_transform2", "double_slcp_summary_transform2", "mog_10", "slcp_distractors"]
     if args.task in task_benchmark:
         true = posterior(j = args.x0_ind+1)
     else:

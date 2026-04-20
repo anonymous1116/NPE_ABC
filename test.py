@@ -21,7 +21,7 @@ def main():
     #        GPU: ,           CPU:  for 1M samples
     # 10K   0.02 min.     0.11 min
     #100K   0.11 min.     1.01 min
-    # 1M    0.95 min.     10.5 min
+    # 1M    0.11 min.     10.1 min
     print("Simulated data X:")
     print(X.size())
 

@@ -56,7 +56,8 @@ def Priors(task_name: str):
         return BoxUniform(low = -3*torch.ones(10), high = 3*torch.ones(10))
     else:
         raise ValueError(f"Unknown task name for prior: {task_name}")
-    
+
+
 class true_Posteriors:
     def __init__(self, task):
         self.task = task

@@ -74,7 +74,7 @@ def main(args):
 
         elapsed_time =time1-time0
         # Get true posterior      
-        task_benchmark = ["two_moons", "bernoulli_glm2", "slcp_summary_transform2", "double_slcp_summary_transform2", "mog_10"]
+        task_benchmark = ["two_moons", "bernoulli_glm2", "slcp_summary_transform2", "double_slcp_summary_transform2", "mog_10", "slcp_distractors"]
         if args.task in task_benchmark:
             true_sample = posterior(j = j+1)
         else:
