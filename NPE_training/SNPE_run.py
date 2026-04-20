@@ -7,7 +7,7 @@ import os
 import argparse
 import time
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
-from simulator import Simulators, Priors, observation_lists, true_Posteriors
+from simulator import Bounds, Simulators, Priors, observation_lists, true_Posteriors
 from utils.evaluate import create_c2st_job_script
 from sbibm.metrics.c2st import c2st
 
@@ -19,9 +19,20 @@ def main(args):
     priors = Priors(args.task)
     simulators = Simulators(args.task)
     true_posteriors = true_Posteriors(args.task)
+    bounds = Bounds(args.task)
+        
+
     
+
     true = true_posteriors(j = args.x0_ind+1)
     
+    task_benchmark = ["two_moons", "bernoulli_glm2", "slcp_summary_transform2", "double_slcp_summary_transform2", "mog_10"]
+    if args.task in task_benchmark:
+        true = posterior(j = args.x0_ind+1)
+    else:
+        true = posterior(torch.tensor(x0), n_samples=10000, bounds=bounds)
+
+
     x0 = observation_lists(args.task)[args.x0_ind]
     inference = NPE(priors, density_estimator = args.cond_den)
     proposal = priors
