@@ -12,7 +12,7 @@ def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, c
 
     limits = Bounds(task)
     posterior = true_Posteriors(task)
-    task_benchmark = ["two_moons", "bernoulli_glm2", "slcp_summary_transform2", "double_slcp_summary_transform2", "mog_10"]
+    task_benchmark = ["two_moons", "bernoulli_glm2", "slcp_summary_transform2", "double_slcp_summary_transform2", "mog_10", "slcp_distractors"]
     if task in task_benchmark:
         true_sample = posterior(j = x0_ind+1)
     else:
@@ -66,4 +66,4 @@ if __name__ == "__main__":
     run_similiarity(args.task, args.measure, args.x0_ind, args.seed, args.post_n_samples, args.num_training, args.cond_den, args.method)
 
 
-#python utils/get_measure.py --task "mog_10" --measure "c2st" --x0_ind 0 --seed 1 --post_n_samples 10000 --num_training 300000 --cond_den "nsf" --method "NPE"
+#python utils/get_measure.py --task "slcp_distractors" --measure "c2st" --x0_ind 1 --seed 1 --post_n_samples 10000 --num_training 1000 --cond_den "nsf" --method "NPE"
