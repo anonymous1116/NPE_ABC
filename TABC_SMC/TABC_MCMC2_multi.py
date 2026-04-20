@@ -64,7 +64,7 @@ def run_single_chain(chain_args):
 
     # Per-chain ESS target: divide total target across chains
     NUM_CHAINS = 16
-    ESS_TARGET_PER_CHAIN = 10_000 // NUM_CHAINS  # = 1000 per chain
+    ESS_TARGET_PER_CHAIN = 1_000  # = 1000 per chain
     CHECK_EVERY = 1_000
 
     theta_init = posterior.sample((1,), x0, show_progress_bars=False)
@@ -131,15 +131,14 @@ def run_single_chain(chain_args):
 
     theta_list = torch.row_stack(theta_list)
     s_list = torch.row_stack(s_list)
+    burn_in = int(0.2 * len(theta_list))
     
-    # Burn-in: discard first 20%
-    burn_in = int(len(theta_list) * 0.2)
-    theta_list = theta_list[burn_in:]
-    s_store     = s_list[burn_in:]
-
+    theta_store = torch.row_stack(theta_list)[burn_in:]
+    s_store     = torch.row_stack(s_list)[burn_in:]
+    
     # Randomly select 1000 samples per chain (10 chains × 1000 = 10K total)
-    ran = torch.randint(0, len(theta_list), (1000,))
-    theta_selected = theta_list[ran]
+    ran = torch.randint(0, len(theta_store), (1000,))
+    theta_selected = theta_store[ran]
     s_selected     = s_store[ran]
 
 
