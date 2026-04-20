@@ -17,7 +17,6 @@ def main():
     end_time = time.time()
     elapsed_time = end_time - start_time
     print(f"Simulated 10,000 samples in {elapsed_time/60:.2f} minutes")
-    print("Sampled theta:")
     print("Simulated data X:")
     print(X.size())
 
