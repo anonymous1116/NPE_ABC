@@ -5,7 +5,7 @@ from simulator import Simulators, Priors, observation_lists, Bounds, true_Poster
 def main():
     # Example usage of the Simulators class
     #simulators = simulator.Simulators(task="slcp")
-    priors = simulator.Priors(task="slcp")
+    priors = simulator.Priors(task="slcp_summary_transform2")
     
     # Sample theta from the prior
     theta = priors.sample((100,))  # Sample 5 parameter sets
