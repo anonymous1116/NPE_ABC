@@ -203,8 +203,8 @@ def main(args):
 
     # ── Combine chains ─────────────────────────────────────────────────────
     # Stack all chains: shape (NUM_CHAINS, N, D) for arviz R-hat
-    all_theta = [torch.row_stack(r["theta_list"]) for r in results]
-    all_s     = [torch.row_stack(r["s_list"])     for r in results]
+    all_theta = [torch.row_stack(r["theta_selected"]) for r in results]
+    all_s     = [torch.row_stack(r["s_selected"])     for r in results]
 
     
     # Sample 1000 from each chain → 10K total
