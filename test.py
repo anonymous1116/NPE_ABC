@@ -1,5 +1,6 @@
 import torch
 import simulator
+import time 
 from simulator import Simulators, Priors, observation_lists, Bounds, true_Posteriors, simulator_slcp_distractors
 
 def main():
@@ -7,16 +8,17 @@ def main():
     #simulators = simulator.Simulators(task="slcp")
     priors = simulator.Priors("slcp_summary_transform2")
     
+    start_time = time.time()
     # Sample theta from the prior
-    theta = priors.sample((100,))  # Sample 5 parameter sets
+    theta = priors.sample((10000,))  # Sample 5 parameter sets
 
     # Run the simulator
     X = simulator_slcp_distractors(theta)
-
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    print(f"Simulated 10,000 samples in {elapsed_time/60:.2f} minutes")
     print("Sampled theta:")
-    print(theta)
     print("Simulated data X:")
-    print(X)    
     print(X.size())
 
 if __name__ == "__main__":
