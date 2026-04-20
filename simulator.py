@@ -605,6 +605,8 @@ def Simulators(task_name: str):
         return simulator_my_ten_twomoons
     elif task_name in ["mog_10"]:
         return simulator_MoG
+    elif task_name in ["slcp_distractors"]:
+        return simulator_slcp_distractors
 
     elif task_name in ["slcp_summary_transform2"]:
         def summary_generator(theta):
