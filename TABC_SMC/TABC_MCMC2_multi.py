@@ -195,7 +195,7 @@ def main(args):
     print(mad, "mad")
 
     # ── Launch 10 parallel chains ──────────────────────────────────────────
-    NUM_CHAINS = 10
+    NUM_CHAINS = 16
     chain_args = [(c, args, dist_max, mad, x0) for c in range(NUM_CHAINS)]
 
     with Pool(processes=NUM_CHAINS) as pool:
