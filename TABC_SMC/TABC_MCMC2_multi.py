@@ -203,24 +203,13 @@ def main(args):
 
     # ── Combine chains ─────────────────────────────────────────────────────
     # Stack all chains: shape (NUM_CHAINS, N, D) for arviz R-hat
-    all_theta = [torch.row_stack(r["theta_selected"]) for r in results]
-    all_s     = [torch.row_stack(r["s_selected"])     for r in results]
+    sample_post_MCMC = [(r["theta_selected"]) for r in results]
+    s_MCMC                = [(r["s_selected"])     for r in results]
 
+    ind = torch.randint(0,s_10K.size(0), (10000,))
+    sample_post_10K_MCMC = sample_post_MCMC[ind]
+    s_10K = s_MCMC[ind]
     
-    # Sample 1000 from each chain → 10K total
-    samples_per_chain = 1000
-    ran_indices = [torch.randint(0, len(t), (samples_per_chain,)) for t in all_theta]
-    sample_post_10K_MCMC = torch.cat([t[idx] for t, idx in zip(all_theta, ran_indices)])
-    s_10K                = torch.cat([s[idx] for s, idx in zip(all_s,     ran_indices)])
-    
-    s_10K = s_10K[torch.randint(0,s_10K.size(0), (10000,))]
-    # R-hat diagnostic across chains
-    min_len = min(len(t) for t in all_theta)
-    theta_chains_np = np.stack([t[:min_len].cpu().numpy() for t in all_theta])  # (C, N, D)
-    rhat_data = arviz.convert_to_dataset(theta_chains_np)
-    rhat = arviz.rhat(rhat_data)
-    print("R-hat:", rhat)
-
     # ── Calibrate ──────────────────────────────────────────────────────────
     with torch.no_grad():
         tmp, _ = transform.forward(sample_post_10K_MCMC.to(device), context=embed(s_10K.to(device)))
@@ -251,7 +240,7 @@ def main(args):
     print(f"c2st_10K: {tmp}, c2st_1K: {tmp2}, c2st_MCMC: {c2st_MCMC}, c2st_MCMC_1K: {c2st_MCMC_1K}")
 
     # ── Save ───────────────────────────────────────────────────────────────
-    output_dir = f"../depot_hyun/hyun/NPE_ABC/MCMC2_multis_results/{args.task}/J_{int(args.num_training/1000)}K/eta{sci_str}"
+    output_dir = f"../depot_hyun/hyun/NPE_ABC/MCMC2_multi_results/{args.task}/J_{int(args.num_training/1000)}K/eta{sci_str}"
     os.makedirs(output_dir, exist_ok=True)
 
     pairplot(post_sample, figsize=(6, 6), limits=bounds)
@@ -273,7 +262,6 @@ def main(args):
         "acc_history": [r["acc_history"] for r in results],
         "time_limit_exceeded": any(r["time_limit_exceeded"] for r in results),
         "elapsed_time": elapsed_time,
-        "rhat": rhat,
     }, f"{output_dir}/x0{args.x0_ind}_seed{args.seed}_history.pt")
 
 
