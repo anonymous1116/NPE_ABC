@@ -120,6 +120,7 @@ def run_single_chain(chain_args):
                   f"acc={acc_rate:.3f}, ABC_acc_size={abc_acc_size:.3f}", flush=True)
 
             if ess_median >= ESS_TARGET_PER_CHAIN:
+                print(f"[Chain {chain_id}] Target ESS Attained.")
                 break
 
         elapsed_time = time.time() - start_time
@@ -128,10 +129,25 @@ def run_single_chain(chain_args):
             print(f"[Chain {chain_id}] Time limit exceeded.")
             break
 
+    theta_list = torch.row_stack(theta_list)
+    s_list = torch.row_stack(s_list)
+    
+    # Burn-in: discard first 20%
+    burn_in = int(len(theta_list) * 0.2)
+    theta_list = theta_list[burn_in:]
+    s_store     = s_list[burn_in:]
+
+
+    # Randomly select 1000 samples per chain (10 chains × 1000 = 10K total)
+    ran = torch.randint(0, len(theta_list), (ESS_TARGET_PER_CHAIN,))
+    theta_selected = theta_list[ran]
+    s_selected     = s_store[ran]
+
+
     return {
         "chain_id": chain_id,
-        "theta_list": theta_list,
-        "s_list": s_list,
+        "theta_selected": theta_selected,
+        "s_selected": s_selected,
         "ess_history_min": ess_history_min,
         "ess_history_median": ess_history_median,
         "acc_history": acc_history,
