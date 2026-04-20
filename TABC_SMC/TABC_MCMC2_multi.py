@@ -204,7 +204,7 @@ def main(args):
     # ── Combine chains ─────────────────────────────────────────────────────
     # Stack all chains: shape (NUM_CHAINS, N, D) for arviz R-hat
     sample_post_MCMC = torch.cat([r["theta_selected"] for r in results])
-    s_MCMC                = torch.cat([r["s_selected"] for r in results])
+    s_MCMC           = torch.cat([r["s_selected"] for r in results])
 
     ind = torch.randint(0,s_10K.size(0), (10000,))
     sample_post_10K_MCMC = sample_post_MCMC[ind]
