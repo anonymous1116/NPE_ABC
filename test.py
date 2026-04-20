@@ -10,13 +10,14 @@ def main():
     
     start_time = time.time()
     # Sample theta from the prior
-    theta = priors.sample((10000,))  # Sample 5 parameter sets
+    num = 100_000
+    theta = priors.sample((num,))  # Sample 5 parameter sets
 
     # Run the simulator
     X = simulator_slcp_distractors(theta)
     end_time = time.time()
     elapsed_time = end_time - start_time
-    print(f"Simulated 10,000 samples in {elapsed_time/60:.2f} minutes")
+    print(f"Simulated {num} samples in {elapsed_time/60:.2f} minutes")
     print("Simulated data X:")
     print(X.size())
 
