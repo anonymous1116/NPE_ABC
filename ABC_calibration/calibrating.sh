@@ -30,7 +30,7 @@ seed=$((SLURM_ARRAY_TASK_ID / 10 + 1))
 
 L=10000000
 task="slcp_distractors"
-num_training=5000000 
+num_training=500000 
 tol=1e-3
 
 # Run the calibrate_amor.py
