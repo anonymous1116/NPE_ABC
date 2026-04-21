@@ -23,7 +23,7 @@ def Bounds(task_name: str):
         return [[-5, 5]] * 10
     elif task_name in ["my_ten_twomoons"]:
         return [[-5,5]] * 20
-    elif task_name in ["slcp_summary_transform2", "slcp_distractors"]:
+    elif task_name in ["slcp_summary_transform2", "slcp_distractors", "slcp"]:    
         return [[-3, 3]] * 5
     elif task_name in ["double_slcp_summary_transform2"]:
         return [[-3, 3]] * 10
@@ -50,14 +50,14 @@ def Priors(task_name: str):
         return BoxUniform(low = -5*torch.ones(20), high = 5*torch.ones(20))
     elif task_name in ["mog_10"]:
         return BoxUniform(low = -10*torch.ones(10), high = 10*torch.ones(10))
-    elif task_name in ["slcp_summary_transform2", "slcp_distractors"]:
+    elif task_name in ["slcp_summary_transform2", "slcp_distractors", "slcp"]:
         return BoxUniform(low = -3*torch.ones(5), high = 3*torch.ones(5))
     elif task_name in ["double_slcp_summary_transform2"]:
         return BoxUniform(low = -3*torch.ones(10), high = 3*torch.ones(10))
     else:
         raise ValueError(f"Unknown task name for prior: {task_name}")
 
-task_benchmark = ["two_moons", "bernoulli_glm2", "slcp_summary_transform2", "double_slcp_summary_transform2", "mog_10", "slcp_distractors"]
+task_benchmark = ["two_moons", "bernoulli_glm2", "slcp_summary_transform2", "double_slcp_summary_transform2", "mog_10", "slcp_distractors", "slcp"]
     
 class true_Posteriors:
     def __init__(self, task):
@@ -69,7 +69,7 @@ class true_Posteriors:
             return self.two_moons(kwargs.get('j', 0))
         elif self.task in ["bernoulli_glm2"]:
             return self.bernoulli_glm2(kwargs.get('j', 0))
-        elif self.task in ["slcp_summary_transform2", "slcp_distractors"]:
+        elif self.task in ["slcp_summary_transform2", "slcp_distractors", "slcp"]:
             return self.slcp(kwargs.get('j', 0))
         elif self.task in ["double_slcp_summary_transform2"]:
             return self.double_slcp(kwargs.get('j', 0))
@@ -238,13 +238,17 @@ def observation_lists(task_name:str):
         obs = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/double_slcp_summary_transform2_obs.pt")    
         return obs
 
-    elif task_name in ["slcp_summary_transform2"]:
+    elif task_name in ["slcp_summary_transform2", "slcp"]:
         obs_list = []
         for j in range(1, 11):
             task = sbibm.get_task("slcp")
             observation = task.get_observation(num_observation=j)  # 10 per task
             obs_list.append(observation[0].tolist())
-        return SLCP_summary_transform2(torch.tensor(obs_list))
+        if task_name == "slcp_summary_transform2":
+            return SLCP_summary_transform2(torch.tensor(obs_list))
+        else:
+            return torch.tensor(obs_list).to(torch.float32)
+        
     elif task_name in ["slcp_distractors"]:
         obs_list = []
         for j in range(1, 11):
@@ -608,6 +612,8 @@ def Simulators(task_name: str):
         return simulator_MoG
     elif task_name in ["slcp_distractors"]:
         return simulator_slcp_distractors
+    elif task_name in ["slcp"]:
+        return simulator_slcp3
 
     elif task_name in ["slcp_summary_transform2"]:
         def summary_generator(theta):
