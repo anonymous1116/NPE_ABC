@@ -129,8 +129,6 @@ def run_single_chain(chain_args):
             print(f"[Chain {chain_id}] Time limit exceeded.")
             break
 
-    theta_list = torch.row_stack(theta_list)
-    s_list = torch.row_stack(s_list)
     burn_in = int(0.2 * len(theta_list))
     
     theta_store = torch.row_stack(theta_list)[burn_in:]
