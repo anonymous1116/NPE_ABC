@@ -42,6 +42,7 @@ echo "[$(date)] Starting job: x0_ind=$x0_ind, seed=$seed, L=$L"
 #python ABC_calibration/calibrating_flow.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol
 
 python ABC_calibration/calibrating_flow_experiment.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol
+#python ABC_calibration/calibrating_flow_experiment.py --x0_ind 1 --seed 1 --L 10000000 --task "slcp_distractors" --num_training 300_000 --tol 1e-3
 #python ABC_calibration/calibrating_flow_linear_embed.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol
 #python ABC_calibration/calibrating_flow_linear_embed.py --x0_ind 1 --seed 1 --L 10000000 --task "my_five_twomoons_err10" --num_training 1000000 --tol 1e-3
 #python ABC_calibration/calibrating_flow_experiment2.py --x0_ind $x0_ind --seed $seed --task $task --num_training 3000000 
