@@ -6,7 +6,7 @@ import sbibm
 import time
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from sbibm.metrics.c2st import c2st
-from simulator import Priors, Simulators, Bounds, observation_lists, true_Posteriors
+from simulator import Priors, Simulators, Bounds, observation_lists, true_Posteriors, task_benchmark
 from help_functions import UnifSample, param_box, truncated_mvn_sample, ABC_rej2
 import matplotlib.pyplot as plt
 from pathlib import Path
@@ -104,7 +104,6 @@ def main(args):
 
     print("X_abc size", X_abc.size())
 
-    task_benchmark = ["two_moons", "bernoulli_glm2", "slcp_summary_transform2", "double_slcp_summary_transform2"]
     if args.task in task_benchmark:
         post_sample = true_posteriors(j = args.x0_ind+1)
     elif args.task in ["my_five_twomoons"]:    
