@@ -135,7 +135,7 @@ def run_single_chain(chain_args):
     s_store     = torch.row_stack(s_list)[burn_in:]
     
     # Randomly select 1000 samples per chain (10 chains × 1000 = 10K total)
-    ran = torch.randint(0, len(theta_store), (1000,))
+    ran = torch.randint(0, len(theta_store), (2,))
     theta_selected = theta_store[ran]
     s_selected     = s_store[ran]
 
