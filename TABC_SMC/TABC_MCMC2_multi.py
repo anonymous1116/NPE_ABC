@@ -192,8 +192,8 @@ def main(args):
     mad = get_epsilon["mad"]
     print(mad, "mad")
 
-    # ── Launch 10 parallel chains ──────────────────────────────────────────
-    NUM_CHAINS = 16
+    # ── Launch 20 parallel chains ──────────────────────────────────────────
+    NUM_CHAINS = 20
     chain_args = [(c, args, dist_max, mad, x0) for c in range(NUM_CHAINS)]
 
     with Pool(processes=NUM_CHAINS) as pool:
