@@ -73,7 +73,7 @@ def run_single_chain(chain_args):
 
     accepted_count = 0
     n_generated_total = 0
-    total_iterations = 1_000_000
+    total_iterations = 12000#1_000_000
     time_limit_exceeded = False
     ess_history_min, ess_history_median, iter_history, acc_history = [], [], [], []
 
@@ -201,6 +201,7 @@ def main(args):
     # ── Combine chains ─────────────────────────────────────────────────────
     # Stack all chains: shape (NUM_CHAINS, N, D) for arviz R-hat
     sample_post_MCMC = torch.cat([r["theta_selected"] for r in results])
+    print(sample_post_MCMC.size(), "sample_post_MCMC size")
     s_MCMC           = torch.cat([r["s_selected"] for r in results])
 
     ind = torch.randint(0,s_MCMC.size(0), (10000,))
