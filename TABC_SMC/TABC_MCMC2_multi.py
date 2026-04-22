@@ -73,7 +73,7 @@ def run_single_chain(chain_args):
 
     accepted_count = 0
     n_generated_total = 0
-    total_iterations = 12000#1_000_000
+    total_iterations = 1_000_000
     time_limit_exceeded = False
     ess_history_min, ess_history_median, iter_history, acc_history = [], [], [], []
 
