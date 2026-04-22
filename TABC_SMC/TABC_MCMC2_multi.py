@@ -208,6 +208,7 @@ def main(args):
 
     ind = torch.randint(0,s_MCMC.size(0), (sample_post_size,))
     sample_post_10K_MCMC = sample_post_MCMC[ind]
+    print(sample_post_10K_MCMC)
     s_10K = s_MCMC[ind]
     
     # ── Calibrate ──────────────────────────────────────────────────────────
