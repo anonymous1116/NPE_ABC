@@ -135,7 +135,8 @@ def run_single_chain(chain_args):
     s_store     = torch.row_stack(s_list)[burn_in:]
     
     # Randomly select 1000 samples per chain (10 chains × 1000 = 10K total)
-    ran = torch.randint(0, len(theta_store), (1000,))
+    sample_num = ess_median if ess_median < 1000 else 1000
+    ran = torch.randint(0, len(theta_store), (sample_num,))
     theta_selected = theta_store[ran]
     s_selected     = s_store[ran]
 
@@ -201,10 +202,11 @@ def main(args):
     # ── Combine chains ─────────────────────────────────────────────────────
     # Stack all chains: shape (NUM_CHAINS, N, D) for arviz R-hat
     sample_post_MCMC = torch.cat([r["theta_selected"] for r in results])
+    sample_post_size = min(10_000, sample_post_MCMC.size(0))
     print(sample_post_MCMC.size(), "sample_post_MCMC size")
     s_MCMC           = torch.cat([r["s_selected"] for r in results])
 
-    ind = torch.randint(0,s_MCMC.size(0), (10000,))
+    ind = torch.randint(0,s_MCMC.size(0), (sample_post_size,))
     sample_post_10K_MCMC = sample_post_MCMC[ind]
     s_10K = s_MCMC[ind]
     
@@ -215,7 +217,7 @@ def main(args):
 
     adj = adj.cpu()
     sample_post_10K = torch.clone(adj)
-    ran2 = torch.randint(0, 10000, (1000,))
+    ran2 = torch.randint(0, sample_post_size, (1000,))
     sample_post_1K = adj[ran2]
 
     # ── Reference posterior ────────────────────────────────────────────────
@@ -231,7 +233,7 @@ def main(args):
     elapsed_time = end_time - start_time
 
     # ── C2ST ───────────────────────────────────────────────────────────────
-    tmp  = c2st(post_sample.cpu(), sample_post_10K.cpu())
+    tmp  = c2st(post_sample[:sample_post_size].cpu(), sample_post_10K.cpu())
     tmp2 = c2st(post_sample[:1000].cpu(), sample_post_1K.cpu())
     c2st_MCMC    = c2st(post_sample.cpu(), sample_post_10K_MCMC.cpu())
     c2st_MCMC_1K = c2st(post_sample[:1000].cpu(), sample_post_10K_MCMC[ran2].cpu())
