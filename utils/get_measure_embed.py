@@ -18,8 +18,8 @@ def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, c
     else:
         true_sample = posterior(torch.tensor(x0), n_samples=post_n_samples, bounds=limits)
     
-    if cdim is not None:
-        output_file_path = f"../depot_hyun/hyun/NPE_ABC/nets_embed/{task}/J_{int(num_training/1000)}K/{task}_{seed}_{cond}_cdim{cdim}.pkl"
+    if cdim is None:
+        output_file_path = f"../depot_hyun/hyun/NPE_ABC/nets_embed/{task}/J_{int(num_training/1000)}K/{task}_{seed}_{cond}.pkl"
     else:
         output_file_path = f"../depot_hyun/hyun/NPE_ABC/nets_embed/{task}_cdim{args.cdim}/J_{int(num_training/1000)}K/{task}_{seed}_{cond}.pkl"
 
@@ -65,4 +65,4 @@ if __name__ == "__main__":
     run_similiarity(args.task, args.measure, args.x0_ind, args.seed, args.post_n_samples, args.num_training, args.cond_den, args.cdim)
 
 
-#python utils/get_measure_embed.py --task "slcp_distractors" --measure "c2st" --num_training 300000 --x0_ind 1 --seed 1 --cdim 10
+#python utils/get_measure_embed.py --task "slcp_distractors" --measure "c2st" --num_training 1000 --x0_ind 1 --seed 1 --cdim 10
