@@ -26,9 +26,11 @@ conda activate /depot/wangxiao/apps/hyun18/NPE_NABC
     if embed:
         implement_options = "get_measure_embed"
         cdim_arg = f"--cdim {cdim}" if cdim is not None else ""
+        method_arg = f"" 
     else:
         implement_options = "get_measure"
         cdim_arg = ""
+        method_arg = f"--method {method}"
     job_script = f"""#!/bin/bash
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
@@ -53,7 +55,7 @@ cd $SLURM_SUBMIT_DIR
 # Run the Python script for the current simulation
 echo "Running simulation for task '{task}', '{num_training}', x0_ind={x0_ind}, seed={seed}..."
 
-python ./utils/{implement_options}.py --task {task} --num_training {num_training} --measure {measure} --x0_ind {x0_ind} --seed {seed} --post_n_samples {post_n_samples} --method {method} --cond_den {cond_den} --cdim {cdim} {cdim_arg}
+python ./utils/{implement_options}.py --task {task} --num_training {num_training} --measure {measure} --x0_ind {x0_ind} --seed {seed} --post_n_samples {post_n_samples} --cond_den {cond_den} {cdim_arg} {method_arg}
 echo "## Job completed for task '{task}', x0_ind={x0_ind}, seed={seed}" ##"
 """
     # Create the directory for SLURM files if it doesn't exist
@@ -104,4 +106,4 @@ if __name__ == "__main__":
     main(args)  # Pass the entire args object to the main function
 
 
-#python utils/evaluate.py --task "slcp_distractors" --measure "c2st" --num_training 300000 --method "NPE" --cdim 10
+#python utils/get_measure_embed.py --task "slcp_distractors" --measure "c2st" --num_training 300000 --method "NPE" --cdim 10
