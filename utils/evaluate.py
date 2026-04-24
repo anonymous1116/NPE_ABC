@@ -81,6 +81,7 @@ def get_args():
                         help='Conditional density estimator type: mdn, maf, nsf')
     parser.add_argument('--method', type=str, default='NPE', 
                         help='Method type: NPE, FMPE, NPSE')
+    parser.add_argument('--cdim', type=int, default=None, help='Dimension of the conditional density')
     return parser.parse_args()
 
 
@@ -94,7 +95,7 @@ def main(args):
     print("distribute")
     for i in range(len(x0_list.tolist())):
         for j in seeds:
-            create_c2st_job_script(args.task, args.num_training, args.measure, x0_ind = i, seed = j, cond_den = args.cond_den, method = args.method, post_n_samples=10_000, use_gpu = gpu_ind)
+            create_c2st_job_script(args.task, args.num_training, args.measure, x0_ind = i, seed = j, cond_den = args.cond_den, method = args.method, post_n_samples=10_000, use_gpu = gpu_ind, embed = True if "embed" in args.method else False, cdim=args.cdim)
     print("distribute end")
     
 

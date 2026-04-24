@@ -5,7 +5,7 @@ from simulator import observation_lists, Bounds, true_Posteriors, task_benchmark
 from sbibm.metrics.c2st import c2st
 from NPE_training.NPE_run_embed import EmbeddingNet, LinearEmbedding
 
-def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, cond):
+def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, cond, cdim):
     x0_list = observation_lists(task)
     x0 = x0_list[x0_ind]
     torch.manual_seed(seed)
@@ -18,8 +18,11 @@ def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, c
     else:
         true_sample = posterior(torch.tensor(x0), n_samples=post_n_samples, bounds=limits)
     
-    output_file_path = f"../depot_hyun/hyun/NPE_ABC/nets_embed/{task}/J_{int(num_training/1000)}K/{task}_{seed}_{cond}.pkl"    
-    
+    if cdim is not None:
+        output_file_path = f"../depot_hyun/hyun/NPE_ABC/nets_embed/{task}/J_{int(num_training/1000)}K/{task}_{seed}_{cond}_cdim{cdim}.pkl"
+    else:
+        output_file_path = f"../depot_hyun/hyun/NPE_ABC/nets_embed/{task}/J_{int(num_training/1000)}K_cdim{args.cdim}/{task}_{seed}_{cond}.pkl"
+
     if not os.path.exists(output_file_path):
         raise FileNotFoundError(f"NPE results file not found: {output_file_path}")
         
@@ -53,6 +56,7 @@ def get_args():
                         help="Number of simulations for training (default: 500_000)")
     parser.add_argument('--cond_den', type=str, default='nsf', 
                         help='Conditional density estimator type: mdn, maf, nsf')
+    parser.add_argument('--cdim', type=int, default=None, help='Dimension of the conditional density')
     return parser.parse_args()
 
     
