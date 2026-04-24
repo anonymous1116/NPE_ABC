@@ -232,6 +232,32 @@ def truncated_mvn_sample(L, mean, std, lower, upper):
     return torch.column_stack(samples)
 
 
+def truncated_mvn_log_prob(x, mean, std, lower, upper):
+    """
+    Computes log probability of x under a truncated multivariate normal distribution
+    with independent dimensions.
+    
+    Parameters:
+    - x:     Tensor of shape (N, d) or (d,)
+    - mean, std, lower, upper: Tensor of shape (d,)
+    
+    Returns:
+    - log_prob: Tensor of shape (N,) or scalar
+    """
+    # Log normalizing constant per dimension: log(Phi(upper) - Phi(lower))
+    lower_cdf = 0.5 * (1 + torch.erf((lower - mean) / (std * math.sqrt(2))))
+    upper_cdf = 0.5 * (1 + torch.erf((upper - mean) / (std * math.sqrt(2))))
+    log_norm = torch.log(upper_cdf - lower_cdf)  # shape (d,)
+
+    # Log normal pdf per dimension
+    log_pdf = -0.5 * ((x - mean) / std) ** 2 - torch.log(std) - 0.5 * math.log(2 * math.pi)  # shape (N, d)
+
+    # Mask out-of-support values
+    in_support = (x >= lower) & (x <= upper)  # shape (N, d)
+    log_prob_per_dim = torch.where(in_support, log_pdf - log_norm, torch.tensor(float('-inf')))  # shape (N, d)
+
+    return log_prob_per_dim.sum(dim=-1)  # shape (N,)
+
 @torch.no_grad()
 def forward_from_Z_chunked(
     density_estimator,
