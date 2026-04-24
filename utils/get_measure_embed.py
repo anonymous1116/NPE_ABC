@@ -21,7 +21,7 @@ def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, c
     if cdim is not None:
         output_file_path = f"../depot_hyun/hyun/NPE_ABC/nets_embed/{task}/J_{int(num_training/1000)}K/{task}_{seed}_{cond}_cdim{cdim}.pkl"
     else:
-        output_file_path = f"../depot_hyun/hyun/NPE_ABC/nets_embed/{task}/J_{int(num_training/1000)}K_cdim{args.cdim}/{task}_{seed}_{cond}.pkl"
+        output_file_path = f"../depot_hyun/hyun/NPE_ABC/nets_embed/{task}_cdim{args.cdim}/J_{int(num_training/1000)}K/{task}_{seed}_{cond}.pkl"
 
     if not os.path.exists(output_file_path):
         raise FileNotFoundError(f"NPE results file not found: {output_file_path}")
