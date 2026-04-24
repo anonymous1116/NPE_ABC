@@ -3,7 +3,7 @@
 #SBATCH --cpus-per-task=4
 #SBATCH --partition=cpu
 #SBATCH --account=statdept
-#SBATCH --time=8-00:00:00
+#SBATCH --time=9-00:00:00
 #SBATCH --qos=normal
 #SBATCH --array=1-10               # Create a job array with indices from 1 to 10
 #SBATCH --output=NPE/NPE_nsf/output_log/output_log_%A_%a.log
