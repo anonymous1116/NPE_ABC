@@ -20,6 +20,8 @@ def main(args):
     simulators = Simulators(args.task)
     true_posteriors = true_Posteriors(args.task)
     bounds = Bounds(args.task)
+    x0 = observation_lists(args.task)[args.x0_ind]
+    
         
     if args.task in task_benchmark:
         true = true_posteriors(j = args.x0_ind+1)
@@ -27,7 +29,6 @@ def main(args):
         true = true_posteriors(torch.tensor(x0), n_samples=10000, bounds=bounds)
 
 
-    x0 = observation_lists(args.task)[args.x0_ind]
     inference = NPE(priors, density_estimator = args.cond_den)
     proposal = priors
     c2st_results_list = []
