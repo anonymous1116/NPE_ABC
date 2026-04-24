@@ -62,6 +62,7 @@ def get_args():
     
 if __name__ == "__main__":
     args = get_args()  # Parse command-line arguments    
-    run_similiarity(args.task, args.measure, args.x0_ind, args.seed, args.post_n_samples, args.num_training, args.cond_den)
+    run_similiarity(args.task, args.measure, args.x0_ind, args.seed, args.post_n_samples, args.num_training, args.cond_den, args.cdim)
 
 
+#python utils/get_measure_embed.py --task "slcp_distractors" --measure "c2st" --num_training 300000 --x0_ind 1 --seed 1 --cdim 10

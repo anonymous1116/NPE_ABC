@@ -98,7 +98,7 @@ def get_args():
     parser.add_argument('--seed', type=int, default=1, help='Random seed for reproducibility')
     parser.add_argument('--num_training', type=int, default=500_000, help='Number of simulations to run')
     parser.add_argument('--cond_den', type=str, default='nsf', help='Conditional density estimator type: mdn, maf, nsf')
-    parser.add_argument('--cdim', type=int, default=None, help='Dimension of the conditional density')
+    parser.add_argument('--cdim', type=int, default=None, help='Dimension of the conditional density', required=True)
     return parser.parse_args()
 
 
