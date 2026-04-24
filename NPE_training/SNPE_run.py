@@ -22,9 +22,9 @@ def main(args):
     bounds = Bounds(args.task)
         
     if args.task in task_benchmark:
-        true = posterior(j = args.x0_ind+1)
+        true = true_posteriors(j = args.x0_ind+1)
     else:
-        true = posterior(torch.tensor(x0), n_samples=10000, bounds=bounds)
+        true = true_posteriors(torch.tensor(x0), n_samples=10000, bounds=bounds)
 
 
     x0 = observation_lists(args.task)[args.x0_ind]
