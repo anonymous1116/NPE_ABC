@@ -21,11 +21,6 @@ def main(args):
     true_posteriors = true_Posteriors(args.task)
     bounds = Bounds(args.task)
         
-
-    
-
-    true = true_posteriors(j = args.x0_ind+1)
-    
     if args.task in task_benchmark:
         true = posterior(j = args.x0_ind+1)
     else:
