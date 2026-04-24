@@ -1,7 +1,7 @@
 
 import os, sys, torch,pickle, argparse 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
-from simulator import observation_lists, Bounds, true_Posteriors
+from simulator import observation_lists, Bounds, true_Posteriors, task_benchmark
 from sbibm.metrics.c2st import c2st
 from NPE_training.NPE_run_embed import EmbeddingNet, LinearEmbedding
 
@@ -13,7 +13,6 @@ def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, c
 
     limits = Bounds(task)
     posterior = true_Posteriors(task)
-    task_benchmark = ["two_moons", "bernoulli_glm2", "slcp_summary_transform2", "double_slcp_summary_transform2"]
     if task in task_benchmark:
         true_sample = posterior(j = x0_ind+1)
     else:
