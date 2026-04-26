@@ -40,7 +40,10 @@ def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, c
         dist = c2st(true_sample[:sample_post_size], sample_post[:sample_post_size])
     print("c2st: ", dist)  
     # Save
-    output_dir = f"../depot_hyun/hyun/NPE_ABC/NPE_{measure}_embed_results/{task}/J_{int(num_training/1000)}K"   
+    if cdim is None:
+        output_dir = f"../depot_hyun/hyun/NPE_ABC/NPE_{measure}_embed_results/{task}/J_{int(num_training/1000)}K"   
+    else:
+        output_dir = f"../depot_hyun/hyun/NPE_ABC/NPE_{measure}_embed_results/{task}_cdim{args.cdim}/J_{int(num_training/1000)}K"   
     os.makedirs(output_dir, exist_ok=True)
     torch.save(dist, os.path.join(output_dir, f"result_x0_{x0_ind}_seed_{seed}.pt"))  # Customize filename as needed
     
