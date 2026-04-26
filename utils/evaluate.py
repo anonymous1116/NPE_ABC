@@ -106,4 +106,4 @@ if __name__ == "__main__":
     main(args)  # Pass the entire args object to the main function
 
 
-#python utils/get_measure_embed.py --task "slcp_distractors" --measure "c2st" --num_training 300000 --method "NPE" --cdim 10
+#python utils/get_measure_embed.py --task "slcp_distractors" --measure "c2st" --num_training 1000000 --method "NPE" --cdim 10
