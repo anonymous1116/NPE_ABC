@@ -11,7 +11,7 @@ from help_functions import UnifSample, param_box, truncated_mvn_sample, ABC_rej2
 import matplotlib.pyplot as plt
 from pathlib import Path
 from sbi.analysis import pairplot
-from NPE_training.NPE_run_embed import EmbeddingNet, LinearEmbedding, GatedLinearEmbedding
+from NPE_training.NPE_run_embed import EmbeddingNet, LinearEmbedding
 
 def main(args):
     seed = args.seed
