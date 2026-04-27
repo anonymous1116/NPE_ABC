@@ -30,7 +30,11 @@ def main(args):
     simulators = Simulators(args.task)
     bounds = Bounds(args.task)
     
-    chunk_size = 50_000_000
+    if args.task in ["slcp_distractors"]:
+        chunk_size = 10_000_000
+    else:
+        chunk_size = 50_000_000
+    
     num_chunks = L // chunk_size
     
     start_time = time.time()
