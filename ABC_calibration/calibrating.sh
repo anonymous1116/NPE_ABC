@@ -32,7 +32,7 @@ L=1000000000
 task="slcp_distractors"
 num_training=1000000 
 tol=1e-5
-
+cdim=10
 # Run the calibrate_amor.py
 x0_ind=$((SLURM_ARRAY_TASK_ID % 10)) 
 
@@ -50,7 +50,6 @@ echo "[$(date)] Starting job: x0_ind=$x0_ind, seed=$seed, L=$L"
 
 #python ABC_calibration/calibrating_flow.py --x0_ind 1 --seed 1 --L 10000000 --task "my_five_twomoons_err2" --num_training 100000 --tol 1e-3
 
-cdim=10
 python ABC_calibration/calibrating_flow_reduce_dim.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol --cdim $cdim
 
 echo "[$(date)] Job complete: x0_ind=$x0_ind, seed=$seed"
