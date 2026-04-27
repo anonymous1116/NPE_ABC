@@ -108,4 +108,4 @@ if __name__ == "__main__":
     main(args)  # Pass the entire args object to the main function
 
 
-#python utils/evaluate.py --task "slcp_distractors" --measure "c2st" --num_training 1000000 --method "NPE" --cdim 10
+#python utils/evaluate.py --task "slcp_distractors" --measure "c2st" --num_training 1000000 --method "NPE" --cdim 10 --embed True

@@ -68,4 +68,4 @@ if __name__ == "__main__":
     run_similiarity(args.task, args.measure, args.x0_ind, args.seed, args.post_n_samples, args.num_training, args.cond_den, args.cdim)
 
 
-#python utils/get_measure_embed.py --task "slcp_distractors" --measure "c2st" --num_training 1000 --x0_ind 1 --seed 1 --cdim 10
+#python utils/evaluate.py --task "slcp_distractors" --measure "c2st" --num_training 1000000 --cdim 5 --embed True
