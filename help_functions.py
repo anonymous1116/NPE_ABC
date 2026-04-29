@@ -355,7 +355,7 @@ def forward_from_theta_test(
     density_estimator,
     x_b,                    # [B, x_dim]
     theta_test,             # [N, theta_dim]
-    chunk_elems=231072,
+    chunk_elems=1231072,
     verbose=True,
     logger=None,
     log_every=10,
