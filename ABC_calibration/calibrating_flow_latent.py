@@ -57,7 +57,7 @@ def main(args):
     NABC_results = []
     
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
+    print(f"Device: {device}", flush=True)
     priors = Priors(args.task)
     true_posteriors = true_Posteriors(args.task)
     simulators = Simulators(args.task)
