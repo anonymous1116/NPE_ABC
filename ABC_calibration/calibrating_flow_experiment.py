@@ -29,7 +29,7 @@ def main(args):
     simulators = Simulators(args.task)
     bounds = Bounds(args.task)
     
-    if args.task in ["slcp_distractors"]:
+    if args.task in ["slcp_distractors", "slcp"]:
         chunk_size = 10_000_000
     else:
         chunk_size = 50_000_000
