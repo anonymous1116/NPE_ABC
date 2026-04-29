@@ -21,7 +21,7 @@ def WABC_rejection(x0, X_cal, tol, density_estimator, device):
     with torch.no_grad():
         theta_test, _ = transform.inverse(Z_init.to(device), context = embed(x0.expand((Z_init.size(0),x0.size(1))).to(device)))
 
-    Z_test = forward_from_theta_test(density_estimator, X_cal, theta_test)
+    Z_test = forward_from_theta_test(density_estimator, X_cal, theta_test, device=device)
     
     mean_test = torch.mean(Z_test,dim =0)
     covs_test = covs_chunked(Z_test)
