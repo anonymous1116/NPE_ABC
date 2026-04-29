@@ -13,7 +13,7 @@ from simulator import Priors, Simulators, Bounds, observation_lists, true_Poster
 from help_functions import UnifSample, param_box, truncated_mvn_sample, ABC_rej2, forward_from_theta_test, eigen_chunked
 
 def WABC_rejection(x0, X_cal, tol, density_estimator, device, num_samples=1000):
-    Z_init = torch.randn((num_samples,10))
+    Z_init = torch.randn((num_samples,X_cal.size(1)))
     density_estimator_npe_gpu = density_estimator.to(device).eval()
     flow = density_estimator_npe_gpu.net
     transform=flow._transform
@@ -224,4 +224,4 @@ if __name__ == "__main__":
     print(f"cond_den: {args.cond_den}")
 
 
-#python ABC_calibration/calibrating_flow_latent.py --x0_ind 1 --seed 1 --task "bernoulli_glm2" --num_training 1000000 --L 100000 --tol 1e-1
+#python ABC_calibration/calibrating_flow_latent.py --x0_ind 1 --seed 1 --task "slcp" --num_training 1000000 --L 100000 --tol 1e-1
