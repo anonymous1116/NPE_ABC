@@ -7,7 +7,7 @@ import time
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from sbibm.metrics.c2st import c2st
 from simulator import Priors, Simulators, Bounds, observation_lists, true_Posteriors
-from help_functions import UnifSample, param_box, truncated_mvn_sample, ABC_rej2, forward_from_Z_chunked, covs_chunked
+from help_functions import UnifSample, param_box, truncated_mvn_sample, ABC_rej2, inverse_from_Z_chunked, covs_chunked
 import matplotlib.pyplot as plt
 from pathlib import Path
 from sbi.analysis import pairplot
@@ -106,7 +106,7 @@ def main(args):
     X_abc = X_abc.to(device)       # [B, x_dim]
     
     # 4) Now call your fast function (or sbi’s sample_batched) on GPU
-    samples_all = forward_from_Z_chunked(
+    samples_all = inverse_from_Z_chunked(
         density_estimator_npe_gpu, 
         X_abc,
         Y_abc.size(1),
@@ -118,7 +118,7 @@ def main(args):
     covs_X = covs_X
     print(covs_X)
 
-    samples_GPU = forward_from_Z_chunked(density_estimator_npe_gpu, x0, Y_abc.size(1), 50000)
+    samples_GPU = inverse_from_Z_chunked(density_estimator_npe_gpu, x0, Y_abc.size(1), 50000)
     samples_GPU = samples_GPU.squeeze(1).cpu()
     mean_obs = torch.mean(samples_GPU,0)
     cov_obs = torch.cov(samples_GPU.T)

@@ -259,7 +259,7 @@ def truncated_mvn_log_prob(x, mean, std, lower, upper):
     return log_prob_per_dim.sum(dim=-1)  # shape (N,)
 
 @torch.no_grad()
-def forward_from_Z_chunked(
+def inverse_from_Z_chunked(
     density_estimator,
     x_b,                    # [B, x_dim]
     theta_dim,
@@ -348,6 +348,98 @@ def forward_from_Z_chunked(
 
     theta = theta_flat.reshape(N, B, theta_dim)
     return theta
+
+
+@torch.no_grad()
+def forward_from_Z_chunked(
+    density_estimator,
+    x_b,                    # [B, x_dim]
+    theta_test,
+    chunk_elems=231072,     # rows of (N*B) per chunk
+    verbose=True,           # turn on/off prints
+    logger=None,            # optional: a logging.Logger
+    log_every=10,            # print every k chunks
+):
+    def log(msg):
+        if not verbose and logger is None:
+            return
+        if logger is not None:
+            logger.info(msg)
+        else:
+            print(msg)
+    density_estimator.eval()
+    flow = density_estimator.net
+    flow.eval()
+    
+    N, theta_dim = theta_test.size()
+     
+    
+    transform = flow._transform
+    embed = flow._embedding_net
+    
+    device = next(flow.parameters()).device
+    x_b = x_b.to(device)
+    
+    with torch.no_grad():    
+        context = embed(x_b)                     # [B, context_dim]
+    B = context.shape[0]
+    ctx_flat = context.unsqueeze(0).expand(N, B, -1).reshape(N * B, context.shape[-1])
+    theta_test_flat = theta_test.unsqueeze(1).expand(-1,B,-1).reshape(N*B,theta_test.shape[-1])
+    total = N * B
+    n_chunks = math.ceil(total / chunk_elems)
+
+    Z_flat = torch.empty(total, theta_dim, device=device, dtype=x_b.dtype)
+    
+    if device.type == "cuda":
+        torch.cuda.synchronize()
+        start_mem = torch.cuda.memory_allocated(device)
+    t0 = time.perf_counter()
+
+    log(f"[start] device={device} | total_rows={total} (= N*B = {N}*{B}) | "
+        f"theta_dim={theta_dim} | context_dim={context.shape[-1]} | "
+        f"chunk_elems={chunk_elems} | n_chunks={n_chunks}")
+
+    
+    processed = 0
+    for ci in range(n_chunks):
+        start = ci * chunk_elems
+        end   = min(start + chunk_elems, total)
+        rows  = end - start
+
+        t_chunk0 = time.perf_counter()
+        ctx_chunk = ctx_flat[start:end].contiguous()    # [rows, context_dim]
+        theta_test_chunk = theta_test_flat[start:end].contiguous()
+        with torch.no_grad():
+            z_chunk, _ = transform.forward(theta_test_chunk, context=ctx_chunk)
+
+        Z_flat[start:end] = z_chunk
+
+        if device.type == "cuda":
+            torch.cuda.synchronize()
+        t_chunk1 = time.perf_counter()
+
+        processed += rows
+        if (ci % log_every) == 0:
+            if device.type == "cuda":
+                cur_mem = torch.cuda.memory_allocated(device)
+                max_mem = torch.cuda.max_memory_allocated(device)
+                mem_str = f"mem(cur={cur_mem/1e6:.1f}MB, max={max_mem/1e6:.1f}MB, +{(cur_mem-start_mem)/1e6:.1f}MB)"
+            else:
+                mem_str = "mem(cpu)"
+
+            log(f"[chunk {ci+1}/{n_chunks}] rows={rows}, "
+                f"range=[{start}:{end}) | "
+                f"elapsed={t_chunk1 - t_chunk0:.3f}s | "
+                f"progress={processed}/{total} ({100*processed/total:.1f}%) | {mem_str}")
+
+    if device.type == "cuda":
+        torch.cuda.synchronize()
+    t1 = time.perf_counter()
+    log(f"[forward done] total_time={t1 - t0:.3f}s | throughput={(processed/(t1-t0))/1e6:.2f}M rows/s")
+
+    Z_gen = Z_flat.reshape(N, B, theta_dim)
+    return Z_gen
+
 
 def covs_chunked(MAT, chunk=1000):
     N = MAT.shape[0]
