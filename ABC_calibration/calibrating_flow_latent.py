@@ -21,7 +21,7 @@ def WABC_rejection(x0, X_cal, tol, density_estimator, device):
     with torch.no_grad():
         theta_test, _ = transform.inverse(Z_init.to(device), context = embed(x0.expand((Z_init.size(0),x0.size(1))).to(device)))
 
-    Z_test = forward_from_theta_test(density_estimator, X_cal, theta_test, device=device)
+    Z_test = forward_from_theta_test(density_estimator, X_cal, theta_test)
     
     mean_test = torch.mean(Z_test,dim =0)
     covs_test = covs_chunked(Z_test)
@@ -88,6 +88,7 @@ def main(args):
         saved_data = pickle.load(f)
     density_estimator_npe = saved_data["density_estimator"]
     density_estimator_npe_gpu = density_estimator_npe.to(device).eval()
+
     flow = density_estimator_npe_gpu.net
     transform=flow._transform
     embed = flow._embedding_net
