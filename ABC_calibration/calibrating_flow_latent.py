@@ -82,7 +82,10 @@ def main(args):
         saved_data = pickle.load(f)
     density_estimator_npe = saved_data["density_estimator"]
     density_estimator_npe_gpu = density_estimator_npe.to(device).eval()
-
+    flow = density_estimator_npe_gpu.net
+    transform=flow._transform
+    embed = flow._embedding_net
+    
     Z_init = torch.randn((10000,10))
     with torch.no_grad():
         theta_test, _ = transform.inverse(Z_init.to(device), context = embed(x0.expand((Z_init.size(0),x0.size(1))).to(device)))
