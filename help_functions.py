@@ -380,7 +380,7 @@ def forward_from_theta_test(
 
     transform = flow._transform
     embed = flow._embedding_net
-
+    del density_estimator, flow
     context = embed(x_b)                  # [B, context_dim]
     B, ctx_dim = context.shape
 
@@ -447,3 +447,17 @@ def covs_chunked(MAT, chunk=1000):
         cov_chunk = torch.einsum('nmd,nme->mde', xc, xc) / (N - 1)  # (chunk,2,2)
         covs_list.append(cov_chunk)
     return torch.cat(covs_list, dim=0)       # (M, 2, 2)
+
+def eigen_chunked(MAT, chunk=1000):
+    N = MAT.shape[0]
+    mu = MAT.mean(dim=0, keepdim=True)         # (1, M, p)
+    dist_list = []
+    for s in range(0, MAT.shape[1], chunk):
+        e = s + chunk
+        xc = MAT[:, s:e, :] - mu[:, s:e, :]    # (N, chunk, p)
+        cov_chunk = torch.einsum('nmd,nme->mde', xc, xc) / (N - 1)  # (chunk,p,p)
+        L, _ = torch.linalg.eigh(cov_chunk)          # [B, p]
+        L_sqrt = L.clamp(min=0).sqrt()            # [B, p]
+        frob_sq = ((L_sqrt - 1) ** 2).sum(dim=-1) # [B]
+        dist_list.append(frob_sq)
+    return torch.cat(dist_list)       # (M, 2, 2)

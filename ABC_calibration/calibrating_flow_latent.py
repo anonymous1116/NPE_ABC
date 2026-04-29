@@ -10,7 +10,7 @@ from sbi.analysis import pairplot
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from sbibm.metrics.c2st import c2st
 from simulator import Priors, Simulators, Bounds, observation_lists, true_Posteriors, task_benchmark
-from help_functions import UnifSample, param_box, truncated_mvn_sample, ABC_rej2, forward_from_theta_test, covs_chunked
+from help_functions import UnifSample, param_box, truncated_mvn_sample, ABC_rej2, forward_from_theta_test, eigen_chunked
 
 def WABC_rejection(x0, X_cal, tol, density_estimator, device, num_samples=1000):
     Z_init = torch.randn((num_samples,10))
@@ -26,12 +26,7 @@ def WABC_rejection(x0, X_cal, tol, density_estimator, device, num_samples=1000):
     Z_test = forward_from_theta_test(density_estimator, X_cal, theta_test)
     
     mean_test = torch.mean(Z_test,dim =0)
-    covs_test = covs_chunked(Z_test)
-
-    L, _ = torch.linalg.eigh(covs_test)          # [B, p]
-    L_sqrt = L.clamp(min=0).sqrt()            # [B, p]
-    frob_sq = ((L_sqrt - 1) ** 2).sum(dim=-1) # [B]
-        
+    frob_sq = eigen_chunked(Z_test)
 
     W_distances = torch.sqrt((mean_test ** 2 + frob_sq))
     # Determine threshold distance using top-k rather than sorting the entire tensor
