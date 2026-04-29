@@ -161,7 +161,7 @@ def main(args):
     
     elapsed_time = end_time - start_time  # Calculate elapsed time
     
-    print("NABC sample size: ", new_theta.size())
+    print("TABC sample size: ", new_theta.size())
     results_size = min(10_000, new_theta.size(0))
 
     tmp = c2st(post_sample[:results_size].cpu(), new_theta[:results_size] )
