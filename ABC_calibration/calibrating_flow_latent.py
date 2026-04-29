@@ -12,12 +12,14 @@ from sbibm.metrics.c2st import c2st
 from simulator import Priors, Simulators, Bounds, observation_lists, true_Posteriors, task_benchmark
 from help_functions import UnifSample, param_box, truncated_mvn_sample, ABC_rej2, forward_from_theta_test, covs_chunked
 
-def WABC_rejection(x0, X_cal, tol, density_estimator, device):
-    Z_init = torch.randn((10000,10))
+def WABC_rejection(x0, X_cal, tol, density_estimator, device, num_samples=1000):
+    Z_init = torch.randn((num_samples,10))
     density_estimator_npe_gpu = density_estimator.to(device).eval()
     flow = density_estimator_npe_gpu.net
     transform=flow._transform
     embed = flow._embedding_net
+
+    del flow, density_estimator_npe_gpu
     with torch.no_grad():
         theta_test, _ = transform.inverse(Z_init.to(device), context = embed(x0.expand((Z_init.size(0),x0.size(1))).to(device)))
 
@@ -63,10 +65,7 @@ def main(args):
     simulators = Simulators(args.task)
     bounds = Bounds(args.task)
     
-    if args.task in ["slcp_distractors"]:
-        chunk_size = 10_000_000
-    else:
-        chunk_size = 50_000_000
+    chunk_size = 1_000_000
     num_chunks = L // chunk_size
     
     start_time = time.time()
@@ -94,18 +93,110 @@ def main(args):
     embed = flow._embedding_net
     
     
-    index_ABC = WABC_rejection(x0, X_cal, 1e-2, density_estimator_npe, device)
+    #index_ABC = WABC_rejection(x0, X_cal, 1e-2, density_estimator_npe, device, num_samples=500)
+    index_ABC = ABC_rej2(x0, X_cal, 1e-2, device)
+    
     X_cal, Y_cal = X_cal[index_ABC], Y_cal[index_ABC]
+
+    with torch.no_grad():
+        tmp, _ =  transform.forward(Y_cal.to(device), context = embed(X_cal.to(device)) )
+        adj, _ = transform.inverse(tmp, context = embed(x0.expand((tmp.size(0),x0.size(1))).to(device)))    
+    adj = adj.cpu()
+
+    X_abc = []
+    Y_abc = []
+    
+    if bounds is not None:
+        adj = torch.clamp(adj, min = torch.tensor(bounds)[:,0], max = torch.tensor(bounds)[:,1])
+
+    with torch.no_grad():
+        max_vals = torch.max(adj,0).values
+        min_vals = torch.min(adj,0).values
+    
+    priors_mean = torch.zeros(10)
+    priors_std = torch.ones(10) * np.sqrt(2)
+
+    print("max_vals:", max_vals)   
+    print("min_vals:", min_vals)
+
 
     print(X_cal.size())
 
-    #flow = density_estimator_npe_gpu.net
-    #transform=flow._transform
-    #embed = flow._embedding_net
-    #with torch.no_grad():
-    #    tmp, _ =  transform.forward(Y_cal.to(device), context = embed(X_cal.to(device)) )
-    #    adj, _ = transform.inverse(tmp, context = embed(x0.expand((tmp.size(0),x0.size(1))).to(device)))    
-    #adj = adj.cpu()
+    for i in range(num_chunks + 1): 
+        start = i * chunk_size
+        end = (i + 1) * chunk_size if (i + 1) * chunk_size < L else L
+        nums = end-start
+
+        if nums == 0:
+            break
+        if args.task == "bernoulli_glm2":
+            Y_chunk = truncated_mvn_sample(nums, priors_mean, priors_std, min_vals, max_vals)
+        else:
+            Y_chunk = param_box(UnifSample(bins = 10), adj, num=nums)
+        
+        X_chunk = simulators(Y_chunk)
+        
+        index_ABC = WABC_rejection(x0, X_chunk, args.tol, density_estimator_npe, device, num_samples=500)
+    
+        X_chunk, Y_chunk = X_chunk[index_ABC], Y_chunk[index_ABC]
+        X_abc.append(X_chunk)
+        Y_abc.append(Y_chunk)
+        print(f"{i}th iteration out of {num_chunks}", flush = True)
+
+    X_abc = torch.cat(X_abc)
+    Y_abc = torch.cat(Y_abc)    
+
+    print("X_abc size", X_abc.size())
+
+    if args.task in task_benchmark:
+        post_sample = true_posteriors(j = args.x0_ind+1)
+    elif args.task in ["my_five_twomoons"]:    
+        post_sample = torch.load(f"../depot_hyun/hyun/NPE_ABC/seeds/my_five_twomoons_post_{args.x0_ind+1}.pt")
+    else:
+        post_sample = true_posteriors(torch.tensor(x0), n_samples=10_000, bounds=bounds)
+    
+    with torch.no_grad():
+        tmp, _ =  transform.forward(Y_abc.to(device), context = embed(X_abc.to(device)) )
+        new_theta, _ = transform.inverse(tmp, context = embed(x0.expand((tmp.size(0),x0.size(1))).to(device)))    
+
+    new_theta = new_theta.cpu()
+    # 4) Now call your fast function (or sbi’s sample_batched) on GPU
+    end_time = time.time()
+    
+    
+    elapsed_time = end_time - start_time  # Calculate elapsed time
+    
+    print("NABC sample size: ", new_theta.size())
+    results_size = min(10_000, new_theta.size(0))
+
+    tmp = c2st(post_sample[:results_size].cpu(), new_theta[:results_size] )
+    print(tmp)    
+    
+    NABC_results.append(tmp)
+    
+    sci_str = format(args.tol, ".0e")
+    print(sci_str)  # Output: '1e-02'
+    
+
+    output_dir = f"../depot_hyun/hyun/NPE_ABC/flow_c2st_results/{args.task}_context/J_{int(args.num_training/1000)}K/{int(args.L/1_000_000)}M_eta{sci_str}"
+    ## Create the directory if it doesn't exist
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+        print(f"Directory '{output_dir}' created.")
+    else:
+        print(f"Directory '{output_dir}' already exists.")
+
+    # Save to output_dir
+    pairplot(post_sample, figsize=(6,6), limits = bounds)
+    plt.savefig(Path(output_dir) / f"x0{args.x0_ind}_seed{args.seed}_reference.png")
+    plt.close()
+
+    pairplot(new_theta[:10000], figsize=(6,6), limits = bounds)
+    plt.savefig(Path(output_dir) / f"x0{args.x0_ind}_seed{args.seed}_calibrated.png")
+    plt.close()
+    
+    torch.save(NABC_results, f"{output_dir}/x0{args.x0_ind}_seed{args.seed}.pt")
+    torch.save([torch.cuda.get_device_name(0), elapsed_time], f"{output_dir}/x0{args.x0_ind}_seed{args.seed}_info.pt")
 
     #
 def get_args():
