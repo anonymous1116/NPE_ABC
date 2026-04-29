@@ -229,4 +229,4 @@ if __name__ == "__main__":
     print(f"cond_den: {args.cond_den}")
 
 
-#python ABC_calibration/calibrating_flow_latent.py --x0_ind 1 --seed 1 --task "bernoulli_glm2" --num_training 1000000
+#python ABC_calibration/calibrating_flow_latent.py --x0_ind 1 --seed 1 --task "bernoulli_glm2" --num_training 1000000 --L 1000000 --tol 1e-2 
