@@ -29,7 +29,7 @@ seed=$((SLURM_ARRAY_TASK_ID / 10 + 1))
 #L=100000000
 
 L=1000000
-task="bernoulli_glm2"
+task="slcp"
 num_training=1000000 
 tol=1e-2
 cdim=10
