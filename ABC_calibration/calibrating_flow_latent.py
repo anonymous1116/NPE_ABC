@@ -25,10 +25,10 @@ def WABC_rejection(x0, X_cal, tol, density_estimator, device, num_samples=1000):
 
     Z_test = forward_from_theta_test(density_estimator, X_cal, theta_test)
     
-    mean_test = torch.mean(Z_test,dim =0)
+    mean_test = torch.sum(torch.mean(Z_test,dim =0) ** 2, 1)
     frob_sq = eigen_chunked(Z_test)
 
-    W_distances = torch.sqrt((mean_test ** 2 + frob_sq))
+    W_distances = torch.sqrt((mean_test + frob_sq))
     # Determine threshold distance using top-k rather than sorting the entire tensor
     num = X_cal.size(0)
     nacc = int(num * tol)
@@ -224,4 +224,4 @@ if __name__ == "__main__":
     print(f"cond_den: {args.cond_den}")
 
 
-#python ABC_calibration/calibrating_flow_latent.py --x0_ind 1 --seed 1 --task "bernoulli_glm2" --num_training 1000000 --L 1000000 --tol 1e-2 
+#python ABC_calibration/calibrating_flow_latent.py --x0_ind 1 --seed 1 --task "bernoulli_glm2" --num_training 1000000 --L 100000 --tol 1e-1
