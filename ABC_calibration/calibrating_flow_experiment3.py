@@ -4,15 +4,13 @@ import os, sys, pickle
 import argparse
 import sbibm
 import time
+import matplotlib.pyplot as plt
+from pathlib import Path
+from sbi.analysis import pairplot
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from sbibm.metrics.c2st import c2st
 from simulator import Priors, Simulators, Bounds, observation_lists, true_Posteriors, task_benchmark
 from help_functions import UnifSample, param_box, truncated_mvn_sample, ABC_rej2
-import matplotlib.pyplot as plt
-from pathlib import Path
-from sbi.analysis import pairplot
-
-# Without resampling
 
 def main(args):
     seed = args.seed
@@ -21,6 +19,7 @@ def main(args):
     torch.manual_seed(seed)
     np.random.seed(seed)
 
+    L = args.L
     NABC_results = []
     
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -29,7 +28,13 @@ def main(args):
     true_posteriors = true_Posteriors(args.task)
     simulators = Simulators(args.task)
     bounds = Bounds(args.task)
-     
+    
+    if args.task in ["slcp_distractors"]:
+        chunk_size = 10_000_000
+    else:
+        chunk_size = 50_000_000
+    num_chunks = L // chunk_size
+    
     start_time = time.time()
     x0 = observation_lists(args.task)[args.x0_ind]
 
@@ -39,9 +44,14 @@ def main(args):
         
     chunk_size_cal = 10_000
     print("x0_size", x0.size(), flush = True)
+    #print("X_cal size", X_cal.size(), flush = True)
     
-    Y_cal = priors.sample((chunk_size_cal,))
+    Y_cal = priors.sample((1_000_000,))
     X_cal = simulators(Y_cal)
+
+
+    index_ABC = ABC_rej2(x0, X_cal, 1e-2, device)
+    X_cal, Y_cal = X_cal[index_ABC], Y_cal[index_ABC]
 
     output_file_path = os.path.join(f'../depot_hyun/hyun/NPE_ABC/nets/{args.task}/J_{int(args.num_training/1000)}K/{args.task}_{seed}_{args.cond_den}.pkl')
     with open(output_file_path, 'rb') as f:
@@ -56,7 +66,50 @@ def main(args):
         adj, _ = transform.inverse(tmp, context = embed(x0.expand((tmp.size(0),x0.size(1))).to(device)))    
     adj = adj.cpu()
 
-    X_abc = torch.clone(X_cal); Y_abc = torch.clone(adj)
+    X_abc = []
+    Y_abc = []
+    
+    if bounds is not None:
+        adj = torch.clamp(adj, min = torch.tensor(bounds)[:,0], max = torch.tensor(bounds)[:,1])
+
+    with torch.no_grad():
+        max_vals = torch.max(adj,0).values
+        min_vals = torch.min(adj,0).values
+    
+    priors_mean = torch.zeros(10)
+    priors_std = torch.ones(10) * np.sqrt(2)
+
+    print("max_vals:", max_vals)   
+    print("min_vals:", min_vals)
+
+    for i in range(num_chunks + 1): 
+        start = i * chunk_size
+        end = (i + 1) * chunk_size if (i + 1) * chunk_size < L else L
+        nums = end-start
+
+        if nums == 0:
+            break
+        if args.task == "bernoulli_glm2":
+            Y_chunk = truncated_mvn_sample(nums, priors_mean, priors_std, min_vals, max_vals)
+        else:
+            Y_chunk = param_box(UnifSample(bins = 10), adj, num=nums)
+        
+        X_chunk = simulators(Y_chunk)
+        
+        x0_embed = embed(x0.to(device))
+        X_chunk_embed = embed(X_chunk.to(device))
+    
+
+        index_ABC = ABC_rej2(x0_embed, X_chunk_embed, args.tol, device)
+        X_chunk, Y_chunk = X_chunk[index_ABC], Y_chunk[index_ABC]
+        X_abc.append(X_chunk)
+        Y_abc.append(Y_chunk)
+        print(f"{i}th iteration out of {num_chunks}", flush = True)
+
+    X_abc = torch.cat(X_abc)
+    Y_abc = torch.cat(Y_abc)    
+
+    print("X_abc size", X_abc.size())
 
     if args.task in task_benchmark:
         post_sample = true_posteriors(j = args.x0_ind+1)
@@ -65,20 +118,29 @@ def main(args):
     else:
         post_sample = true_posteriors(torch.tensor(x0), n_samples=10_000, bounds=bounds)
     
+    with torch.no_grad():
+        tmp, _ =  transform.forward(Y_abc.to(device), context = embed(X_abc.to(device)) )
+        new_theta, _ = transform.inverse(tmp, context = embed(x0.expand((tmp.size(0),x0.size(1))).to(device)))    
+
+    new_theta = new_theta.cpu()
     end_time = time.time()
     
     
     elapsed_time = end_time - start_time  # Calculate elapsed time
     
-    print("NABC sample size: ", Y_abc.size())
-    results_size = min(10_000, Y_abc.size(0))
+    print("NABC sample size: ", new_theta.size())
+    results_size = min(10_000, new_theta.size(0))
 
-    tmp = c2st(post_sample[:results_size].cpu(), Y_abc[:results_size] )
+    tmp = c2st(post_sample[:results_size].cpu(), new_theta[:results_size] )
     print(tmp)    
     
     NABC_results.append(tmp)
     
-    output_dir = f"../depot_hyun/hyun/NPE_ABC/flow_c2st_results_exp2/{args.task}_context/J_{int(args.num_training/1000)}K"
+    sci_str = format(args.tol, ".0e")
+    print(sci_str)  # Output: '1e-02'
+    
+
+    output_dir = f"../depot_hyun/hyun/NPE_ABC/flow_c2st_results/{args.task}_context/J_{int(args.num_training/1000)}K/{int(args.L/1_000_000)}M_eta{sci_str}"
     ## Create the directory if it doesn't exist
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -91,7 +153,7 @@ def main(args):
     plt.savefig(Path(output_dir) / f"x0{args.x0_ind}_seed{args.seed}_reference.png")
     plt.close()
 
-    pairplot(Y_abc[:10000], figsize=(6,6), limits = bounds)
+    pairplot(new_theta[:10000], figsize=(6,6), limits = bounds)
     plt.savefig(Path(output_dir) / f"x0{args.x0_ind}_seed{args.seed}_calibrated.png")
     plt.close()
     
@@ -104,10 +166,14 @@ def get_args():
                         help = "See number (default: 1)")
     parser.add_argument("--seed", type = int, default = 1,
                         help = "See number (default: 1)")
+    parser.add_argument("--L", type = int, default = 10_000_000,
+                        help = "Calibration data size (default: 10M)")
     parser.add_argument('--task', type=str, default='twomoons', 
                         help='Simulation type: Lapl, MoG')
     parser.add_argument("--num_training", type=int, default=100_000, 
                         help="Number of training data of NPE (default: 100_000)")
+    parser.add_argument("--tol", type=float, default=1e-4,
+                    help="Tolerance value for ABC (any positive float, default: 1e-4 but less than 1e-2)")
     parser.add_argument('--cond_den', type=str, default='nsf', 
                         help='Conditional density estimator type: mdn, maf, nsf')
     return parser.parse_args()
@@ -117,6 +183,8 @@ if __name__ == "__main__":
     main(args)
     print(f"x0_ind: {args.x0_ind}")
     print(f"seed: {args.seed}")
+    print(f"L: {args.L}")
     print(f"task: {args.task}")
     print(f"num_training: {args.num_training}")
+    print(f"tol: {args.tol}")
     print(f"cond_den: {args.cond_den}")
