@@ -351,14 +351,14 @@ def inverse_from_Z_chunked(
 
 
 @torch.no_grad()
-def forward_from_Z_chunked(
+def forward_from_theta_test(
     density_estimator,
     x_b,                    # [B, x_dim]
-    theta_test,
-    chunk_elems=231072,     # rows of (N*B) per chunk
-    verbose=True,           # turn on/off prints
-    logger=None,            # optional: a logging.Logger
-    log_every=10,            # print every k chunks
+    theta_test,             # [N, theta_dim]
+    chunk_elems=231072,
+    verbose=True,
+    logger=None,
+    log_every=10,
 ):
     def log(msg):
         if not verbose and logger is None:
@@ -367,78 +367,74 @@ def forward_from_Z_chunked(
             logger.info(msg)
         else:
             print(msg)
+
     density_estimator.eval()
     flow = density_estimator.net
     flow.eval()
-    
-    N, theta_dim = theta_test.size()
-     
-    
+
+    N, theta_dim = theta_test.shape
+    device = next(flow.parameters()).device
+
+    x_b = x_b.to(device)
+    theta_test = theta_test.to(device)
+
     transform = flow._transform
     embed = flow._embedding_net
-    
-    device = next(flow.parameters()).device
-    x_b = x_b.to(device)
-    
-    with torch.no_grad():    
-        context = embed(x_b)                     # [B, context_dim]
-    B = context.shape[0]
-    ctx_flat = context.unsqueeze(0).expand(N, B, -1).reshape(N * B, context.shape[-1])
-    theta_test_flat = theta_test.unsqueeze(1).expand(-1,B,-1).reshape(N*B,theta_test.shape[-1])
+
+    context = embed(x_b)                  # [B, context_dim]
+    B, ctx_dim = context.shape
+
     total = N * B
     n_chunks = math.ceil(total / chunk_elems)
 
-    Z_flat = torch.empty(total, theta_dim, device=device, dtype=x_b.dtype)
-    
-    if device.type == "cuda":
-        torch.cuda.synchronize()
-        start_mem = torch.cuda.memory_allocated(device)
-    t0 = time.perf_counter()
+    # Output stored chunk by chunk, never allocate [N*B, ...] upfront
+    Z_out = torch.empty(N, B, theta_dim, device=device, dtype=x_b.dtype)
 
-    log(f"[start] device={device} | total_rows={total} (= N*B = {N}*{B}) | "
-        f"theta_dim={theta_dim} | context_dim={context.shape[-1]} | "
+    log(f"[start] device={device} | N={N} | B={B} | total_rows={total} | "
+        f"theta_dim={theta_dim} | ctx_dim={ctx_dim} | "
         f"chunk_elems={chunk_elems} | n_chunks={n_chunks}")
 
-    
+    t0 = time.perf_counter()
     processed = 0
+
     for ci in range(n_chunks):
         start = ci * chunk_elems
         end   = min(start + chunk_elems, total)
         rows  = end - start
 
+        # Convert flat indices -> (n_idx, b_idx) without materializing full tensors
+        n_idx = torch.arange(start, end, device=device) // B   # [rows]
+        b_idx = torch.arange(start, end, device=device) % B    # [rows]
+
+        theta_chunk = theta_test[n_idx]   # [rows, theta_dim]  — index, no expand
+        ctx_chunk   = context[b_idx]      # [rows, ctx_dim]    — index, no expand
+
         t_chunk0 = time.perf_counter()
-        ctx_chunk = ctx_flat[start:end].contiguous()    # [rows, context_dim]
-        theta_test_chunk = theta_test_flat[start:end].contiguous()
         with torch.no_grad():
-            z_chunk, _ = transform.forward(theta_test_chunk, context=ctx_chunk)
-
-        Z_flat[start:end] = z_chunk
-
+            z_chunk, _ = transform.forward(theta_chunk, context=ctx_chunk)
+        # Write directly into the right slice of Z_out
+        Z_out.view(total, theta_dim)[start:end] = z_chunk
         if device.type == "cuda":
             torch.cuda.synchronize()
         t_chunk1 = time.perf_counter()
 
         processed += rows
-        if (ci % log_every) == 0:
+        if ci % log_every == 0:
             if device.type == "cuda":
-                cur_mem = torch.cuda.memory_allocated(device)
-                max_mem = torch.cuda.max_memory_allocated(device)
-                mem_str = f"mem(cur={cur_mem/1e6:.1f}MB, max={max_mem/1e6:.1f}MB, +{(cur_mem-start_mem)/1e6:.1f}MB)"
+                cur_mem  = torch.cuda.memory_allocated(device)
+                max_mem  = torch.cuda.max_memory_allocated(device)
+                mem_str  = f"mem(cur={cur_mem/1e6:.1f}MB, max={max_mem/1e6:.1f}MB)"
             else:
                 mem_str = "mem(cpu)"
-
-            log(f"[chunk {ci+1}/{n_chunks}] rows={rows}, "
-                f"range=[{start}:{end}) | "
-                f"elapsed={t_chunk1 - t_chunk0:.3f}s | "
+            log(f"[chunk {ci+1}/{n_chunks}] rows={rows} [{start}:{end}) | "
+                f"elapsed={t_chunk1-t_chunk0:.3f}s | "
                 f"progress={processed}/{total} ({100*processed/total:.1f}%) | {mem_str}")
 
-    if device.type == "cuda":
-        torch.cuda.synchronize()
     t1 = time.perf_counter()
-    log(f"[forward done] total_time={t1 - t0:.3f}s | throughput={(processed/(t1-t0))/1e6:.2f}M rows/s")
+    log(f"[done] total_time={t1-t0:.3f}s | "
+        f"throughput={(processed/(t1-t0))/1e6:.2f}M rows/s")
 
-    Z_gen = Z_flat.reshape(N, B, theta_dim)
-    return Z_gen
+    return Z_out  # [N, B, theta_dim]
 
 
 def covs_chunked(MAT, chunk=1000):

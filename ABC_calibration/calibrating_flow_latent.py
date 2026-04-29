@@ -10,13 +10,18 @@ from sbi.analysis import pairplot
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from sbibm.metrics.c2st import c2st
 from simulator import Priors, Simulators, Bounds, observation_lists, true_Posteriors, task_benchmark
-from help_functions import UnifSample, param_box, truncated_mvn_sample, ABC_rej2, forward_from_Z_chunked, covs_chunked
+from help_functions import UnifSample, param_box, truncated_mvn_sample, ABC_rej2, forward_from_theta_test, covs_chunked
 
-def WABC_rejection(x0, X_cal, tol, theta_test, density_estimator, device):
-    # 1) Compute distances on GPU
-    x0 = x0.to(device)
+def WABC_rejection(x0, X_cal, tol, density_estimator, device):
+    Z_init = torch.randn((10000,10))
+    density_estimator_npe_gpu = density_estimator.to(device).eval()
+    flow = density_estimator_npe_gpu.net
+    transform=flow._transform
+    embed = flow._embedding_net
+    with torch.no_grad():
+        theta_test, _ = transform.inverse(Z_init.to(device), context = embed(x0.expand((Z_init.size(0),x0.size(1))).to(device)))
 
-    Z_test = forward_from_Z_chunked(density_estimator, X_cal, theta_test)
+    Z_test = forward_from_theta_test(density_estimator, X_cal, theta_test)
     
     mean_test = torch.mean(Z_test,dim =0)
     covs_test = covs_chunked(Z_test)
@@ -34,8 +39,9 @@ def WABC_rejection(x0, X_cal, tol, theta_test, density_estimator, device):
     
     # Create mask and filter based on the threshold distance
     wt1 = (W_distances <= ds)
-    torch.cuda.empty_cache()
     # Select points within tolerance and return to CPU if needed
+    del density_estimator_npe_gpu, flow, transform, embed, Z_test, mean_test, covs_test, L, L_sqrt, frob_sq, W_distances
+    torch.cuda.empty_cache()
     return wt1.cpu()
 
     
@@ -86,11 +92,8 @@ def main(args):
     transform=flow._transform
     embed = flow._embedding_net
     
-    Z_init = torch.randn((10000,10))
-    with torch.no_grad():
-        theta_test, _ = transform.inverse(Z_init.to(device), context = embed(x0.expand((Z_init.size(0),x0.size(1))).to(device)))
-
-    index_ABC = WABC_rejection(x0, X_cal, 1e-2, theta_test, density_estimator_npe, device)
+    
+    index_ABC = WABC_rejection(x0, X_cal, 1e-2, density_estimator_npe, device)
     X_cal, Y_cal = X_cal[index_ABC], Y_cal[index_ABC]
 
     print(X_cal.size())
