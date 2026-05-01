@@ -42,6 +42,7 @@ def main(args):
             if tmp.ndim == 1:
                 tmp = torch.reshape(tmp, (1, tmp.size(0)))
             tmp = torch.cat([tmp, noise], dim = 0)
+            print(tmp)
             x0_list.append(tmp[0][permute].tolist())
 
         x0_list = torch.tensor(x0_list, dtype = torch.float32)
