@@ -211,6 +211,7 @@ def get_args():
                         help='Conditional density estimator type: mdn, maf, nsf')
     return parser.parse_args()
 
+
 if __name__ == "__main__":
     args = get_args()
     main(args)
