@@ -1,12 +1,12 @@
 #!/bin/bash
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
-#SBATCH --time=00:19:00
+#SBATCH --time=02:19:00
 #SBATCH --account=statdept
 #SBATCH --gpus-per-node=1
 #SBATCH --mem=170G
-#SBATCH --qos=normal
-#SBATCH --partition=a10
+#SBATCH --qos=standby
+#SBATCH --partition=a10,a100-80gb
 #SBATCH --array=0-99
 #SBATCH --output=ABC_calibration/log/output_log_%A_%a.out
 #SBATCH --error=ABC_calibration/log/error_log_%A_%a.txt
@@ -29,7 +29,7 @@ seed=$((SLURM_ARRAY_TASK_ID / 10 + 1))
 #L=100000000
 
 L=10000000
-task="slcp"
+task="bernoulli_glm2"
 num_training=1000000 
 tol=1e-3
 cdim=10
@@ -40,8 +40,8 @@ echo "[$(date)] Starting job: x0_ind=$x0_ind, seed=$seed, L=$L"
 
 #python ABC_calibration/calibrating_flow.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol
 #python ABC_calibration/calibrating_flow.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol
-#python ABC_calibration/calibrating_flow_latent.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol 
-python ABC_calibration/calibrating_flow_experiment.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol
+python ABC_calibration/calibrating_flow_latent.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol 
+#python ABC_calibration/calibrating_flow_experiment.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol
 #python ABC_calibration/calibrating_flow_experiment.py --x0_ind 1 --seed 1 --L 10000000 --task "slcp" --num_training 3_000_000 --tol 1e-3
 #python ABC_calibration/calibrating_flow_linear_embed.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol
 #python ABC_calibration/calibrating_flow_linear_embed.py --x0_ind 1 --seed 1 --L 10000000 --task "my_five_twomoons_err10" --num_training 1000000 --tol 1e-3

@@ -34,8 +34,6 @@ def main(args):
         current_dir = os.path.dirname(os.path.abspath(__file__))
         torch.save(x0_list, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/my_five_twomoons_err40_obs.pt")    
         print(x0_list)
-
-
     
     elif args.task == "mog_10":
         random.seed(2826)
