@@ -29,7 +29,7 @@ def main(args):
             if tmp.ndim == 1:
                 tmp = torch.reshape(tmp, (1, tmp.size(0)))
             tmp = torch.cat([tmp, noise], dim = 0)
-            tmp = tmp[0]
+            x0_list.append(tmp[0].tolist())
         x0_list = torch.tensor(x0_list, dtype = torch.float32)
         current_dir = os.path.dirname(os.path.abspath(__file__))
         torch.save(x0_list, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/my_five_twomoons_err40_obs.pt")    
