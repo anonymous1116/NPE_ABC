@@ -28,20 +28,21 @@ def main(args):
         
         random.seed(2826)
         torch.manual_seed(2826)
+        # Posteriors
+        bounds = Bounds("my_five_twomoons")
+        true_posterior = true_Posteriors("my_five_twomoons")
+        
         x0_list = []
         for j in range(10):
             noise = torch.randn( (1,10)) * 2.0 
             tmp = observation_lists("my_five_twomoons")[j]
 
-            # Posteriors
-            bounds = Bounds("my_five_twomoons")
-            true_posterior = true_Posteriors("my_five_twomoons")
             post_sample = true_posterior(torch.tensor(tmp)[None, :], n_samples=10_000, bounds=bounds)
             torch.save(post_sample, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/my_five_twomoons_err40_post_{j+1}.pt")
             print(tmp)
             if tmp.ndim == 1:
                 tmp = torch.reshape(tmp, (1, tmp.size(0)))
-            tmp = torch.cat([tmp, noise], dim = 0)
+            tmp = torch.cat([tmp, noise])
             print(tmp)
             x0_list.append(tmp[0][permute].tolist())
 
