@@ -41,7 +41,7 @@ def main(args):
             torch.save(post_sample, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/my_five_twomoons_err40_post_{j+1}.pt")
             tmp = torch.cat([tmp, noise])
             print(tmp)
-            x0_list.append(tmp[0][permute].tolist())
+            x0_list.append(tmp[permute].tolist())
 
         x0_list = torch.tensor(x0_list, dtype = torch.float32)
         current_dir = os.path.dirname(os.path.abspath(__file__))
