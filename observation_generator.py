@@ -25,6 +25,7 @@ def main(args):
         for j in range(10):
             noise = torch.randn( (1,10)) * 2.0 
             tmp = observation_lists("my_five_twomoons")[j]
+            print(tmp)
             if tmp.ndim == 1:
                 tmp = torch.reshape(tmp, (1, tmp.size(0)))
             tmp = torch.cat([tmp, noise], dim = 0)
