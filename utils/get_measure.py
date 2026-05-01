@@ -66,4 +66,4 @@ if __name__ == "__main__":
     run_similiarity(args.task, args.measure, args.x0_ind, args.seed, args.post_n_samples, args.num_training, args.cond_den, args.method)
 
 
-#python utils/get_measure.py --task "slcp" --measure "c2st" --x0_ind 1 --seed 1 --post_n_samples 10000 --num_training 1000 --cond_den "nsf" --method "NPE"
+#python utils/get_measure.py --task "my_five_twomoons_err40" --measure "c2st" --x0_ind 1 --seed 1 --post_n_samples 10000 --num_training 10000 --cond_den "nsf" --method "NPE"
