@@ -18,14 +18,13 @@ def main(args):
         current_dir = os.path.dirname(os.path.abspath(__file__))
         torch.save(x0_list, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/my_ten_twomoons_obs.pt")    
         print(x0_list)
-
     if args.task == "my_five_twomoons_err40":
         random.seed(2826)
         torch.manual_seed(2826)
         x0_list = []
         for j in range(10):
             noise = torch.randn( (1,10)) * 2.0 
-            tmp = observation_lists("my_five_twomoons_err40")[j]
+            tmp = observation_lists("my_five_twomoons")[j]
             if tmp.ndim == 1:
                 tmp = torch.reshape(tmp, (1, tmp.size(0)))
             tmp = torch.cat([tmp, noise], dim = 0)
@@ -35,6 +34,7 @@ def main(args):
         torch.save(x0_list, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/my_five_twomoons_err40_obs.pt")    
         print(x0_list)
     
+
     elif args.task == "mog_10":
         random.seed(2826)
         torch.manual_seed(2826)
