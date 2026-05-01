@@ -24,7 +24,7 @@ def main(args):
         permute = torch.randperm(50)
         current_dir = os.path.dirname(os.path.abspath(__file__))
         
-        torch.save(permute, f"{current_dir}/../NPE_ABC/utils/files/my_five_twomoons_err40_permutation.pt")
+        torch.save(permute, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/my_five_twomoons_err40_permutation.pt")
         
         random.seed(2826)
         torch.manual_seed(2826)

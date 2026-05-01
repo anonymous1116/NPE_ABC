@@ -561,7 +561,7 @@ def simulator_my_five_twomoons_err40(theta):
     # theta: N * 10 dimensions
     X = []
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    
+    permute = torch.load(f"{os.path.dirname(os.path.abspath(__file__))}/utils/files/permute.pt", weights_only = False).to(device)
     for i in range(5):
         tmp = torch.clone(theta[:, 2*i : (2*i + 2 )] )
         tmp2 = simulator_my_twomoons(tmp)
@@ -570,7 +570,7 @@ def simulator_my_five_twomoons_err40(theta):
     for _ in range(4):
         tmp = torch.randn( (batch_size,10), device = device) * 2.0 
         X.append(tmp.cpu())
-    return torch.cat(X, dim = 1)
+    return torch.cat(X, dim = 1)[permute]
 
 def simulator_slcp3(theta):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -627,6 +627,9 @@ def Simulators(task_name: str):
         return simulator_my_five_twomoons_err5
     elif task_name in ["my_five_twomoons_err10"]:
         return simulator_my_five_twomoons_err10
+    elif task_name in ["my_five_twomoons_err40"]:
+        return simulator_my_five_twomoons_err40
+    
     elif task_name in ["my_ten_twomoons"]:
         return simulator_my_ten_twomoons
     elif task_name in ["mog_10"]:
