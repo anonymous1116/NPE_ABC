@@ -57,7 +57,7 @@ def Priors(task_name: str):
     else:
         raise ValueError(f"Unknown task name for prior: {task_name}")
 
-task_benchmark = ["two_moons", "bernoulli_glm2", "slcp_summary_transform2", "double_slcp_summary_transform2", "mog_10", "slcp_distractors", "slcp"]
+task_benchmark = ["two_moons", "bernoulli_glm2", "slcp_summary_transform2", "double_slcp_summary_transform2", "mog_10", "slcp_distractors", "slcp", "my_five_twomoons_err40"]
     
 class true_Posteriors:
     def __init__(self, task):
@@ -156,6 +156,11 @@ class true_Posteriors:
         task = sbibm.get_task("gaussian_linear_uniform")  # See sbibm.get_available_tasks() for all tasks
         return task.get_reference_posterior_samples(num_observation=j)
     
+    def my_five_twomoons_err40(self, j):
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        post_sample = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/my_five_twomoons_err40_post_{j}.pt")    
+        return post_sample
+
     def slcp(self, j):
         try:
             # Get the directory of the current file (simulator.py)
