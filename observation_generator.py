@@ -2,7 +2,7 @@ import torch, argparse, sys, random
 import numpy as np
 import os, pickle
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
-from simulator import Simulators, observation_lists, MoG_posterior, Bounds
+from simulator import Simulators, observation_lists, MoG_posterior, Bounds, true_Posteriors
 
 def main(args):
     if args.task == "my_ten_twomoons":
@@ -19,19 +19,34 @@ def main(args):
         torch.save(x0_list, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/my_ten_twomoons_obs.pt")    
         print(x0_list)
     if args.task == "my_five_twomoons_err40":
+        #permunation
+        torch.manual_seed(2825)
+        permute = torch.randperm(50)
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        
+        torch.save(permute, f"{current_dir}/../NPE_ABC/utils/files/my_five_twomoons_err40_permutation.pt")
+        
         random.seed(2826)
         torch.manual_seed(2826)
         x0_list = []
         for j in range(10):
             noise = torch.randn( (1,10)) * 2.0 
             tmp = observation_lists("my_five_twomoons")[j]
+
+            # Posteriors
+            bounds = Bounds("my_five_twomoons")
+            true_posterior = true_Posteriors("my_five_twomoons")
+            post_sample = true_posterior(torch.tensor(tmp)[None, :], n_samples=10_000, bounds=bounds)
+            torch.save(post_sample, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/my_five_twomoons_err40_post_{j+1}.pt")
             print(tmp)
             if tmp.ndim == 1:
                 tmp = torch.reshape(tmp, (1, tmp.size(0)))
             tmp = torch.cat([tmp, noise], dim = 0)
-            x0_list.append(tmp[0].tolist())
+            x0_list.append(tmp[0][permute].tolist())
+
         x0_list = torch.tensor(x0_list, dtype = torch.float32)
         current_dir = os.path.dirname(os.path.abspath(__file__))
+
         torch.save(x0_list, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/my_five_twomoons_err40_obs.pt")    
         print(x0_list)
     
