@@ -19,7 +19,7 @@ def Bounds(task_name: str):
         return [[-1, 1]] * 2
     elif task_name in ["my_twomoons"]:
         return [[-5, 5]] * 2
-    elif task_name in ["my_five_twomoons", "my_five_twomoons_err2", "my_five_twomoons_err5", "my_five_twomoons_err10"]:
+    elif task_name in ["my_five_twomoons", "my_five_twomoons_err2", "my_five_twomoons_err5", "my_five_twomoons_err10", "my_five_twomoons_err40"]:
         return [[-5, 5]] * 10
     elif task_name in ["my_ten_twomoons"]:
         return [[-5,5]] * 20
@@ -44,7 +44,7 @@ def Priors(task_name: str):
         return BoxUniform(low = -1*torch.ones(2), high = 1*torch.ones(2))
     elif task_name in ["my_twomoons"]:
         return BoxUniform(low = -5*torch.ones(2), high = 5*torch.ones(2))
-    elif task_name in ["my_five_twomoons", "my_five_twomoons_err2", "my_five_twomoons_err5", "my_five_twomoons_err10" ]:
+    elif task_name in ["my_five_twomoons", "my_five_twomoons_err2", "my_five_twomoons_err5", "my_five_twomoons_err10", "my_five_twomoons_err40"]:
         return BoxUniform(low = -5*torch.ones(10), high = 5*torch.ones(10))
     elif task_name in ["my_ten_twomoons"]:
         return BoxUniform(low = -5*torch.ones(20), high = 5*torch.ones(20))
@@ -73,7 +73,8 @@ class true_Posteriors:
             return self.slcp(kwargs.get('j', 0))
         elif self.task in ["double_slcp_summary_transform2"]:
             return self.double_slcp(kwargs.get('j', 0))
-        
+        elif self.task in ["my_five_twomoons_err40"]:
+            return self.my_five_twomoons_err40(kwargs.get('j', 0))
         elif self.task in ["mog_10"]:
             return self.mog_10(kwargs.get('j', 0))
         
@@ -223,7 +224,7 @@ def observation_lists(task_name:str):
                              [-1.0, 1.0], [-0.5, 1.0], [-0.25, 0.5]], 
                              dtype = torch.float32)
     
-    elif task_name in ["my_five_twomoons", "my_five_twomoons_err2", "my_five_twomoons_err5", "my_five_twomoons_err10"]:
+    elif task_name in ["my_five_twomoons", "my_five_twomoons_err2", "my_five_twomoons_err5", "my_five_twomoons_err10", "my_five_twomoons_err40"]:
         current_dir = os.path.dirname(os.path.abspath(__file__))
         obs = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{task_name}_obs.pt")    
         return obs 
@@ -549,6 +550,21 @@ def simulator_my_five_twomoons_err10(theta):
     del tmp
     tmp = torch.randn( (batch_size,5), device = device) * 2.0 
     X.append(tmp.cpu())
+    return torch.cat(X, dim = 1)
+
+def simulator_my_five_twomoons_err40(theta):
+    # theta: N * 10 dimensions
+    X = []
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    
+    for i in range(5):
+        tmp = torch.clone(theta[:, 2*i : (2*i + 2 )] )
+        tmp2 = simulator_my_twomoons(tmp)
+        X.append(tmp2)
+    batch_size  = theta.size(0)
+    for _ in range(4):
+        tmp = torch.randn( (batch_size,10), device = device) * 2.0 
+        X.append(tmp.cpu())
     return torch.cat(X, dim = 1)
 
 def simulator_slcp3(theta):
