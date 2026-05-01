@@ -34,7 +34,7 @@ def main(args):
         
         x0_list = []
         for j in range(10):
-            noise = torch.randn( (10,)) * 2.0 
+            noise = torch.randn( (40,)) * 2.0 
             tmp = observation_lists("my_five_twomoons")[j]
 
             post_sample = true_posterior(torch.tensor(tmp)[None, :], n_samples=10_000, bounds=bounds)
