@@ -45,7 +45,7 @@ def WABC_rejection(x0, X_cal, tol, density_estimator, theta_dim, device, num_sam
 
 def main(args):
     seed = args.seed
-    torch.set_default_device("cpu")
+    #torch.set_default_device("cpu")
     
     torch.manual_seed(seed)
     np.random.seed(seed)
