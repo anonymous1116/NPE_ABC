@@ -53,3 +53,4 @@ python ABC_calibration/calibrating_flow_latent.py --x0_ind $x0_ind --seed $seed 
 
 echo "[$(date)] Job complete: x0_ind=$x0_ind, seed=$seed"
 
+python ABC_calibration/calibrating_flow_latent.py --x0_ind 1 --seed 1 --L 100000 --task "my_five_twomoons_err40" --num_training 1000000 --tol $tol 
