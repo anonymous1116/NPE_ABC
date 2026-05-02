@@ -29,6 +29,7 @@ def WABC_rejection(x0, X_cal, tol, density_estimator, theta_dim, device, num_sam
     frob_sq = eigen_chunked(Z_test)
 
     W_distances = torch.sqrt((mean_test + frob_sq))
+    
     # Determine threshold distance using top-k rather than sorting the entire tensor
     num = X_cal.size(0)
     nacc = int(num * tol)
@@ -182,10 +183,18 @@ def main(args):
 
     # Save to output_dir
     pairplot(post_sample, figsize=(6,6), limits = bounds)
-    plt.savefig(Path(output_dir) / f"x0{args.x0_ind}_seed{args.seed}_reference.png")
+    plt.savefig(Path(output_dir) / f"x0{args.x0_ind}_seed{args.seed}_reference_bounds.png")
     plt.close()
 
+    pairplot(post_sample, figsize=(6,6))
+    plt.savefig(Path(output_dir) / f"x0{args.x0_ind}_seed{args.seed}_reference.png")
+    plt.close()
+    
     pairplot(new_theta[:10000], figsize=(6,6), limits = bounds)
+    plt.savefig(Path(output_dir) / f"x0{args.x0_ind}_seed{args.seed}_calibrated_bounds.png")
+    plt.close()
+    
+    pairplot(new_theta[:10000], figsize=(6,6))
     plt.savefig(Path(output_dir) / f"x0{args.x0_ind}_seed{args.seed}_calibrated.png")
     plt.close()
     
