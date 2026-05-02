@@ -1,13 +1,13 @@
 #!/bin/bash
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
-#SBATCH --time=03:59:00
+#SBATCH --time=01:59:00
 #SBATCH --account=statdept
 #SBATCH --gpus-per-node=1
 #SBATCH --mem=170G
 #SBATCH --qos=standby
-#SBATCH --partition=a100-80gb,a10
-#SBATCH --array=0,1,50-99
+#SBATCH --partition=a10,a100-80gb
+#SBATCH --array=0-99
 #SBATCH --output=ABC_calibration/log/output_log_%A_%a.out
 #SBATCH --error=ABC_calibration/log/error_log_%A_%a.txt
 
@@ -28,10 +28,10 @@ cd $SLURM_SUBMIT_DIR
 seed=$((SLURM_ARRAY_TASK_ID / 10 + 1))
 #L=100000000
 
-L=10000000
+L=1000000
 task="my_five_twomoons_err40"
-num_training=1000000 
-tol=1e-3
+num_training=3000000 
+tol=1e-2
 cdim=10
 # Run the calibrate_amor.py
 x0_ind=$((SLURM_ARRAY_TASK_ID % 10)) 
