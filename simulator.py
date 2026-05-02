@@ -561,7 +561,7 @@ def simulator_my_five_twomoons_err40(theta):
     # theta: N * 10 dimensions
     X = []
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    permute = torch.load(f"{os.path.dirname(os.path.abspath(__file__))}/../depot_hyun/hyun/NPE_ABC/seeds/my_five_twomoons_err40_permutation.pt", weights_only = False).to(device)
+    permute = torch.load(f"{os.path.dirname(os.path.abspath(__file__))}/../depot_hyun/hyun/NPE_ABC/seeds/my_five_twomoons_err40_permutation.pt", weights_only = False)
     for i in range(5):
         tmp = torch.clone(theta[:, 2*i : (2*i + 2 )] )
         tmp2 = simulator_my_twomoons(tmp)
