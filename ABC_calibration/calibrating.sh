@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
-#SBATCH --time=02:19:00
+#SBATCH --time=03:59:00
 #SBATCH --account=statdept
 #SBATCH --gpus-per-node=1
 #SBATCH --mem=170G
@@ -29,7 +29,7 @@ seed=$((SLURM_ARRAY_TASK_ID / 10 + 1))
 #L=100000000
 
 L=10000000
-task="bernoulli_glm2"
+task="my_five_twomoons_err40"
 num_training=1000000 
 tol=1e-3
 cdim=10
