@@ -131,8 +131,8 @@ def main(args):
         index_ABC = ABC_rej2(x0, X_chunk, args.tol*10, device)
         X_chunk, Y_chunk = X_chunk[index_ABC], Y_chunk[index_ABC]
         
-        index_ABC = WABC_rejection(x0, X_chunk, 0.1, density_estimator_npe, Y_chunk.size(1), device, num_samples=300)
-        X_chunk, Y_chunk = X_chunk[index_ABC], Y_chunk[index_ABC]
+        index_WABC = WABC_rejection(x0, X_chunk, 0.1, density_estimator_npe, Y_chunk.size(1), device, num_samples=300)
+        X_chunk, Y_chunk = X_chunk[index_WABC], Y_chunk[index_WABC]
         
         X_abc.append(X_chunk)
         Y_abc.append(Y_chunk)
