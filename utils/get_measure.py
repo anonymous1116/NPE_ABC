@@ -3,6 +3,9 @@ import os, sys, torch,pickle, argparse
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from simulator import observation_lists, Bounds, true_Posteriors, task_benchmark
 from sbibm.metrics.c2st import c2st
+from pathlib import Path
+from sbi.analysis import pairplot
+import matplotlib.pyplot as plt
 
 def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, cond, method):
     x0_list = observation_lists(task)
@@ -44,6 +47,15 @@ def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, c
     output_dir = f"../depot_hyun/hyun/NPE_ABC/{method}_{measure}_results/{task}/J_{int(num_training/1000)}K"   
     os.makedirs(output_dir, exist_ok=True)
     torch.save(dist, os.path.join(output_dir, f"result_x0_{x0_ind}_seed_{seed}.pt"))  # Customize filename as needed
+
+    # Save to output_dir
+    pairplot(true_sample, figsize=(6,6), limits = limits)
+    plt.savefig(Path(output_dir) / f"x0{args.x0_ind}_seed{args.seed}_reference.png")
+    plt.close()
+
+    pairplot(sample_post[:sample_post_size], figsize=(6,6), limits = limits)
+    plt.savefig(Path(output_dir) / f"x0{args.x0_ind}_seed{args.seed}_calibrated.png")
+    plt.close()
     
 
 def get_args():
