@@ -132,7 +132,7 @@ def main(args):
         
         X_chunk = simulators(Y_chunk)
         
-        index_ABC = WABC_rejection(x0, X_chunk, args.tol, density_estimator_npe, Y_chunk.size(1), device, num_samples=100)
+        index_ABC = WABC_rejection(x0, X_chunk, args.tol, density_estimator_npe, Y_chunk.size(1), device, num_samples=300)
     
         X_chunk, Y_chunk = X_chunk[index_ABC], Y_chunk[index_ABC]
         X_abc.append(X_chunk)
