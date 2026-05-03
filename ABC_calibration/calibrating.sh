@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
-#SBATCH --time=01:39:00
+#SBATCH --time=00:29:00
 #SBATCH --account=statdept
 #SBATCH --gpus-per-node=1
 #SBATCH --mem=170G
@@ -28,10 +28,10 @@ cd $SLURM_SUBMIT_DIR
 seed=$((SLURM_ARRAY_TASK_ID / 10 + 1))
 #L=100000000
 
-L=1000000
+L=10000000
 task="my_five_twomoons_err40"
 num_training=3000000 
-tol=1e-2
+tol=1e-3
 cdim=10
 # Run the calibrate_amor.py
 x0_ind=$((SLURM_ARRAY_TASK_ID % 10)) 
@@ -56,3 +56,4 @@ echo "[$(date)] Job complete: x0_ind=$x0_ind, seed=$seed"
 #module load conda
 #conda activate /depot/wangxiao/apps/hyun18/NPE_NABC
 #python ABC_calibration/calibrating_flow_latent.py --x0_ind 1 --seed 1 --L 100000 --task "my_five_twomoons_err40" --num_training 1000000 --tol 1e-1 
+python ABC_calibration/calibrating_flow_experiment.py --x0_ind 1 --seed 1 --L 1000000 --task "my_five_twomoons_err40" --num_training 3000000 --tol 1e-2

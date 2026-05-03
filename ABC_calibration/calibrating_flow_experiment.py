@@ -14,7 +14,7 @@ from help_functions import UnifSample, param_box, truncated_mvn_sample, ABC_rej2
 
 def main(args):
     seed = args.seed
-    torch.set_default_device("cpu")
+    #torch.set_default_device("cpu")
     
     torch.manual_seed(seed)
     np.random.seed(seed)
