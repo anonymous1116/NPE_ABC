@@ -12,7 +12,9 @@ from sbibm.metrics.c2st import c2st
 from simulator import Priors, Simulators, Bounds, observation_lists, true_Posteriors, task_benchmark
 from help_functions import UnifSample, param_box, truncated_mvn_sample, ABC_rej2, forward_from_theta_test, eigen_chunked
 
-def WABC_rejection(x0, X_cal, tol, density_estimator, theta_dim, device, num_samples=1000):
+#
+
+def HZ_rejection(x0, X_cal, tol, density_estimator, theta_dim, device, num_samples=1000):
     Z_init = torch.randn((num_samples,theta_dim))
     density_estimator_npe_gpu = density_estimator.to(device).eval()
     flow = density_estimator_npe_gpu.net
@@ -41,8 +43,6 @@ def WABC_rejection(x0, X_cal, tol, density_estimator, theta_dim, device, num_sam
     del transform, embed, Z_test, mean_test, frob_sq, W_distances
     torch.cuda.empty_cache()
     return wt1.cpu()
-
-    
 
 def main(args):
     seed = args.seed
@@ -88,9 +88,8 @@ def main(args):
     transform=flow._transform
     embed = flow._embedding_net
     
-    
-    index_ABC = WABC_rejection(x0, X_cal, 1e-2, density_estimator_npe, Y_cal.size(1), device, num_samples=50)
-    #index_ABC = ABC_rej2(x0, X_cal, 1e-2, device)
+    #index_ABC = WABC_rejection(x0, X_cal, 1e-2, density_estimator_npe, Y_cal.size(1), device, num_samples=50)
+    index_ABC = ABC_rej2(x0, X_cal, 1e-2, device)
     
     X_cal, Y_cal = X_cal[index_ABC], Y_cal[index_ABC]
 
@@ -173,7 +172,7 @@ def main(args):
     sci_str = format(args.tol, ".0e")
     print(sci_str)  # Output: '1e-02'
     
-    output_dir = f"../depot_hyun/hyun/NPE_ABC/flow_c2st_latent/{args.task}_context/J_{int(args.num_training/1000)}K/{int(args.L/1_000_000)}M_eta{sci_str}"
+    output_dir = f"../depot_hyun/hyun/NPE_ABC/flow_c2st_latent2/{args.task}_context/J_{int(args.num_training/1000)}K/{int(args.L/1_000_000)}M_eta{sci_str}"
     ## Create the directory if it doesn't exist
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
