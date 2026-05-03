@@ -12,9 +12,7 @@ from sbibm.metrics.c2st import c2st
 from simulator import Priors, Simulators, Bounds, observation_lists, true_Posteriors, task_benchmark
 from help_functions import UnifSample, param_box, truncated_mvn_sample, ABC_rej2, forward_from_theta_test, eigen_chunked
 
-#
-
-def HZ_rejection(x0, X_cal, tol, density_estimator, theta_dim, device, num_samples=1000):
+def WABC_rejection(x0, X_cal, tol, density_estimator, theta_dim, device, num_samples=1000):
     Z_init = torch.randn((num_samples,theta_dim))
     density_estimator_npe_gpu = density_estimator.to(device).eval()
     flow = density_estimator_npe_gpu.net
@@ -130,10 +128,12 @@ def main(args):
             Y_chunk = param_box(UnifSample(bins = 10), adj, num=nums)
         
         X_chunk = simulators(Y_chunk)
-        
-        index_ABC = WABC_rejection(x0, X_chunk, args.tol, density_estimator_npe, Y_chunk.size(1), device, num_samples=300)
-    
+        index_ABC = ABC_rej2(x0, X_chunk, args.tol*10, device)
         X_chunk, Y_chunk = X_chunk[index_ABC], Y_chunk[index_ABC]
+        
+        index_ABC = WABC_rejection(x0, X_chunk, 0.1, density_estimator_npe, Y_chunk.size(1), device, num_samples=300)
+        X_chunk, Y_chunk = X_chunk[index_ABC], Y_chunk[index_ABC]
+        
         X_abc.append(X_chunk)
         Y_abc.append(Y_chunk)
         print(f"{i}th iteration out of {num_chunks}", flush = True)
