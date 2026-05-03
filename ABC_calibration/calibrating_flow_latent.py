@@ -89,8 +89,8 @@ def main(args):
     embed = flow._embedding_net
     
     
-    #index_ABC = WABC_rejection(x0, X_cal, 1e-2, density_estimator_npe, Y_cal.size(1) device, num_samples=500)
-    index_ABC = ABC_rej2(x0, X_cal, 1e-2, device)
+    index_ABC = WABC_rejection(x0, X_cal, 1e-2, density_estimator_npe, Y_cal.size(1), device, num_samples=100)
+    #index_ABC = ABC_rej2(x0, X_cal, 1e-2, device)
     
     X_cal, Y_cal = X_cal[index_ABC], Y_cal[index_ABC]
 
@@ -132,7 +132,7 @@ def main(args):
         
         X_chunk = simulators(Y_chunk)
         
-        index_ABC = WABC_rejection(x0, X_chunk, args.tol, density_estimator_npe, Y_chunk.size(1), device, num_samples=500)
+        index_ABC = WABC_rejection(x0, X_chunk, args.tol, density_estimator_npe, Y_chunk.size(1), device, num_samples=100)
     
         X_chunk, Y_chunk = X_chunk[index_ABC], Y_chunk[index_ABC]
         X_abc.append(X_chunk)
