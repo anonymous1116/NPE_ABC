@@ -10,38 +10,10 @@ from sbi.analysis import pairplot
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from sbibm.metrics.c2st import c2st
 from simulator import Priors, Simulators, Bounds, observation_lists, true_Posteriors, task_benchmark
-from help_functions import UnifSample, param_box, truncated_mvn_sample, ABC_rej2, forward_from_theta_test, eigen_chunked
+from help_functions import UnifSample, param_box, truncated_mvn_sample, ABC_rej2, forward_from_theta_test
 
-def WABC_rejection(x0, X_cal, tol, density_estimator, theta_dim, device, num_samples=1000):
-    Z_init = torch.randn((num_samples,theta_dim))
-    density_estimator_npe_gpu = density_estimator.to(device).eval()
-    flow = density_estimator_npe_gpu.net
-    transform=flow._transform
-    embed = flow._embedding_net
-
-    del flow, density_estimator_npe_gpu
-    with torch.no_grad():
-        theta_test, _ = transform.inverse(Z_init.to(device), context = embed(x0.expand((Z_init.size(0),x0.size(1))).to(device)))
-
-    Z_test = forward_from_theta_test(density_estimator, X_cal, theta_test)
-    
-    mean_test = torch.sum(torch.mean(Z_test,dim =0) ** 2, 1)
-    frob_sq = eigen_chunked(Z_test)
-
-    W_distances = torch.sqrt((mean_test + frob_sq))
-    
-    # Determine threshold distance using top-k rather than sorting the entire tensor
-    num = X_cal.size(0)
-    nacc = int(num * tol)
-    ds = torch.topk(W_distances, nacc, largest=False).values[-1]
-    
-    # Create mask and filter based on the threshold distance
-    wt1 = (W_distances <= ds)
-    # Select points within tolerance and return to CPU if needed
-    del transform, embed, Z_test, mean_test, frob_sq, W_distances
-    torch.cuda.empty_cache()
-    return wt1.cpu()
-
+# To test TABC_rejection instead of WABC_rejection, replace the line 138 with the following line:
+#index_ABC = TABC_rejection(x0, X_abc, 0.01, density_estimator_npe, Y_abc.size(1), device, num_samples=100
 
 
 def TABC_rejection(x0, X_cal, tol, density_estimator, theta_dim, device, num_samples=1000):
@@ -57,16 +29,16 @@ def TABC_rejection(x0, X_cal, tol, density_estimator, theta_dim, device, num_sam
 
     Z_test = forward_from_theta_test(density_estimator, X_cal, theta_test)
     
-    dist = (Z_test - Z_init.unsqueeze(1)).norm(dim=(0, 2))  # (10000,)
+    dist = (Z_test - Z_init.unsqueeze(1)).norm(dim=(0, 2))  # (num_samples,)
     # Determine threshold distance using top-k rather than sorting the entire tensor
     num = X_cal.size(0)
     nacc = int(num * tol)
     ds = torch.topk(dist, nacc, largest=False).values[-1]
     
     # Create mask and filter based on the threshold distance
-    wt1 = (W_distances <= ds)
+    wt1 = (dist <= ds)
     # Select points within tolerance and return to CPU if needed
-    del transform, embed, Z_test, mean_test, frob_sq, W_distances
+    del transform, embed, Z_test, mean_test, frob_sq, dist
     torch.cuda.empty_cache()
     return wt1.cpu()
 
@@ -168,7 +140,7 @@ def main(args):
     X_abc = torch.cat(X_abc)
     Y_abc = torch.cat(Y_abc)    
 
-    index_WABC = WABC_rejection(x0, X_abc, 0.01, density_estimator_npe, Y_abc.size(1), device, num_samples=100)
+    index_WABC = TABC_rejection(x0, X_abc, 0.01, density_estimator_npe, Y_abc.size(1), device, num_samples=100)
     X_abc, Y_abc = X_abc[index_WABC], Y_abc[index_WABC]
 
     print("X_abc size", X_abc.size())
@@ -202,7 +174,7 @@ def main(args):
     sci_str = format(args.tol, ".0e")
     print(sci_str)  # Output: '1e-02'
     
-    output_dir = f"../depot_hyun/hyun/NPE_ABC/flow_c2st_latent2/{args.task}_context/J_{int(args.num_training/1000)}K/{int(args.L/1_000_000)}M_eta{sci_str}"
+    output_dir = f"../depot_hyun/hyun/NPE_ABC/flow_c2st_latent3/{args.task}_context/J_{int(args.num_training/1000)}K/{int(args.L/1_000_000)}M_eta{sci_str}"
     ## Create the directory if it doesn't exist
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
