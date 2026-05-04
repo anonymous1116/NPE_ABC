@@ -140,7 +140,7 @@ def main(args):
     X_abc = torch.cat(X_abc)
     Y_abc = torch.cat(Y_abc)    
 
-    index_WABC = TABC_rejection(x0, X_abc, 0.01, density_estimator_npe, Y_abc.size(1), device, num_samples=100)
+    index_WABC = TABC_rejection(x0, X_abc, 0.01, density_estimator_npe, Y_abc.size(1), device, num_samples=200)
     X_abc, Y_abc = X_abc[index_WABC], Y_abc[index_WABC]
 
     print("X_abc size", X_abc.size())
