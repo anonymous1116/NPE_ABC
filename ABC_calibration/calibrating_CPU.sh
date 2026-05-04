@@ -6,13 +6,13 @@
 #SBATCH --time=04:00:00
 #SBATCH --qos=standby
 #SBATCH --array=0-99
-#SBATCH --output=ABC_calibration/log/output_log_%A_%a.out
-#SBATCH --error=ABC_calibration/log/error_log_%A_%a.txt
+#SBATCH --output=ABC_calibration/log_CPU/output_log_%A_%a.out
+#SBATCH --error=ABC_calibration/log_CPU/error_log_%A_%a.txt
 
 # #SBATCH --partition=a10,a100-40gb,a100-80gb
 
 # Create the output_log directory if it doesn't exist
-mkdir -p ABC_calibration/output_log
+mkdir -p ABC_calibration/log_CPU
 
 # Load the required Python environment
 module load conda
@@ -52,5 +52,5 @@ echo "[$(date)] Job complete: x0_ind=$x0_ind, seed=$seed"
 
 #module load conda
 #conda activate /depot/wangxiao/apps/hyun18/NPE_NABC
-#python ABC_calibration/calibrating_flow_latent2.py --x0_ind 1 --seed 1 --L 1000000 --task "my_five_twomoons_err40" --num_training 3000000 --tol 1e-2 
+#python ABC_calibration/calibrating_flow_latent3.py --x0_ind 1 --seed 1 --L 1000000 --task "my_five_twomoons_err40" --num_training 3000000 --tol 1e-2 
 #python ABC_calibration/calibrating_flow_experiment.py --x0_ind 1 --seed 1 --L 1000000 --task "my_five_twomoons_err40" --num_training 3000000 --tol 1e-2
