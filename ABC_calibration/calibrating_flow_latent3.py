@@ -234,4 +234,4 @@ if __name__ == "__main__":
     print(f"cond_den: {args.cond_den}")
 
 
-#python ABC_calibration/calibrating_flow_latent.py --x0_ind 1 --seed 1 --task "slcp" --num_training 1000000 --L 100000 --tol 1e-1
+#python ABC_calibration/calibrating_flow_latent3.py --x0_ind 1 --seed 1 --task "my_five_twomoons_err40" --num_training 3000000 --L 10000000 --tol 1e-3
