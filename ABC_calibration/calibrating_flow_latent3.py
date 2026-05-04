@@ -38,7 +38,7 @@ def TABC_rejection(x0, X_cal, tol, density_estimator, theta_dim, device, num_sam
     # Create mask and filter based on the threshold distance
     wt1 = (dist <= ds)
     # Select points within tolerance and return to CPU if needed
-    del transform, embed, Z_test, mean_test, frob_sq, dist
+    del transform, embed, Z_test, dist
     torch.cuda.empty_cache()
     return wt1.cpu()
 
