@@ -100,7 +100,7 @@ def main(args):
         X_chunk_embed = embed(X_chunk.to(device))
     
 
-        index_ABC = ABC_rej2(x0_embed, X_chunk_embed, args.tol*100, device)
+        index_ABC = ABC_rej2(x0_embed, X_chunk_embed, args.tol*10, device)
         X_chunk, Y_chunk = X_chunk[index_ABC], Y_chunk[index_ABC]
         X_abc.append(X_chunk)
         Y_abc.append(Y_chunk)
@@ -111,7 +111,7 @@ def main(args):
     Y_abc = torch.cat(Y_abc)    
 
     X_abc_embed = embed(X_abc.to(device))
-    index_ABC = ABC_rej2(x0_embed, X_abc_embed, 0.01, device)
+    index_ABC = ABC_rej2(x0_embed, X_abc_embed, 0.1, device)
     X_abc, Y_abc = X_abc[index_ABC], Y_abc[index_ABC]
 
     print("X_abc size", X_abc.size())
