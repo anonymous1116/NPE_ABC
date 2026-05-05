@@ -28,7 +28,7 @@ seed=$((SLURM_ARRAY_TASK_ID / 10 + 1))
 
 L=1000000000
 task="my_five_twomoons_err40"
-num_training=3000000 
+num_training=5000000 
 tol=1e-5
 # Run the calibrate_amor.py
 x0_ind=$((SLURM_ARRAY_TASK_ID % 10)) 
@@ -37,7 +37,7 @@ echo "[$(date)] Starting job: x0_ind=$x0_ind, seed=$seed, L=$L"
 
 #python ABC_calibration/calibrating_flow.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol
 #python ABC_calibration/calibrating_flow.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol
-python ABC_calibration/calibrating_flow_latent2.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol 
+python ABC_calibration/calibrating_flow_latent4.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol 
 #python ABC_calibration/calibrating_flow_experiment.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol
 #python ABC_calibration/calibrating_flow_experiment.py --x0_ind 1 --seed 1 --L 10000000 --task "slcp" --num_training 3_000_000 --tol 1e-3
 #python ABC_calibration/calibrating_flow_linear_embed.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol
@@ -52,5 +52,5 @@ echo "[$(date)] Job complete: x0_ind=$x0_ind, seed=$seed"
 
 #module load conda
 #conda activate /depot/wangxiao/apps/hyun18/NPE_NABC
-#python ABC_calibration/calibrating_flow_latent3.py --x0_ind 1 --seed 1 --L 1000000 --task "my_five_twomoons_err40" --num_training 3000000 --tol 1e-2 
+#python ABC_calibration/calibrating_flow_latent4.py --x0_ind 1 --seed 1 --L 1000000 --task "my_five_twomoons_err40" --num_training 3000000 --tol 1e-2 
 #python ABC_calibration/calibrating_flow_experiment.py --x0_ind 1 --seed 1 --L 1000000 --task "my_five_twomoons_err40" --num_training 3000000 --tol 1e-2
