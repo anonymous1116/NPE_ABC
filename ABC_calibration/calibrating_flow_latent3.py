@@ -114,7 +114,6 @@ def main(args):
     print("max_vals:", max_vals)   
     print("min_vals:", min_vals)
 
-
     print(X_cal.size())
 
     for i in range(num_chunks + 1): 
@@ -130,7 +129,7 @@ def main(args):
             Y_chunk = param_box(UnifSample(bins = 10), adj, num=nums)
         
         X_chunk = simulators(Y_chunk)
-        index_ABC = ABC_rej2(x0, X_chunk, args.tol*100, device)
+        index_ABC = ABC_rej2(x0, X_chunk, args.tol*10, device)
         X_chunk, Y_chunk = X_chunk[index_ABC], Y_chunk[index_ABC]
         
         X_abc.append(X_chunk)
@@ -140,7 +139,7 @@ def main(args):
     X_abc = torch.cat(X_abc)
     Y_abc = torch.cat(Y_abc)    
 
-    index_WABC = TABC_rejection(x0, X_abc, 0.01, density_estimator_npe, Y_abc.size(1), device, num_samples=200)
+    index_WABC = TABC_rejection(x0, X_abc, 0.1, density_estimator_npe, Y_abc.size(1), device, num_samples=100)
     X_abc, Y_abc = X_abc[index_WABC], Y_abc[index_WABC]
 
     print("X_abc size", X_abc.size())
