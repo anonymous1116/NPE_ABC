@@ -44,7 +44,7 @@ def main(args):
             tmp = observation_lists("my_five_twomoons")[j]
 
             post_sample = true_posterior(torch.tensor(tmp)[None, :], n_samples=10_000, bounds=bounds)
-            torch.save(post_sample, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{args.task}_err40_post_{j+1}.pt")
+            torch.save(post_sample, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{args.task}_post_{j+1}.pt")
             tmp = torch.cat([tmp, noise])
             print(tmp)
             x0_list.append(tmp[permute].tolist())
