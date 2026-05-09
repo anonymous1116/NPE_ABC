@@ -12,7 +12,6 @@ def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, c
     x0 = x0_list[x0_ind]
     torch.manual_seed(seed)
     print(x0)
-
     limits = Bounds(task)
     posterior = true_Posteriors(task)
     #task_benchmark = ["two_moons", "bernoulli_glm2", "slcp_summary_transform2", "double_slcp_summary_transform2", "mog_10", "slcp_distractors"]
@@ -57,7 +56,6 @@ def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, c
     plt.savefig(Path(output_dir) / f"x0{args.x0_ind}_seed{args.seed}_calibrated.png")
     plt.close()
     
-
 def get_args():
     parser = argparse.ArgumentParser(description="Run SLURM job for simulation.")
     parser.add_argument('--task', type=str, required=True, help='Task type')
