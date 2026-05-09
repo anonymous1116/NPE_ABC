@@ -47,7 +47,7 @@ def main(args):
     Y_cal = priors.sample((1_000_000,))
     X_cal = simulators(Y_cal)
 
-    permute = torch.load(f"{os.path.dirname(os.path.abspath(__file__))}/depot_hyun/hyun/NPE_ABC/seeds/{args.task}_permutation.pt", weights_only = False)[0:9]
+    permute = torch.load(f"{os.path.dirname(os.path.abspath(__file__))}/../../depot_hyun/hyun/NPE_ABC/seeds/{args.task}_permutation.pt", weights_only = False)[0:9]
     
     output_file_path = os.path.join(f'../depot_hyun/hyun/NPE_ABC/nets/{args.task}/J_{int(args.num_training/1000)}K/{args.task}_{seed}_{args.cond_den}.pkl')
     with open(output_file_path, 'rb') as f:
