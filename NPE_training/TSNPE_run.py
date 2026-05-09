@@ -52,8 +52,6 @@ def main(args):
         end_time = time.time()
         elapsed_time = end_time - start_time
         
-        
-        
         # Posterior
         posterior = inference.build_posterior(density_estimator).set_default_x(x0)
         samples = posterior.sample((10_000,), x=x0)
@@ -64,8 +62,6 @@ def main(args):
         
         accept_reject_fn = get_density_thresholder(posterior, quantile=1e-4)
         proposal = RestrictedPrior(priors, accept_reject_fn, sample_with="rejection")
-        
-        proposal = posterior.set_default_x(x0)
     
     # Define the output directory
     output_dir = f"../depot_hyun/hyun/NPE_ABC/SNPE_nets_round{args.total_round}/{args.task}/J_{int(args.num_training/1000)}K"
