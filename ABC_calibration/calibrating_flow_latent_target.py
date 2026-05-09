@@ -103,11 +103,7 @@ def main(args):
         
         X_chunk = simulators(Y_chunk)
 
-        x0_embed = embed(x0.to(device))
-        X_chunk_embed = embed(X_chunk.to(device))
-    
-
-        index_ABC = ABC_rej2(x0_embed[:,inv_perm], X_chunk_embed[:,inv_perm], args.tol*100, device)
+        index_ABC = ABC_rej2(x0[:,inv_perm], X_chunk[:,inv_perm], args.tol*100, device)
     
         X_chunk, Y_chunk = X_chunk[index_ABC], Y_chunk[index_ABC]
         
@@ -117,9 +113,8 @@ def main(args):
 
     X_abc = torch.cat(X_abc)
     Y_abc = torch.cat(Y_abc)
-    X_abc_embed = embed(X_abc.to(device))
     
-    index_ABC = ABC_rej2(x0_embed[:, inv_perm], X_abc_embed[:, inv_perm], 0.01, device)
+    index_ABC = ABC_rej2(x0[:, inv_perm], X_abc[:, inv_perm], 0.01, device)
     X_abc, Y_abc = X_abc[index_ABC], Y_abc[index_ABC]
 
     print("X_abc size", X_abc.size())
