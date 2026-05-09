@@ -9,7 +9,6 @@ import time
 from sbi.utils import get_density_thresholder, RestrictedPrior
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from simulator import Bounds, Simulators, Priors, observation_lists, true_Posteriors, task_benchmark
-from utils.evaluate import create_c2st_job_script
 from sbibm.metrics.c2st import c2st
 
 def main(args):
@@ -33,7 +32,6 @@ def main(args):
     proposal = priors
     c2st_results_list = []
     elapsed_time_list = []
-    
     
     for _ in range(args.total_round):
         start_time = time.time()  # Start timer
@@ -89,7 +87,6 @@ def get_args():
     parser.add_argument('--cond_den', type=str, default='nsf', help='Conditional density estimator type: mdn, maf, nsf')
     parser.add_argument('--x0_ind', type=int, default=0, help='observation index')
     parser.add_argument('--total_round', type=int, default=0, help='observation index')
-    
     return parser.parse_args()
 
 if __name__ == "__main__":
