@@ -62,7 +62,7 @@ def main(args):
     transform=flow._transform
     embed = flow._embedding_net
     
-    index_ABC = ABC_rej2(x0[:, inv_perm], X_cal[:, inv_perm], 1e-2, device)
+    index_ABC = ABC_rej2(x0, X_cal, 1e-2, device)
     X_cal, Y_cal = X_cal[index_ABC], Y_cal[index_ABC]    
     
     with torch.no_grad():
