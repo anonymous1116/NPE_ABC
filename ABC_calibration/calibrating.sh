@@ -5,9 +5,9 @@
 #SBATCH --account=statdept
 #SBATCH --gpus-per-node=1
 #SBATCH --mem=170G
-#SBATCH --qos=normal
-#SBATCH --partition=a10
-#SBATCH --array=50-99
+#SBATCH --qos=standby
+#SBATCH --partition=a100-80gb,a10
+#SBATCH --array=0-50
 #SBATCH --output=ABC_calibration/log/output_log_%A_%a.out
 #SBATCH --error=ABC_calibration/log/error_log_%A_%a.txt
 
