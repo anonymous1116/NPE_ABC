@@ -60,7 +60,7 @@ def main(args):
     embed = flow._embedding_net
     
     X_cal_truth = X_cal[:, permute]
-    index_ABC = ABC_rej2(x0, X_cal_truth, 1e-2, device)
+    index_ABC = ABC_rej2(x0[:, permute], X_cal_truth, 1e-2, device)
     X_cal, Y_cal = X_cal[index_ABC], Y_cal[index_ABC]    
     
     with torch.no_grad():
@@ -101,7 +101,7 @@ def main(args):
         
         X_chunk = simulators(Y_chunk)
         X_chunk_truth = X_chunk[:, permute]
-        index_ABC = ABC_rej2(x0, X_chunk_truth, args.tol*100, device)
+        index_ABC = ABC_rej2(x0[:, permute], X_chunk_truth, args.tol*100, device)
 
         X_chunk, Y_chunk = X_chunk[index_ABC], Y_chunk[index_ABC]
         
@@ -112,7 +112,7 @@ def main(args):
     X_abc = torch.cat(X_abc)
     Y_abc = torch.cat(Y_abc)    
     X_abc_truth = X_abc[:, permute]
-    index_ABC = ABC_rej2(x0, X_abc_truth, 0.01, device)
+    index_ABC = ABC_rej2(x0[:, permute], X_abc_truth, 0.01, device)
     X_abc, Y_abc = X_abc[index_ABC], Y_abc[index_ABC]
 
     print("X_abc size", X_abc.size())
