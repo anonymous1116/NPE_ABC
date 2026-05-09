@@ -22,7 +22,6 @@ def main(args):
     bounds = Bounds(args.task)
     x0 = observation_lists(args.task)[args.x0_ind]
     
-        
     if args.task in task_benchmark:
         true = true_posteriors(j = args.x0_ind+1)
     else:
