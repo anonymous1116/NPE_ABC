@@ -31,5 +31,6 @@ total_round=10
 echo "[$(date)] Starting job: x0_ind=$x0_ind, seed=$seed, L=$L"
 python NPE_training/SNPE_run.py --task $task --seed $seed --x0_ind $x0_ind --num_training $num_training --cond_den "nsf" --total_round $total_round
 #python NPE_training/SNPE_run_seq.py --task $task --seed $seed --x0_ind $x0_ind --num_training $num_training --cond_den "nsf" --total_round $total_round
+#python NPE_training/TSNPE_run.py --task "my_five_twomoons" --seed 1 --x0_ind 0 --num_training 100 --cond_den "nsf" --total_round 10
 
 echo "[$(date)] Job complete: x0_ind=$x0_ind, seed=$seed"
