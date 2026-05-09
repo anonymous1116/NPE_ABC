@@ -4,7 +4,7 @@
 #SBATCH --cpus-per-task=4
 #SBATCH --partition=cpu
 #SBATCH --account=statdept
-#SBATCH --time=8-00:00:00
+#SBATCH --time=12-00:00:00
 #SBATCH --qos=normal
 #SBATCH --array=0-99               # Create a job array with indices from 1 to 10
 #SBATCH --output=SNPE/NPE_nsf/output_log/output_log_%A_%a.log
@@ -25,7 +25,7 @@ cd $SLURM_SUBMIT_DIR
 seed=$((SLURM_ARRAY_TASK_ID / 10 + 1))
 # Run the calibrate_amor.py
 x0_ind=$((SLURM_ARRAY_TASK_ID % 10)) 
-num_training=100000
+num_training=200000
 task="my_five_twomoons"
 total_round=10
 echo "[$(date)] Starting job: x0_ind=$x0_ind, seed=$seed, L=$L"
