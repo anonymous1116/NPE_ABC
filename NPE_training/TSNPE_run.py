@@ -48,7 +48,7 @@ def main(args):
         elapsed_time = end_time - start_time
         
         # Posterior
-        posterior = inference.build_posterior().set_default_x(x0)
+        posterior = inference.build_posterior(density_estimator).set_default_x(x0)
         samples = posterior.sample((10_000,), x=x0)
         c2st_results = c2st(samples, true)
         c2st_results_list.append(c2st_results[0].tolist())
