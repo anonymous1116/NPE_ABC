@@ -29,6 +29,8 @@ def TABC_rejection(x0, X_cal, tol, density_estimator, theta_dim, device, num_sam
 
     Z_test = forward_from_theta_test(density_estimator, X_cal, theta_test)
     
+    Z_test = Z_test.cpu()
+    Z_init = Z_init.cpu()
     dist = (Z_test - Z_init.unsqueeze(1)).norm(dim=(0, 2))  # (num_samples,)
     # Determine threshold distance using top-k rather than sorting the entire tensor
     num = X_cal.size(0)
