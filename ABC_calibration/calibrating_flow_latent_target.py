@@ -50,7 +50,7 @@ def main(args):
     permute = torch.load(f"{os.path.dirname(os.path.abspath(__file__))}/../../depot_hyun/hyun/NPE_ABC/seeds/{args.task}_permutation.pt", weights_only = False)
     inv_perm = torch.empty_like(permute)
     inv_perm[permute] = torch.arange(len(permute))
-    inv_perm = inv_perm[0:9]
+    inv_perm = inv_perm[0:10]
 
     output_file_path = os.path.join(f'../depot_hyun/hyun/NPE_ABC/nets/{args.task}/J_{int(args.num_training/1000)}K/{args.task}_{seed}_{args.cond_den}.pkl')
     with open(output_file_path, 'rb') as f:
@@ -217,4 +217,4 @@ if __name__ == "__main__":
     print(f"cond_den: {args.cond_den}")
 
 
-#python ABC_calibration/calibrating_flow_latent.py --x0_ind 1 --seed 1 --task "slcp" --num_training 1000000 --L 100000 --tol 1e-1
+#python ABC_calibration/calibrating_flow_latent_target.py --x0_ind 0 --seed 1 --task "my_five_twomoons_err40" --num_training 3000000 --L 10000000 --tol 1e-3
