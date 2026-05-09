@@ -56,7 +56,7 @@ def main(args):
         proposal = RestrictedPrior(priors, accept_reject_fn, sample_with="rejection")
     
     # Define the output directory
-    output_dir = f"../depot_hyun/hyun/NPE_ABC/SNPE_nets_round{args.total_round}/{args.task}/J_{int(args.num_training/1000)}K"
+    output_dir = f"../depot_hyun/hyun/NPE_ABC/TSNPE_nets_round{args.total_round}/{args.task}/J_{int(args.num_training/1000)}K"
 
     # Create the directory if it doesn't exist
     if not os.path.exists(output_dir):
