@@ -29,16 +29,11 @@ def main(args):
     else:
         true = true_posteriors(torch.tensor(x0), n_samples=10000, bounds=bounds)
 
-
     inference = NPE(priors, density_estimator = args.cond_den)
     proposal = priors
     c2st_results_list = []
     elapsed_time_list = []
     
-    
-    
-    accept_reject_fn = get_density_thresholder(posterior, quantile=1e-4)
-    proposal = RestrictedPrior(prior, accept_reject_fn, sample_with="rejection")
     
     for _ in range(args.total_round):
         start_time = time.time()  # Start timer
