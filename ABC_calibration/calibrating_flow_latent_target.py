@@ -62,8 +62,7 @@ def main(args):
     transform=flow._transform
     embed = flow._embedding_net
     
-    X_cal_truth = X_cal[:, inv_perm]
-    index_ABC = ABC_rej2(x0[:, inv_perm], X_cal_truth, 1e-2, device)
+    index_ABC = ABC_rej2(x0[:, inv_perm], X_cal[:, inv_perm], 1e-2, device)
     X_cal, Y_cal = X_cal[index_ABC], Y_cal[index_ABC]    
     
     with torch.no_grad():
@@ -103,8 +102,7 @@ def main(args):
             Y_chunk = param_box(UnifSample(bins = 10), adj, num=nums)
         
         X_chunk = simulators(Y_chunk)
-        X_chunk_truth = X_chunk[:, inv_perm]
-        index_ABC = ABC_rej2(x0[:, inv_perm], X_chunk_truth, args.tol*100, device)
+        index_ABC = ABC_rej2(x0[:, inv_perm], X_chunk[:, inv_perm], args.tol*100, device)
 
         X_chunk, Y_chunk = X_chunk[index_ABC], Y_chunk[index_ABC]
         
@@ -114,8 +112,7 @@ def main(args):
 
     X_abc = torch.cat(X_abc)
     Y_abc = torch.cat(Y_abc)    
-    X_abc_truth = X_abc[:, inv_perm]
-    index_ABC = ABC_rej2(x0[:, inv_perm], X_abc_truth, 0.01, device)
+    index_ABC = ABC_rej2(x0[:, inv_perm], X_abc[:, inv_perm], 0.01, device)
     X_abc, Y_abc = X_abc[index_ABC], Y_abc[index_ABC]
 
     print("X_abc size", X_abc.size())
