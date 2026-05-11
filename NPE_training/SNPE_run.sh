@@ -4,9 +4,9 @@
 #SBATCH --cpus-per-task=4
 #SBATCH --partition=cpu
 #SBATCH --account=statdept
-#SBATCH --time=12-00:00:00
+#SBATCH --time=6-00:00:00
 #SBATCH --qos=normal
-#SBATCH --array=0-99               # Create a job array with indices from 1 to 10
+#SBATCH --array=50-99               # Create a job array with indices from 1 to 10
 #SBATCH --output=SNPE/NPE_nsf/output_log/output_log_%A_%a.log
 #SBATCH --error=SNPE/NPE_nsf/output_log/error_log_%A_%a.txt
 
@@ -25,11 +25,11 @@ cd $SLURM_SUBMIT_DIR
 seed=$((SLURM_ARRAY_TASK_ID / 10 + 1))
 # Run the calibrate_amor.py
 x0_ind=$((SLURM_ARRAY_TASK_ID % 10)) 
-num_training=30000
+num_training=100000
 task="my_five_twomoons"
 total_round=10
 echo "[$(date)] Starting job: x0_ind=$x0_ind, seed=$seed, L=$L"
-python NPE_training/TSNPE_run.py --task $task --seed $seed --x0_ind $x0_ind --num_training $num_training --cond_den "nsf" --total_round $total_round
+python NPE_training/SNPE_run.py --task $task --seed $seed --x0_ind $x0_ind --num_training $num_training --cond_den "nsf" --total_round $total_round
 #python NPE_training/SNPE_run_seq.py --task $task --seed $seed --x0_ind $x0_ind --num_training $num_training --cond_den "nsf" --total_round $total_round
 #python NPE_training/TSNPE_run.py --task "my_five_twomoons" --seed 1 --x0_ind 0 --num_training 100 --cond_den "nsf" --total_round 10
 
