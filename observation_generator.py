@@ -77,10 +77,17 @@ def main(args):
             torch.save(post_sample, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/mog_10_post_{j+1}.pt")
             print(post_sample)
     
-    elif args.task in ["bernoulli_glm2_err90"]:
+    elif args.task in ["bernoulli_glm2_err40", "bernoulli_glm2_err90"]:
         #permunation
         torch.manual_seed(2825)
-        permute = torch.randperm(50)
+        if args.task == "bernoulli_glm2_err40":
+                noise_num = 40
+        elif args.task == "bernoulli_glm2_err90": 
+            noise_num = 90
+        else:
+            raise ValueError("Invalid task name for error level.")
+        
+        permute = torch.randperm(90)
         current_dir = os.path.dirname(os.path.abspath(__file__))
         
         torch.save(permute, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{args.task}_permutation.pt")
@@ -88,19 +95,12 @@ def main(args):
         random.seed(2826)
         torch.manual_seed(2826)
         # Posteriors
-        bounds = Bounds("my_five_twomoons")
-        true_posterior = true_Posteriors("my_five_twomoons")
+        true_posterior = true_Posteriors("bernoulli_glm2")
         
         x0_list = []
         for j in range(10):
-            if args.task == "my_five_twomoons_err40":
-                noise_num = 40
-            elif args.task == "my_five_twomoons_err90": 
-                noise_num = 90
-            else:
-                raise ValueError("Invalid task name for error level.")
             noise = torch.randn( (noise_num,)) * 2.0 
-            tmp = observation_lists("my_five_twomoons")[j]
+            tmp = observation_lists("bernoulli_glm2")[j]
 
             post_sample = true_posterior(torch.tensor(tmp)[None, :], n_samples=10_000, bounds=bounds)
             torch.save(post_sample, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{args.task}_post_{j+1}.pt")
@@ -114,8 +114,7 @@ def main(args):
         torch.save(x0_list, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{args.task}_obs.pt")    
         print(x0_list)
     
-        
-
+    
     else:
         print("Task not recognized.")
 
