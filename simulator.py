@@ -13,7 +13,7 @@ from help_functions import SLCP_summary_transform2
 
 def Bounds(task_name: str):
     task_name = task_name.lower()
-    if task_name == "bernoulli_glm2":
+    if task_name in ["bernoulli_glm2", "bernoulli_glm2_err90"]:
         return None
     elif task_name in ["two_moons"]:
         return [[-1, 1]] * 2
@@ -34,7 +34,7 @@ def Bounds(task_name: str):
 
 def Priors(task_name: str):
     task_name = task_name.lower()
-    if task_name in ["bernoulli_glm2"]:
+    if task_name in ["bernoulli_glm2", "bernoulli_glm2_err90"]:
         dim = 10
         loc = torch.zeros(dim)
         precision_diag = 0.5 * torch.ones(dim)
@@ -67,7 +67,7 @@ class true_Posteriors:
         # Handle the case where task is 'slcp' differently
         if self.task == "two_moons":
             return self.two_moons(kwargs.get('j', 0))
-        elif self.task in ["bernoulli_glm2"]:
+        elif self.task in ["bernoulli_glm2", "bernoulli_glm2_err90"]:
             return self.bernoulli_glm2(kwargs.get('j', 0))
         elif self.task in ["slcp_summary_transform2", "slcp_distractors", "slcp"]:
             return self.slcp(kwargs.get('j', 0))

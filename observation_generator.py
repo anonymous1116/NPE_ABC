@@ -20,8 +20,15 @@ def main(args):
         print(x0_list)
     if args.task in ["my_five_twomoons_err40", "my_five_twomoons_err90"]:
         #permunation
+        if args.task == "my_five_twomoons_err40":
+            noise_num = 40
+        elif args.task == "my_five_twomoons_err90": 
+            noise_num = 90
+        else:
+            raise ValueError("Invalid task name for error level.")
+        
         torch.manual_seed(2825)
-        permute = torch.randperm(50)
+        permute = torch.randperm(10+noise_num)
         current_dir = os.path.dirname(os.path.abspath(__file__))
         
         torch.save(permute, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{args.task}_permutation.pt")
@@ -34,12 +41,6 @@ def main(args):
         
         x0_list = []
         for j in range(10):
-            if args.task == "my_five_twomoons_err40":
-                noise_num = 40
-            elif args.task == "my_five_twomoons_err90": 
-                noise_num = 90
-            else:
-                raise ValueError("Invalid task name for error level.")
             noise = torch.randn( (noise_num,)) * 2.0 
             tmp = observation_lists("my_five_twomoons")[j]
 
@@ -75,6 +76,46 @@ def main(args):
             post_sample = MoG_posterior(x0, n_samples=10_000, bounds=bounds)
             torch.save(post_sample, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/mog_10_post_{j+1}.pt")
             print(post_sample)
+    
+    elif args.task in ["bernoulli_glm2_err90"]:
+        #permunation
+        torch.manual_seed(2825)
+        permute = torch.randperm(50)
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        
+        torch.save(permute, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{args.task}_permutation.pt")
+        
+        random.seed(2826)
+        torch.manual_seed(2826)
+        # Posteriors
+        bounds = Bounds("my_five_twomoons")
+        true_posterior = true_Posteriors("my_five_twomoons")
+        
+        x0_list = []
+        for j in range(10):
+            if args.task == "my_five_twomoons_err40":
+                noise_num = 40
+            elif args.task == "my_five_twomoons_err90": 
+                noise_num = 90
+            else:
+                raise ValueError("Invalid task name for error level.")
+            noise = torch.randn( (noise_num,)) * 2.0 
+            tmp = observation_lists("my_five_twomoons")[j]
+
+            post_sample = true_posterior(torch.tensor(tmp)[None, :], n_samples=10_000, bounds=bounds)
+            torch.save(post_sample, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{args.task}_post_{j+1}.pt")
+            tmp = torch.cat([tmp, noise])
+            print(tmp)
+            x0_list.append(tmp[permute].tolist())
+
+        x0_list = torch.tensor(x0_list, dtype = torch.float32)
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+
+        torch.save(x0_list, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{args.task}_obs.pt")    
+        print(x0_list)
+    
+        
+
     else:
         print("Task not recognized.")
 
