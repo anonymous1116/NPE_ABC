@@ -236,10 +236,11 @@ def observation_lists(task_name:str):
                              [-1.0, 1.0], [-0.5, 1.0], [-0.25, 0.5]], 
                              dtype = torch.float32)
     
-    elif task_name in ["my_five_twomoons", "my_five_twomoons_err2", "my_five_twomoons_err5", "my_five_twomoons_err10", "my_five_twomoons_err40", "my_five_twomoons_err90"]:
+    elif task_name in ["my_five_twomoons", "my_five_twomoons_err2", "my_five_twomoons_err5", "my_five_twomoons_err10", "my_five_twomoons_err40", "my_five_twomoons_err90", "bernoulli_glm2_err90"]:
         current_dir = os.path.dirname(os.path.abspath(__file__))
         obs = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{task_name}_obs.pt")    
         return obs 
+    
     elif task_name in ["my_ten_twomoons", "mog_10"]:
         current_dir = os.path.dirname(os.path.abspath(__file__))
         obs = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{task_name}_obs.pt")    
@@ -594,6 +595,19 @@ def simulator_my_five_twomoons_err90(theta):
         X.append(tmp.cpu())
     return torch.cat(X, dim = 1).cpu()[:,permute]
 
+def simulator_bernoulli_glm2_err90(theta):
+    # theta: N * 10 dimensions
+    X = []
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    permute = torch.load(f"{os.path.dirname(os.path.abspath(__file__))}/../depot_hyun/hyun/NPE_ABC/seeds/bernoulli_glm2_err90_permutation.pt", weights_only = False)
+    X.append(simulator_bernoulli(theta))
+    batch_size  = theta.size(0)
+    for _ in range(9):
+        tmp = torch.randn( (batch_size,10), device = device) * 2.0 
+        X.append(tmp.cpu())
+    return torch.cat(X, dim = 1).cpu()[:,permute]
+
+
 
 
 def simulator_slcp3(theta):
@@ -639,6 +653,9 @@ def Simulators(task_name: str):
     task_name = task_name.lower()
     if task_name in ["bernoulli_glm2"]:
         return simulator_bernoulli
+    if task_name in ["bernoulli_glm2_err90"]:
+        return simulator_bernoulli_glm2_err90
+    
     elif task_name in ["two_moons"]:
         return simulator_my_twomoons
     elif task_name in ["my_twomoons"]:
