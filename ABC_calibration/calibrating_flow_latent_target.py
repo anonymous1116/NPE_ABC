@@ -62,7 +62,7 @@ def main(args):
     transform=flow._transform
     embed = flow._embedding_net
     
-    index_ABC = ABC_rej2(x0, X_cal, 1e-2, device)
+    index_ABC = ABC_rej2(x0[:,inv_perm], X_cal[:,inv_perm], 1e-2, device)
     X_cal, Y_cal = X_cal[index_ABC], Y_cal[index_ABC]    
     
     with torch.no_grad():
@@ -134,6 +134,7 @@ def main(args):
         new_theta, _ = transform.inverse(tmp, context = embed(x0.expand((tmp.size(0),x0.size(1))).to(device)))    
 
     new_theta = new_theta.cpu()
+    print("new_theta:", new_theta)
     # 4) Now call your fast function (or sbi’s sample_batched) on GPU
     end_time = time.time()
     
