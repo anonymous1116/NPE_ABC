@@ -52,6 +52,8 @@ def main(args):
     inv_perm[permute] = torch.arange(len(permute))
     inv_perm = inv_perm[0:10]
 
+    print(x0[:,inv_perm])
+    print(observation_lists("bernoulli_glm2")[args.x0_ind])
     output_file_path = os.path.join(f'../depot_hyun/hyun/NPE_ABC/nets/{args.task}/J_{int(args.num_training/1000)}K/{args.task}_{seed}_{args.cond_den}.pkl')
     with open(output_file_path, 'rb') as f:
         saved_data = pickle.load(f)
@@ -81,7 +83,7 @@ def main(args):
         post_sample = true_posteriors(torch.tensor(x0), n_samples=10_000, bounds=bounds)
     
 
-    print("adj c2st", print(c2st(adj, post_sample)))
+    print("adj c2st",c2st(adj, post_sample))
 
     if bounds is not None:
         adj = torch.clamp(adj, min = torch.tensor(bounds)[:,0], max = torch.tensor(bounds)[:,1])
