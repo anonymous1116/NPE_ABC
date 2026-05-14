@@ -66,13 +66,23 @@ def main(args):
     X_cal, Y_cal = X_cal[index_ABC], Y_cal[index_ABC]    
     
     with torch.no_grad():
-        tmp, _ =  transform.forward(Y_cal.to(device), context = embed(X_cal.to(device)) )
+        tmp, _ = transform.forward(Y_cal.to(device), context = embed(X_cal.to(device)) )
         adj, _ = transform.inverse(tmp, context = embed(x0.expand((tmp.size(0),x0.size(1))).to(device)))    
     adj = adj.cpu()
 
     X_abc = []
     Y_abc = []
     
+    if args.task in task_benchmark:
+        post_sample = true_posteriors(j = args.x0_ind+1)
+    elif args.task in ["my_five_twomoons"]:    
+        post_sample = torch.load(f"../depot_hyun/hyun/NPE_ABC/seeds/my_five_twomoons_post_{args.x0_ind+1}.pt")
+    else:
+        post_sample = true_posteriors(torch.tensor(x0), n_samples=10_000, bounds=bounds)
+    
+
+    print("adj c2st", print(c2st(adj, post_sample)))
+
     if bounds is not None:
         adj = torch.clamp(adj, min = torch.tensor(bounds)[:,0], max = torch.tensor(bounds)[:,1])
 
@@ -105,12 +115,11 @@ def main(args):
 
         index_ABC = ABC_rej2(x0[:,inv_perm], X_chunk[:,inv_perm], args.tol*100, device)
     
-        X_chunk, Y_chunk = X_chunk[index_ABC], Y_chunk[index_ABC]
-        
-        X_abc.append(X_chunk)
-        Y_abc.append(Y_chunk)
+        X_abc.append(X_chunk[index_ABC])
+        Y_abc.append(Y_chunk[index_ABC])
         print(f"{i}th iteration out of {num_chunks}", flush = True)
-
+        del X_chunk, Y_chunk, index_ABC
+    
     X_abc = torch.cat(X_abc)
     Y_abc = torch.cat(Y_abc)
     
@@ -119,12 +128,6 @@ def main(args):
 
     print("X_abc size", X_abc.size())
 
-    if args.task in task_benchmark:
-        post_sample = true_posteriors(j = args.x0_ind+1)
-    elif args.task in ["my_five_twomoons"]:    
-        post_sample = torch.load(f"../depot_hyun/hyun/NPE_ABC/seeds/my_five_twomoons_post_{args.x0_ind+1}.pt")
-    else:
-        post_sample = true_posteriors(torch.tensor(x0), n_samples=10_000, bounds=bounds)
     
     with torch.no_grad():
         tmp, _ =  transform.forward(Y_abc.to(device), context = embed(X_abc.to(device)) )
