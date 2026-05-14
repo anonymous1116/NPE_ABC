@@ -87,7 +87,7 @@ def main(args):
         else:
             raise ValueError("Invalid task name for error level.")
         
-        permute = torch.randperm(noise_num+10)
+        permute = torch.randperm(noise_num)
         current_dir = os.path.dirname(os.path.abspath(__file__))
         
         torch.save(permute, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{args.task}_permutation.pt")

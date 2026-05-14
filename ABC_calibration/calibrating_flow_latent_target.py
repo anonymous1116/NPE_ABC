@@ -81,9 +81,6 @@ def main(args):
         post_sample = torch.load(f"../depot_hyun/hyun/NPE_ABC/seeds/my_five_twomoons_post_{args.x0_ind+1}.pt")
     else:
         post_sample = true_posteriors(torch.tensor(x0), n_samples=10_000, bounds=bounds)
-    
-
-    print("adj c2st",c2st(adj, post_sample))
 
     if bounds is not None:
         adj = torch.clamp(adj, min = torch.tensor(bounds)[:,0], max = torch.tensor(bounds)[:,1])
