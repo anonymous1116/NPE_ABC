@@ -81,13 +81,13 @@ def main(args):
         #permunation
         torch.manual_seed(2825)
         if args.task == "bernoulli_glm2_err40":
-                noise_num = 40
+            noise_num = 40
         elif args.task == "bernoulli_glm2_err90": 
             noise_num = 90
         else:
             raise ValueError("Invalid task name for error level.")
         
-        permute = torch.randperm(90)
+        permute = torch.randperm(noise_num+10)
         current_dir = os.path.dirname(os.path.abspath(__file__))
         
         torch.save(permute, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{args.task}_permutation.pt")
