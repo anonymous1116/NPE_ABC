@@ -98,39 +98,52 @@ class true_Posteriors:
             index = torch.all(index, 1)  # Check if all conditions hold per sample
             samples = samples[index]
         return samples
-
-    def my_twomoons(self, obs, n_samples):
+    
+    def my_twomoons(self,obs, n_samples, bounds = None):
         if obs.ndim == 2:
             obs = obs.flatten()
-        c = 1/np.sqrt(2)
-        theta = torch.zeros((n_samples, 2))
-        for i in range(n_samples):
-            p = Simulators("my_twomoons")(torch.zeros(1,2))
-            q = torch.zeros(2)
-            q[0] = p[0,0] - obs[0]
-            q[1] = obs[1] - p[0,1]
-            
-            if np.random.rand() < 0.5:
-                q[0] = -q[0]
-            theta[i, 0] = c * (q[0] - q[1])
-            theta[i, 1] = c * (q[0] + q[1])
-        return theta
-    
+
+        obs = torch.as_tensor(obs)
+        c = 1 / np.sqrt(2)
+
+        # Generate all samples at once
+        p = Simulators("my_twomoons")(torch.zeros(100*n_samples, 2))
+
+        # Vectorized q construction
+        q0 = p[:, 0] - obs[0]
+        q1 = obs[1] - p[:, 1]
+
+        # Random sign flip
+        signs = torch.where(
+            torch.rand(100*n_samples) < 0.5,
+            -1.0,
+            1.0,
+        )
+
+        q0 = q0 * signs
+
+        # Vectorized theta computation
+        theta = torch.empty(n_samples, 2)
+        theta[:, 0] = c * (q0 - q1)
+        theta[:, 1] = c * (q0 + q1)
+
+        if bounds is not None:
+            theta = torch.clone(self.apply_bounds(theta, bounds))
+        sam_ind = np.random.choice(np.arange(0, theta.size()[0]), n_samples, replace = False)
+        
+        return theta[sam_ind,:]
+
     def my_five_twomoons(self, obs, n_samples, bounds = None):
         if obs.ndim == 2:
             obs = obs.flatten()
         posterior = []
         for i in range(5):
             obs_tmp = obs[2*i: (2*i +2)]
-            tmp2 = self.my_twomoons(obs = obs_tmp, n_samples = 100*n_samples)
+            bounds_tmp = None if bounds is None else bounds[2*i: (2*i + 2)]
+            tmp2 = self.my_twomoons(obs = obs_tmp, n_samples = n_samples, bounds = bounds_tmp)
             posterior.append(tmp2)
         posterior = torch.cat(posterior, dim = 1)
-
-        if bounds is not None:
-            posterior = torch.clone(apply_bounds(posterior, bounds))
-        sam_ind = np.random.choice(np.arange(0, posterior.size()[0]), n_samples, replace = False)
-        
-        return posterior[sam_ind,:]
+        return posterior
 
     def MoG(self,obs, n_samples, bounds = None):
         obs = torch.tensor(obs)
