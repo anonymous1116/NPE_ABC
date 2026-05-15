@@ -130,6 +130,10 @@ def main(args):
         tmp, _ =  transform.forward(Y_abc.to(device), context = embed(X_abc.to(device)) )
         new_theta, _ = transform.inverse(tmp, context = embed(x0.expand((tmp.size(0),x0.size(1))).to(device)))    
 
+    if bounds is not None:
+        new_theta = torch.clamp(new_theta, min = torch.tensor(bounds)[:,0], max = torch.tensor(bounds)[:,1])
+
+
     new_theta = new_theta.cpu()
     print("new_theta:", new_theta)
     # 4) Now call your fast function (or sbi’s sample_batched) on GPU
