@@ -95,7 +95,7 @@ def main(args):
 
 
     print(X_cal.size())
-
+    new_tol = 1e-2
     for i in range(num_chunks + 1): 
         start = i * chunk_size
         end = (i + 1) * chunk_size if (i + 1) * chunk_size < L else L
@@ -110,7 +110,7 @@ def main(args):
         
         X_chunk = simulators(Y_chunk)
 
-        index_ABC = ABC_rej2(x0[:,inv_perm], X_chunk[:,inv_perm], args.tol*100, device)
+        index_ABC = ABC_rej2(x0[:,inv_perm], X_chunk[:,inv_perm], args.tol*(1/new_tol), device)
     
         X_abc.append(X_chunk[index_ABC])
         Y_abc.append(Y_chunk[index_ABC])
@@ -120,7 +120,7 @@ def main(args):
     X_abc = torch.cat(X_abc)
     Y_abc = torch.cat(Y_abc)
     
-    index_ABC = ABC_rej2(x0[:, inv_perm], X_abc[:, inv_perm], 0.01, device)
+    index_ABC = ABC_rej2(x0[:, inv_perm], X_abc[:, inv_perm], new_tol, device)
     X_abc, Y_abc = X_abc[index_ABC], Y_abc[index_ABC]
 
     print("X_abc size", X_abc.size())
@@ -132,7 +132,9 @@ def main(args):
 
     if bounds is not None:
         new_theta = torch.clamp(new_theta, min = torch.tensor(bounds)[:,0], max = torch.tensor(bounds)[:,1])
-
+        tol_bound = 10000/new_theta.size(0)*new_tol
+        index_ABC = ABC_rej2(x0[:, inv_perm], X_abc[:, inv_perm], tol_bound, device)
+        X_abc, Y_abc = X_abc[index_ABC], Y_abc[index_ABC]
 
     new_theta = new_theta.cpu()
     print("new_theta:", new_theta)
