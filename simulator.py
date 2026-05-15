@@ -122,7 +122,7 @@ class true_Posteriors:
         posterior = []
         for i in range(5):
             obs_tmp = obs[2*i: (2*i +2)]
-            tmp2 = self.my_twomoons(obs = obs_tmp, n_samples = 10*n_samples)
+            tmp2 = self.my_twomoons(obs = obs_tmp, n_samples = 100*n_samples)
             posterior.append(tmp2)
         posterior = torch.cat(posterior, dim = 1)
 
