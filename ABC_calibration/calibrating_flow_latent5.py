@@ -10,13 +10,38 @@ from sbi.analysis import pairplot
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from sbibm.metrics.c2st import c2st
 from simulator import Priors, Simulators, Bounds, observation_lists, true_Posteriors, task_benchmark
-from help_functions import UnifSample, param_box, truncated_mvn_sample, ABC_rej2, forward_from_theta_test, eigen_chunked
+from help_functions import UnifSample, compute_mad, param_box, truncated_mvn_sample, ABC_rej2, forward_from_theta_test, eigen_chunked
 
 # To test TABC_rejection instead of WABC_rejection, replace the line 138 with the following line:
 #index_ABC = TABC_rejection(x0, X_abc, 0.01, density_estimator_npe, Y_abc.size(1), device, num_samples=100
 
 
-def WABC_rejection(x0, X_cal, tol, density_estimator, theta_dim, device, num_samples=1000):
+def ABC_rejection(x0, X_cal, tol, device, sort = False):
+    # Move all tensors to the target device at once
+    x0 = x0.to(device)
+    X_cal = X_cal.to(device)
+    mad = compute_mad(X_cal)
+    mad = torch.reshape(mad, (1, X_cal.size(1))).to(device)
+    dist = torch.sqrt(torch.mean(torch.abs(X_cal.to(device) - x0.to(device))**2/mad**2, 1))
+    
+    # Determine threshold distance using top-k rather than sorting the entire tensor
+    num = X_cal.size(0)
+    nacc = int(num * tol)
+    ds = torch.topk(dist, nacc, largest=False).values[-1]
+    
+    # Create mask and filter based on the threshold distance
+    wt1 = (dist <= ds)
+    torch.cuda.empty_cache()
+    # Select points within tolerance and return to CPU if needed
+    if sort:
+        sorted_indices = torch.argsort(dist)
+        return wt1.cpu(), sorted_indices.cpu()
+    else:
+        return wt1.cpu()
+
+
+
+def WABC_rejection(x0, X_cal, tol, density_estimator, theta_dim, device, num_samples=1000, sort = False):
     Z_init = torch.randn((num_samples,theta_dim))
     density_estimator_npe_gpu = density_estimator.to(device).eval()
     flow = density_estimator_npe_gpu.net
@@ -44,7 +69,11 @@ def WABC_rejection(x0, X_cal, tol, density_estimator, theta_dim, device, num_sam
     # Select points within tolerance and return to CPU if needed
     del transform, embed, Z_test, mean_test, frob_sq, W_distances
     torch.cuda.empty_cache()
-    return wt1.cpu()
+    if sort:
+        sorted_indices = torch.argsort(W_distances)
+        return wt1.cpu(), sorted_indices.cpu()
+    else:
+        return wt1.cpu()
 
 
 def main(args):
@@ -144,10 +173,10 @@ def main(args):
     Y_abc = torch.cat(Y_abc)    
 
     new_tol = 1e-2
-    index_WABC = WABC_rejection(x0, X_abc, new_tol, density_estimator_npe, Y_abc.size(1), device, num_samples=300)
+    index_WABC, rank_idx_WABC = WABC_rejection(x0, X_abc, new_tol, density_estimator_npe, Y_abc.size(1), device, num_samples=300, sort=True)
     X_abc_WABC, Y_abc_WABC = X_abc[index_WABC], Y_abc[index_WABC]
 
-    index_ABC = ABC_rej2(x0, X_abc, new_tol, device)
+    index_ABC, rank_idx_ABC = ABC_rejection(x0, X_abc, new_tol, device, sort=True)
     X_abc_ABC, Y_abc_ABC = X_abc[index_ABC], Y_abc[index_ABC]
 
 
@@ -163,10 +192,30 @@ def main(args):
     with torch.no_grad():
         tmp, _ =  transform.forward(Y_abc_WABC.to(device), context = embed(X_abc_WABC.to(device)) )
         new_theta_WABC, _ = transform.inverse(tmp, context = embed(x0.expand((tmp.size(0),x0.size(1))).to(device)))   
+        
         tmp, _ =  transform.forward(Y_abc_ABC.to(device), context = embed(X_abc_ABC.to(device)) )
         new_theta_ABC, _ = transform.inverse(tmp, context = embed(x0.expand((tmp.size(0),x0.size(1))).to(device)))   
         
-
+    if bounds is not None:
+        new_theta_WABC = torch.clamp(new_theta_WABC, min = torch.tensor(bounds)[:,0], max = torch.tensor(bounds)[:,1])
+        tol_bound = 10000/new_theta_WABC.size(0)*new_tol
+        # indices of accepted samples
+        accepted_idx = rank_idx_WABC[:int(tol_bound*X_abc_WABC.size(0))]
+        X_abc_WABC, Y_abc_WABC = X_abc_WABC[accepted_idx], Y_abc_WABC[accepted_idx]
+        with torch.no_grad():
+            tmp, _ =  transform.forward(Y_abc_WABC.to(device), context = embed(X_abc_WABC.to(device)) )
+            new_theta_WABC, _ = transform.inverse(tmp, context = embed(x0.expand((tmp.size(0),x0.size(1))).to(device)))    
+        new_theta_WABC = torch.clamp(new_theta_WABC, min = torch.tensor(bounds)[:,0], max = torch.tensor(bounds)[:,1])
+    
+        new_theta_ABC = torch.clamp(new_theta_ABC, min = torch.tensor(bounds)[:,0], max = torch.tensor(bounds)[:,1])
+        tol_bound = 10000/new_theta_ABC.size(0)*new_tol
+        # indices of accepted samples
+        accepted_idx = rank_idx_ABC[:int(tol_bound*X_abc_ABC.size(0))]
+        X_abc_ABC, Y_abc_ABC = X_abc_ABC[accepted_idx], Y_abc_ABC[accepted_idx]
+        with torch.no_grad():
+            tmp, _ =  transform.forward(Y_abc_ABC.to(device), context = embed(X_abc_ABC.to(device)) )
+            new_theta_ABC, _ = transform.inverse(tmp, context = embed(x0.expand((tmp.size(0),x0.size(1))).to(device)))    
+        new_theta_ABC = torch.clamp(new_theta_ABC, min = torch.tensor(bounds)[:,0], max = torch.tensor(bounds)[:,1])
 
     new_theta_WABC = new_theta_WABC.cpu()
     new_theta_ABC = new_theta_ABC.cpu()
