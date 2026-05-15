@@ -116,16 +116,21 @@ class true_Posteriors:
             theta[i, 1] = c * (q[0] + q[1])
         return theta
     
-    def my_five_twomoons(self, obs, n_samples):
+    def my_five_twomoons(self, obs, n_samples, bounds = None):
         if obs.ndim == 2:
             obs = obs.flatten()
         posterior = []
         for i in range(5):
             obs_tmp = obs[2*i: (2*i +2)]
-            tmp2 = self.my_twomoons(obs = obs_tmp, n_samples = n_samples)
+            tmp2 = self.my_twomoons(obs = obs_tmp, n_samples = 5*n_samples)
             posterior.append(tmp2)
-        return torch.cat(posterior, dim = 1)
+        posterior = torch.cat(posterior, dim = 1)
 
+        if bounds is not None:
+            posterior = torch.clone(apply_bounds(posterior, bounds))
+        sam_ind = np.random.choice(np.arange(0, posterior.size()[0]), n_samples, replace = False)
+        
+        return posterior[sam_ind,:]
 
     def MoG(self,obs, n_samples, bounds = None):
         obs = torch.tensor(obs)
