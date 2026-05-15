@@ -47,8 +47,6 @@ def WABC_rejection(x0, X_cal, tol, density_estimator, theta_dim, device, num_sam
     return wt1.cpu()
 
 
-
-
 def main(args):
     seed = args.seed
     #torch.set_default_device("cpu")
@@ -128,6 +126,7 @@ def main(args):
 
         if nums == 0:
             break
+
         if args.task.startswith("bernoulli_glm2"):
             Y_chunk = truncated_mvn_sample(nums, priors_mean, priors_std, min_vals, max_vals)
         else:
