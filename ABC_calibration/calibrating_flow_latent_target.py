@@ -124,12 +124,13 @@ def main(args):
     X_abc, Y_abc = X_abc[index_ABC], Y_abc[index_ABC]
 
     print("X_abc size", X_abc.size())
-
-    
+    with torch.no_grad():
+        tmp, _ =  transform.forward(Y_abc.to(device), context = embed(X_abc.to(device)) )
+        new_theta, _ = transform.inverse(tmp, context = embed(x0.expand((tmp.size(0),x0.size(1))).to(device)))    
     
     if bounds is not None:
         new_theta = torch.clamp(new_theta, min = torch.tensor(bounds)[:,0], max = torch.tensor(bounds)[:,1])
-        tol_bound = 10000/new_theta.size(0)
+        tol_bound = 10000/new_theta.size(0) * new_tol
         index_ABC = ABC_rej2(x0[:, inv_perm], X_abc[:, inv_perm], tol_bound, device)
         X_abc, Y_abc = X_abc[index_ABC], Y_abc[index_ABC]
         with torch.no_grad():
@@ -220,4 +221,4 @@ if __name__ == "__main__":
     print(f"cond_den: {args.cond_den}")
 
 
-#python ABC_calibration/calibrating_flow_latent_target.py --x0_ind 0 --seed 1 --task "my_five_twomoons_err40" --num_training 3000000 --L 10000000 --tol 1e-3
+#python ABC_calibration/calibrating_flow_latent_target.py --x0_ind 1 --seed 1 --task "my_five_twomoons_err90" --num_training 5000000 --L 1000000 --tol 1e-2
