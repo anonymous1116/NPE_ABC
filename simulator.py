@@ -123,7 +123,7 @@ class true_Posteriors:
         q0 = q0 * signs
 
         # Vectorized theta computation
-        theta = torch.empty(n_samples, 2)
+        theta = torch.empty(100*n_samples, 2)
         theta[:, 0] = c * (q0 - q1)
         theta[:, 1] = c * (q0 + q1)
 
