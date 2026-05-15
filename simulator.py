@@ -58,7 +58,8 @@ def Priors(task_name: str):
         raise ValueError(f"Unknown task name for prior: {task_name}")
 
 task_benchmark = ["two_moons", "bernoulli_glm2", "bernoulli_glm2_err90",
-                  "slcp_summary_transform2", "double_slcp_summary_transform2", "mog_10", "slcp_distractors", "slcp", "my_five_twomoons_err40","my_five_twomoons_err90"]
+                  "slcp_summary_transform2", "double_slcp_summary_transform2", "mog_10", "slcp_distractors", "slcp", 
+                  "my_five_twomoons_err40","my_five_twomoons_err90"]
     
 class true_Posteriors:
     def __init__(self, task):

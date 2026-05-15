@@ -30,7 +30,7 @@ def main(args):
     simulators = Simulators(args.task)
     bounds = Bounds(args.task)
     
-    chunk_size = 1_000_000
+    chunk_size = 5_000_000
     num_chunks = L // chunk_size
     
     start_time = time.time()
