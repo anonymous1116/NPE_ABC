@@ -201,7 +201,7 @@ def main(args):
         tol_bound = 10000/new_theta_WABC.size(0)*new_tol
         # indices of accepted samples
         accepted_idx = rank_idx_WABC[:int(tol_bound*X_abc_WABC.size(0))]
-        X_abc_WABC, Y_abc_WABC = X_abc_WABC[accepted_idx], Y_abc_WABC[accepted_idx]
+        X_abc_WABC, Y_abc_WABC = X_abc[accepted_idx], Y_abc[accepted_idx]
         with torch.no_grad():
             tmp, _ =  transform.forward(Y_abc_WABC.to(device), context = embed(X_abc_WABC.to(device)) )
             new_theta_WABC, _ = transform.inverse(tmp, context = embed(x0.expand((tmp.size(0),x0.size(1))).to(device)))    
@@ -211,7 +211,7 @@ def main(args):
         tol_bound = 10000/new_theta_ABC.size(0)*new_tol
         # indices of accepted samples
         accepted_idx = rank_idx_ABC[:int(tol_bound*X_abc_ABC.size(0))]
-        X_abc_ABC, Y_abc_ABC = X_abc_ABC[accepted_idx], Y_abc_ABC[accepted_idx]
+        X_abc_ABC, Y_abc_ABC = X_abc[accepted_idx], Y_abc[accepted_idx]
         with torch.no_grad():
             tmp, _ =  transform.forward(Y_abc_ABC.to(device), context = embed(X_abc_ABC.to(device)) )
             new_theta_ABC, _ = transform.inverse(tmp, context = embed(x0.expand((tmp.size(0),x0.size(1))).to(device)))    
