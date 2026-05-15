@@ -147,7 +147,8 @@ def main(args):
     print("min_vals:", min_vals)
 
     print(X_cal.size())
-
+    new_tol = 1e-1
+    
     for i in range(num_chunks + 1): 
         start = i * chunk_size
         end = (i + 1) * chunk_size if (i + 1) * chunk_size < L else L
@@ -162,7 +163,7 @@ def main(args):
             Y_chunk = param_box(UnifSample(bins = 10), adj, num=nums)
         
         X_chunk = simulators(Y_chunk)
-        index_ABC = ABC_rej2(x0, X_chunk, args.tol*100, device)
+        index_ABC = ABC_rej2(x0, X_chunk, args.tol/new_tol, device)
         X_chunk, Y_chunk = X_chunk[index_ABC], Y_chunk[index_ABC]
         
         X_abc.append(X_chunk)
@@ -172,7 +173,6 @@ def main(args):
     X_abc = torch.cat(X_abc)
     Y_abc = torch.cat(Y_abc)    
 
-    new_tol = 1e-1
     index_WABC, rank_idx_WABC = WABC_rejection(x0, X_abc, new_tol, density_estimator_npe, Y_abc.size(1), device, num_samples=10, sort=True)
     X_abc_WABC, Y_abc_WABC = X_abc[index_WABC], Y_abc[index_WABC]
 
