@@ -198,7 +198,7 @@ def main(args):
         
     if bounds is not None:
         new_theta_WABC = torch.clamp(new_theta_WABC, min = torch.tensor(bounds)[:,0], max = torch.tensor(bounds)[:,1])
-        tol_bound = 10000/new_theta_WABC.size(0)*new_tol
+        tol_bound = 10000/new_theta_WABC.size(0)
         # indices of accepted samples
         accepted_idx = rank_idx_WABC[:int(tol_bound*X_abc_WABC.size(0))]
         X_abc_WABC, Y_abc_WABC = X_abc[accepted_idx], Y_abc[accepted_idx]
@@ -208,7 +208,7 @@ def main(args):
         new_theta_WABC = torch.clamp(new_theta_WABC, min = torch.tensor(bounds)[:,0], max = torch.tensor(bounds)[:,1])
     
         new_theta_ABC = torch.clamp(new_theta_ABC, min = torch.tensor(bounds)[:,0], max = torch.tensor(bounds)[:,1])
-        tol_bound = 10000/new_theta_ABC.size(0)*new_tol
+        tol_bound = 10000/new_theta_ABC.size(0)
         # indices of accepted samples
         accepted_idx = rank_idx_ABC[:int(tol_bound*X_abc_ABC.size(0))]
         X_abc_ABC, Y_abc_ABC = X_abc[accepted_idx], Y_abc[accepted_idx]
