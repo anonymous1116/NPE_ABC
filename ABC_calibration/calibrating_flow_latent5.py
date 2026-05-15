@@ -67,7 +67,7 @@ def WABC_rejection(x0, X_cal, tol, density_estimator, theta_dim, device, num_sam
     # Create mask and filter based on the threshold distance
     wt1 = (W_distances <= ds)
     # Select points within tolerance and return to CPU if needed
-    del transform, embed, Z_test, mean_test, frob_sq, W_distances
+    del transform, embed, Z_test, mean_test, frob_sq
     torch.cuda.empty_cache()
     if sort:
         sorted_indices = torch.argsort(W_distances)
