@@ -147,7 +147,7 @@ def main(args):
     print("min_vals:", min_vals)
 
     print(X_cal.size())
-    new_tol = 1e-1
+    new_tol = 1e-2
     
     for i in range(num_chunks + 1): 
         start = i * chunk_size
@@ -173,7 +173,7 @@ def main(args):
     X_abc = torch.cat(X_abc)
     Y_abc = torch.cat(Y_abc)    
 
-    index_WABC, rank_idx_WABC = WABC_rejection(x0, X_abc, new_tol, density_estimator_npe, Y_abc.size(1), device, num_samples=10, sort=True)
+    index_WABC, rank_idx_WABC = WABC_rejection(x0, X_abc, new_tol, density_estimator_npe, Y_abc.size(1), device, num_samples=300, sort=True)
     X_abc_WABC, Y_abc_WABC = X_abc[index_WABC], Y_abc[index_WABC]
 
     index_ABC, rank_idx_ABC = ABC_rejection(x0, X_abc, new_tol, device, sort=True)
