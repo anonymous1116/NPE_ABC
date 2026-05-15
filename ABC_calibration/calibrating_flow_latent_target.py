@@ -121,11 +121,11 @@ def main(args):
     Y_abc = torch.cat(Y_abc)
     
     index_ABC = ABC_rej2(x0[:, inv_perm], X_abc[:, inv_perm], new_tol, device)
-    X_abc, Y_abc = X_abc[index_ABC], Y_abc[index_ABC]
+    X_abc_tmp, Y_abc_tmp = X_abc[index_ABC], Y_abc[index_ABC]
 
     print("X_abc size", X_abc.size())
     with torch.no_grad():
-        tmp, _ =  transform.forward(Y_abc.to(device), context = embed(X_abc.to(device)) )
+        tmp, _ =  transform.forward(Y_abc_tmp.to(device), context = embed(X_abc_tmp.to(device)) )
         new_theta, _ = transform.inverse(tmp, context = embed(x0.expand((tmp.size(0),x0.size(1))).to(device)))    
     
     if bounds is not None:
