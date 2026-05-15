@@ -228,9 +228,10 @@ def main(args):
     print("WABC sample size: ", new_theta_WABC.size())
     print("ABC sample size: ", new_theta_ABC.size())
     results_size = min(10_000, new_theta_WABC.size(0))
+    results_size2 = min(10_000, new_theta_ABC.size(0))
 
     c2st_WABC = c2st(post_sample[:results_size].cpu(), new_theta_WABC[:results_size] )
-    c2st_ABC = c2st(post_sample[:results_size].cpu(), new_theta_ABC[:results_size] )
+    c2st_ABC = c2st(post_sample[:results_size2].cpu(), new_theta_ABC[:results_size2] )
     
     print("c2st_WABC:", c2st_WABC, "c2st_ABC:", c2st_ABC)    
     
