@@ -41,7 +41,9 @@ def main(args):
         true_posterior = true_Posteriors("my_five_twomoons")
         
         x0_list = []
-        theta_obs = Priors("my_five_twomoons").sample((10,))
+        #theta_obs = Priors("my_five_twomoons").sample((10,))
+        theta_obs = torch.rand((10,10)) * 8 - 4
+        
         X_obs = Simulators("my_five_twomoons")(theta_obs)
 
         for j in range(10):
