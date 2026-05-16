@@ -140,6 +140,8 @@ def main(args):
         
     new_theta = new_theta.cpu()
     print("new_theta:", new_theta)
+    print("new_theta_max:", torch.max(new_theta,0).values)
+    print("new_theta_min:", torch.min(new_theta,0).values)
     # 4) Now call your fast function (or sbi’s sample_batched) on GPU
     end_time = time.time()
     
