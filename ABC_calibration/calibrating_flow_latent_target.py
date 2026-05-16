@@ -131,7 +131,7 @@ def main(args):
     if bounds is not None:
         new_theta = torch.clamp(new_theta, min = torch.tensor(bounds)[:,0], max = torch.tensor(bounds)[:,1])
         tol_bound = 10000/new_theta.size(0) * new_tol
-        print("tol_bound:", tol_bound)
+        print("new_tol", new_tol, "tol_bound:", tol_bound)
         index_ABC = ABC_rej2(x0[:, inv_perm], X_abc[:, inv_perm], tol_bound, device)
         X_abc, Y_abc = X_abc[index_ABC], Y_abc[index_ABC]
         with torch.no_grad():
