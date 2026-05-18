@@ -28,10 +28,10 @@ cd $SLURM_SUBMIT_DIR
 seed=$((SLURM_ARRAY_TASK_ID / 10 + 1))
 #L=100000000
 
-L=10000000000
-task="my_five_twomoons_err40"
+L=1000000000
+task="bernoulli_glm2_err90"
 num_training=5000000 
-tol=1e-6
+tol=1e-5
 cdim=10
 # Run the calibrate_amor.py
 x0_ind=$((SLURM_ARRAY_TASK_ID % 10)) 
