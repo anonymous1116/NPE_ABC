@@ -18,6 +18,7 @@ def main(args):
         current_dir = os.path.dirname(os.path.abspath(__file__))
         torch.save(x0_list, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/my_ten_twomoons_obs.pt")    
         print(x0_list)
+    
 
     elif args.task in ["my_five_twomoons_err40", "my_five_twomoons_err90"]:
         #permunation
@@ -83,17 +84,23 @@ def main(args):
             torch.save(post_sample, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/mog_10_post_{j+1}.pt")
             print(post_sample)
     
-    elif args.task in ["bernoulli_glm2_err40", "bernoulli_glm2_err90"]:
+    elif args.task in ["bernoulli_glm2_err10", "bernoulli_glm2_err30", "bernoulli_glm2_err50", "bernoulli_glm2_err70", "bernoulli_glm2_err90"]:
         #permunation
         torch.manual_seed(2825)
-        if args.task == "bernoulli_glm2_err40":
-            noise_num = 40
-        elif args.task == "bernoulli_glm2_err90": 
+        if args.task == "bernoulli_glm2_err10":
+            noise_num = 10
+        elif args.task == "bernoulli_glm2_err30":
+            noise_num = 30
+        elif args.task == "bernoulli_glm2_err50":
+            noise_num = 50
+        elif args.task == "bernoulli_glm2_err70":
+            noise_num = 70
+        elif args.task == "bernoulli_glm2_err90":
             noise_num = 90
         else:
             raise ValueError("Invalid task name for error level.")
         
-        permute = torch.randperm(noise_num)
+        permute = torch.randperm(noise_num+10)
         current_dir = os.path.dirname(os.path.abspath(__file__))
         
         torch.save(permute, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{args.task}_permutation.pt")
