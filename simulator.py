@@ -13,7 +13,7 @@ from help_functions import SLCP_summary_transform2
 
 def Bounds(task_name: str):
     task_name = task_name.lower()
-    if task_name in ["bernoulli_glm2", "bernoulli_glm2_err90"]:
+    if task_name.startswith("bernoulli_glm2"):
         return None
     elif task_name in ["two_moons"]:
         return [[-1, 1]] * 2
@@ -34,7 +34,7 @@ def Bounds(task_name: str):
 
 def Priors(task_name: str):
     task_name = task_name.lower()
-    if task_name in ["bernoulli_glm2", "bernoulli_glm2_err90"]:
+    if task_name.startswith("bernoulli_glm2"):
         dim = 10
         loc = torch.zeros(dim)
         precision_diag = 0.5 * torch.ones(dim)
@@ -69,7 +69,7 @@ class true_Posteriors:
         # Handle the case where task is 'slcp' differently
         if self.task == "two_moons":
             return self.two_moons(kwargs.get('j', 0))
-        elif self.task in ["bernoulli_glm2", "bernoulli_glm2_err90"]:
+        elif self.task.startswith("bernoulli_glm2"):
             return self.bernoulli_glm2(kwargs.get('j', 0))
         elif self.task in ["slcp_summary_transform2", "slcp_distractors", "slcp"]:
             return self.slcp(kwargs.get('j', 0))
@@ -256,7 +256,8 @@ def observation_lists(task_name:str):
                              [-1.0, 1.0], [-0.5, 1.0], [-0.25, 0.5]], 
                              dtype = torch.float32)
     
-    elif task_name in ["my_five_twomoons", "my_five_twomoons_err2", "my_five_twomoons_err5", "my_five_twomoons_err10", "my_five_twomoons_err40", "my_five_twomoons_err90", "bernoulli_glm2_err90"]:
+    elif task_name in ["my_five_twomoons", "my_five_twomoons_err2", "my_five_twomoons_err5", "my_five_twomoons_err10", "my_five_twomoons_err40", "my_five_twomoons_err90", 
+                       "bernoulli_glm2_err10", "bernoulli_glm2_err30", "bernoulli_glm2_err50", "bernoulli_glm2_err70", "bernoulli_glm2_err90"]:
         current_dir = os.path.dirname(os.path.abspath(__file__))
         obs = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{task_name}_obs.pt")    
         return obs 
@@ -627,6 +628,18 @@ def simulator_bernoulli_glm2_err90(theta):
         X.append(tmp.cpu())
     return torch.cat(X, dim = 1).cpu()[:,permute]
 
+def simulator_bernoulli_glm2_err(theta, err_num = 90):
+    # theta: N * 10 dimensions
+    X = []
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    permute = torch.load(f"{os.path.dirname(os.path.abspath(__file__))}/../depot_hyun/hyun/NPE_ABC/seeds/bernoulli_glm2_err{err_num}_permutation.pt", weights_only = False)
+    X.append(simulator_bernoulli(theta))
+    batch_size  = theta.size(0)
+    for _ in range(err_num // 10):
+        tmp = torch.randn( (batch_size,10), device = device) * 2.0 
+        X.append(tmp.cpu())
+    return torch.cat(X, dim = 1).cpu()[:,permute]
+
 
 
 
@@ -675,7 +688,10 @@ def Simulators(task_name: str):
         return simulator_bernoulli
     if task_name in ["bernoulli_glm2_err90"]:
         return simulator_bernoulli_glm2_err90
-    
+    elif task_name in ["bernoulli_glm2_err10", "bernoulli_glm2_err30", "bernoulli_glm2_err50", "bernoulli_glm2_err70"]:
+        def simulator_with_err(theta):
+            return simulator_bernoulli_glm2_err(theta, err_num = int(task_name.split("_")[-1]))
+        return simulator_with_err
     elif task_name in ["two_moons"]:
         return simulator_my_twomoons
     elif task_name in ["my_twomoons"]:
