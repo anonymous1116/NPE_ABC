@@ -126,8 +126,6 @@ def main(args):
 
         torch.save(x0_list, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{args.task}_obs.pt")    
         print(x0_list)
-    
-    
     else:
         print("Task not recognized.")
 
