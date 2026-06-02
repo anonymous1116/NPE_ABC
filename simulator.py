@@ -690,7 +690,7 @@ def Simulators(task_name: str):
         return simulator_bernoulli_glm2_err90
     elif task_name in ["bernoulli_glm2_err10", "bernoulli_glm2_err30", "bernoulli_glm2_err50", "bernoulli_glm2_err70"]:
         def simulator_with_err(theta):
-            return simulator_bernoulli_glm2_err(theta, err_num = int(task_name.split("_")[-1]))
+            return simulator_bernoulli_glm2_err(theta, err_num = int(task_name.split("_")[-1][3:5]))
         return simulator_with_err
     elif task_name in ["two_moons"]:
         return simulator_my_twomoons
