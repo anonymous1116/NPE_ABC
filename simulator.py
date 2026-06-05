@@ -44,7 +44,7 @@ def Priors(task_name: str):
         return BoxUniform(low = -1*torch.ones(2), high = 1*torch.ones(2))
     elif task_name in ["my_twomoons"]:
         return BoxUniform(low = -5*torch.ones(2), high = 5*torch.ones(2))
-    elif task_name in ["my_five_twomoons", "my_five_twomoons_err2", "my_five_twomoons_err5", "my_five_twomoons_err10", "my_five_twomoons_err40", "my_five_twomoons_err90"]:
+    elif task_name.startswith("my_five_twomoons"):
         return BoxUniform(low = -5*torch.ones(10), high = 5*torch.ones(10))
     elif task_name in ["my_ten_twomoons"]:
         return BoxUniform(low = -5*torch.ones(20), high = 5*torch.ones(20))
@@ -205,7 +205,6 @@ class true_Posteriors:
         current_dir = os.path.dirname(os.path.abspath(__file__))
         post_sample = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/my_five_twomoons_err70_post_{j}.pt")    
         return post_sample
-
     def my_five_twomoons_err90(self, j):
         current_dir = os.path.dirname(os.path.abspath(__file__))
         post_sample = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/my_five_twomoons_err90_post_{j}.pt")    
