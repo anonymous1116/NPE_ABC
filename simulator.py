@@ -80,8 +80,14 @@ class true_Posteriors:
             return self.slcp(kwargs.get('j', 0))
         elif self.task in ["double_slcp_summary_transform2"]:
             return self.double_slcp(kwargs.get('j', 0))
-        elif self.task in ["my_five_twomoons_err40"]:
-            return self.my_five_twomoons_err40(kwargs.get('j', 0))
+        elif self.task in ["my_five_twomoons_err10"]:
+            return self.my_five_twomoons_err10(kwargs.get('j', 0))
+        elif self.task in ["my_five_twomoons_err30"]:
+            return self.my_five_twomoons_err30(kwargs.get('j', 0))
+        elif self.task in ["my_five_twomoons_err50"]:
+            return self.my_five_twomoons_err50(kwargs.get('j', 0))
+        elif self.task in ["my_five_twomoons_err70"]:
+            return self.my_five_twomoons_err70(kwargs.get('j', 0))
         elif self.task in ["my_five_twomoons_err90"]:
             return self.my_five_twomoons_err90(kwargs.get('j', 0))
         elif self.task in ["mog_10"]:
@@ -183,9 +189,21 @@ class true_Posteriors:
         task = sbibm.get_task("gaussian_linear_uniform")  # See sbibm.get_available_tasks() for all tasks
         return task.get_reference_posterior_samples(num_observation=j)
     
-    def my_five_twomoons_err40(self, j):
+    def my_five_twomoons_err10(self, j):
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        post_sample = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/my_five_twomoons_err40_post_{j}.pt")    
+        post_sample = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/my_five_twomoons_err10_post_{j}.pt")    
+        return post_sample
+    def my_five_twomoons_err30(self, j):
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        post_sample = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/my_five_twomoons_err30_post_{j}.pt")    
+        return post_sample
+    def my_five_twomoons_err50(self, j):
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        post_sample = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/my_five_twomoons_err50_post_{j}.pt")    
+        return post_sample
+    def my_five_twomoons_err70(self, j):
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        post_sample = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/my_five_twomoons_err70_post_{j}.pt")    
         return post_sample
 
     def my_five_twomoons_err90(self, j):
@@ -261,7 +279,9 @@ def observation_lists(task_name:str):
                              [-1.0, 1.0], [-0.5, 1.0], [-0.25, 0.5]], 
                              dtype = torch.float32)
     
-    elif task_name in ["my_five_twomoons", "my_five_twomoons_err2", "my_five_twomoons_err5", "my_five_twomoons_err10", "my_five_twomoons_err40", "my_five_twomoons_err90", 
+    elif task_name in ["my_five_twomoons", "my_five_twomoons_err2", "my_five_twomoons_err5", 
+                       "my_five_twomoons_err10", "my_five_twomoons_err30", "my_five_twomoons_err50",
+                          "my_five_twomoons_err70", "my_five_twomoons_err90", 
                        "bernoulli_glm2_err10", "bernoulli_glm2_err30", "bernoulli_glm2_err50", "bernoulli_glm2_err70", "bernoulli_glm2_err90"]:
         current_dir = os.path.dirname(os.path.abspath(__file__))
         obs = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{task_name}_obs.pt")    
@@ -574,53 +594,6 @@ def simulator_my_five_twomoons_err5(theta):
     X.append(tmp.cpu())
     return torch.cat(X, dim = 1)
     
-def simulator_my_five_twomoons_err10(theta):
-    # theta: N * 10 dimensions
-    X = []
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    
-    for i in range(5):
-        tmp = torch.clone(theta[:, 2*i : (2*i + 2 )] )
-        tmp2 = simulator_my_twomoons(tmp)
-        X.append(tmp2)
-    batch_size  = theta.size(0)
-    tmp = torch.randn( (batch_size,5), device = device) * 2.0 
-    X.append(tmp.cpu())
-    del tmp
-    tmp = torch.randn( (batch_size,5), device = device) * 2.0 
-    X.append(tmp.cpu())
-    return torch.cat(X, dim = 1)
-
-def simulator_my_five_twomoons_err40(theta):
-    # theta: N * 10 dimensions
-    X = []
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    permute = torch.load(f"{os.path.dirname(os.path.abspath(__file__))}/../depot_hyun/hyun/NPE_ABC/seeds/my_five_twomoons_err40_permutation.pt", weights_only = False)
-    for i in range(5):
-        tmp = torch.clone(theta[:, 2*i : (2*i + 2 )] )
-        tmp2 = simulator_my_twomoons(tmp)
-        X.append(tmp2)
-    batch_size  = theta.size(0)
-    for _ in range(4):
-        tmp = torch.randn( (batch_size,10), device = device) * 2.0 
-        X.append(tmp.cpu())
-    return torch.cat(X, dim = 1).cpu()[:,permute]
-
-def simulator_my_five_twomoons_err90(theta):
-    # theta: N * 10 dimensions
-    X = []
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    permute = torch.load(f"{os.path.dirname(os.path.abspath(__file__))}/../depot_hyun/hyun/NPE_ABC/seeds/my_five_twomoons_err90_permutation.pt", weights_only = False)
-    for i in range(5):
-        tmp = torch.clone(theta[:, 2*i : (2*i + 2 )] )
-        tmp2 = simulator_my_twomoons(tmp)
-        X.append(tmp2)
-    batch_size  = theta.size(0)
-    for _ in range(9):
-        tmp = torch.randn( (batch_size,10), device = device) * 2.0 
-        X.append(tmp.cpu())
-    return torch.cat(X, dim = 1).cpu()[:,permute]
-
 def simulator_bernoulli_glm2_err90(theta):
     # theta: N * 10 dimensions
     X = []
@@ -644,6 +617,23 @@ def simulator_bernoulli_glm2_err(theta, err_num = 90):
         tmp = torch.randn( (batch_size,10), device = device) * 2.0 
         X.append(tmp.cpu())
     return torch.cat(X, dim = 1).cpu()[:,permute]
+
+
+def simulator_my_five_twomoons_err(theta, err_num =90):
+    # theta: N * 10 dimensions
+    X = []
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    permute = torch.load(f"{os.path.dirname(os.path.abspath(__file__))}/../depot_hyun/hyun/NPE_ABC/seeds/my_five_twomoons_err{err_num}_permutation.pt", weights_only = False)
+    for i in range(5):
+        tmp = torch.clone(theta[:, 2*i : (2*i + 2 )] )
+        tmp2 = simulator_my_twomoons(tmp)
+        X.append(tmp2)
+    batch_size  = theta.size(0)
+    for _ in range(err_num // 10):
+        tmp = torch.randn( (batch_size,10), device = device) * 2.0 
+        X.append(tmp.cpu())
+    return torch.cat(X, dim = 1).cpu()[:,permute]
+
 
 
 
@@ -691,11 +681,13 @@ def Simulators(task_name: str):
     task_name = task_name.lower()
     if task_name in ["bernoulli_glm2"]:
         return simulator_bernoulli
-    if task_name in ["bernoulli_glm2_err90"]:
-        return simulator_bernoulli_glm2_err90
-    elif task_name in ["bernoulli_glm2_err10", "bernoulli_glm2_err30", "bernoulli_glm2_err50", "bernoulli_glm2_err70"]:
+    elif task_name in ["bernoulli_glm2_err10", "bernoulli_glm2_err30", "bernoulli_glm2_err50", "bernoulli_glm2_err70", "bernoulli_glm2_err90"]:
         def simulator_with_err(theta):
             return simulator_bernoulli_glm2_err(theta, err_num = int(task_name.split("_")[-1][3:5]))
+        return simulator_with_err
+    elif task_name in ["my_five_twomoons_err10", "my_five_twomoons_err30", "my_five_twomoons_err50", "my_five_twomoons_err70", "my_five_twomoons_err90"]:
+        def simulator_with_err(theta):
+            return simulator_my_five_twomoons_err(theta, err_num = int(task_name.split("_")[-1][3:5]))
         return simulator_with_err
     elif task_name in ["two_moons"]:
         return simulator_my_twomoons
@@ -703,17 +695,7 @@ def Simulators(task_name: str):
         return simulator_my_twomoons
     elif task_name in ["my_five_twomoons"]:
         return simulator_my_five_twomoons
-    elif task_name in ["my_five_twomoons_err2"]:
-        return simulator_my_five_twomoons_err2
-    elif task_name in ["my_five_twomoons_err5"]:
-        return simulator_my_five_twomoons_err5
-    elif task_name in ["my_five_twomoons_err10"]:
-        return simulator_my_five_twomoons_err10
-    elif task_name in ["my_five_twomoons_err40"]:
-        return simulator_my_five_twomoons_err40
-    elif task_name in ["my_five_twomoons_err90"]:
-        return simulator_my_five_twomoons_err90
-
+    
 
     elif task_name in ["my_ten_twomoons"]:
         return simulator_my_ten_twomoons
