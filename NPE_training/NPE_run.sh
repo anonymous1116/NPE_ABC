@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=4
+#SBATCH --cpus-per-task=6
 #SBATCH --partition=cpu
 #SBATCH --account=statdept
 #SBATCH --time=5-00:00:00
@@ -30,8 +30,8 @@ seeds=$((seed_START + SLURM_ARRAY_TASK_ID - 1))
 # Run the Python script with the specified N_EPOCHS value
 echo "Running with seed=$seeds"
 #python NPE_training/NPE_run_embed.py --task "slcp_distractors" --seed $seeds --cond_den "nsf" --num_training 1000000 --cdim 5
-python NPE_training/FMPE_run_NABC.py --task "bernoulli_glm2" --seed $seeds --num_training 1500000
-#python NPE_training/NPE_run.py --task "bernoulli_glm20" --seed $seeds --num_training 300000
+#python NPE_training/FMPE_run_NABC.py --task "bernoulli_glm2" --seed $seeds --num_training 1500000
+python NPE_training/NPE_run.py --task "my_five_twomoons_err10" --seed $seeds --num_training 3000000
 #python NPE_training/NPE_run.py --task "double_slcp_summary_transform2" --seed $seed --num_training 300000 --cond_den "nsf"
 #python NPE_training/SNPE_run.py --task "two_moons" --seed 1 --num_training 1000 --cond_den "nsf" --x0_ind 0
 echo "## Run Completed for seed=$seeds ##"
