@@ -19,7 +19,7 @@ def Bounds(task_name: str):
         return [[-1, 1]] * 2
     elif task_name in ["my_twomoons"]:
         return [[-5, 5]] * 2
-    elif task_name in ["my_five_twomoons", "my_five_twomoons_err2", "my_five_twomoons_err5", "my_five_twomoons_err10", "my_five_twomoons_err40", "my_five_twomoons_err90"]:
+    elif task_name.startswith("my_five_twomoons"):
         return [[-5, 5]] * 10
     elif task_name in ["my_ten_twomoons"]:
         return [[-5,5]] * 20
