@@ -20,10 +20,16 @@ def main(args):
         print(x0_list)
     
 
-    elif args.task in ["my_five_twomoons_err40", "my_five_twomoons_err90"]:
+    elif args.task.startswith("my_five_twomoons_err"):
         #permunation
-        if args.task == "my_five_twomoons_err40":
-            noise_num = 40
+        if args.task == "my_five_twomoons_err10":
+            noise_num = 10
+        elif args.task == "my_five_twomoons_err30":
+            noise_num = 30
+        elif args.task == "my_five_twomoons_err50":
+            noise_num = 50
+        elif args.task == "my_five_twomoons_err70":
+            noise_num = 70
         elif args.task == "my_five_twomoons_err90": 
             noise_num = 90
         else:
@@ -43,7 +49,7 @@ def main(args):
         
         x0_list = []
         #theta_obs = Priors("my_five_twomoons").sample((10,))
-        theta_obs = torch.rand((10,10)) * 8 - 4
+        theta_obs = torch.rand((10,10)) * 8 - 4 #support: [-4,4]
         
         X_obs = Simulators("my_five_twomoons")(theta_obs)
 
