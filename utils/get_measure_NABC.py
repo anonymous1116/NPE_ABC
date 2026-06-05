@@ -21,7 +21,7 @@ def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, c
         true_sample = posterior(torch.tensor(x0), n_samples=post_n_samples, bounds=limits)
 
     if method in ["FMPE", "NPSE"]:
-        output_file_path = f"../depot_hyun/hyun/NPE_ABC/{method}_nets/{task}/J_{int(num_training/1000)}K/{task}_{seed}.pkl"    
+        output_file_path = f"../depot_hyun/hyun/NPE_ABC/{method}_nets_NABC/{task}/J_{int(num_training/1000)}K/{task}_{seed}.pkl"    
     else:    
         output_file_path = f"../depot_hyun/hyun/NPE_ABC/nets/{task}/J_{int(num_training/1000)}K/{task}_{seed}_{cond}.pkl"    
     
@@ -43,7 +43,7 @@ def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, c
     print("c2st: ", dist)  
     # Save
     
-    output_dir = f"../depot_hyun/hyun/NPE_ABC/{method}_{measure}_results/{task}/J_{int(num_training/1000)}K"   
+    output_dir = f"../depot_hyun/hyun/NPE_ABC/{method}_{measure}_NABC_results/{task}/J_{int(num_training/1000)}K"   
     os.makedirs(output_dir, exist_ok=True)
     torch.save(dist, os.path.join(output_dir, f"result_x0_{x0_ind}_seed_{seed}.pt"))  # Customize filename as needed
 
