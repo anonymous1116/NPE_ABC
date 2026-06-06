@@ -8,8 +8,40 @@ import argparse
 import time
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from simulator import Simulators, Priors, observation_lists, Bounds, true_Posteriors, task_benchmark
-from utils.evaluate import create_c2st_job_script
 from sbibm.metrics.c2st import c2st
+import subprocess
+
+
+def submit_eval_job(task, seed, num_training, obs_idx):
+    job_name = f"eval_{task}_x0{obs_idx}_s{seed}"
+    script = f"""#!/bin/bash
+#SBATCH --job-name={job_name}
+#SBATCH --output=../depot_hyun/hyun/NPE_ABC/NPSE_nets_NABC/logs/{job_name}_%j.out
+#SBATCH --error=../depot_hyun/hyun/NPE_ABC/NPSE_nets_NABC/logs/{job_name}_%j.err
+#SBATCH --time=01:00:00
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=4
+
+# Create the output_log directory if it doesn't exist
+mkdir -p ../depot_hyun/hyun/NPE_ABC/NPSE_nets_NABC/logs
+
+# Load the required Python environment
+module load conda
+conda activate /depot/wangxiao/apps/hyun18/NPE_NABC
+
+python eval_NPSE.py --task {task} --seed {seed} --num_training {num_training} --obs_idx {obs_idx}
+"""
+    slurm_dir = f"../depot_hyun/hyun/NPE_ABC/NPSE_nets_NABC/slurm_scripts"
+    os.makedirs(slurm_dir, exist_ok=True)
+    slurm_path = os.path.join(slurm_dir, f"{job_name}.sh")
+
+    with open(slurm_path, 'w') as f:
+        f.write(script)
+
+    result = subprocess.run(['sbatch', slurm_path], capture_output=True, text=True)
+    print(f"Submitted {job_name}: {result.stdout.strip()}", flush=True)
+    if result.returncode != 0:
+        print(f"  ERROR: {result.stderr.strip()}", flush=True)
 
 def main(args):
     # Set the random seed
@@ -61,6 +93,8 @@ def main(args):
         torch.save(elapsed_sample, os.path.join(samples_dir, f"samples_x0_{j}_seed_{args.seed}_time.pt"))
         print(f"Saved samples for x0={j}", flush=True)
 
+        # Submit eval job for this x0
+        submit_eval_job(args.task, args.seed, args.num_training, obs_idx=j)
 def get_args():
     # Create an argument parser
     parser = argparse.ArgumentParser(description="Run simulations and inference.")
