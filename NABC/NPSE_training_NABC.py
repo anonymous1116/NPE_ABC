@@ -18,9 +18,12 @@ def submit_eval_job(task, seed, num_training, obs_idx):
 #SBATCH --job-name={job_name}
 #SBATCH --output=../depot_hyun/hyun/NPE_ABC/NPSE_nets_NABC/logs/{job_name}_%j.out
 #SBATCH --error=../depot_hyun/hyun/NPE_ABC/NPSE_nets_NABC/logs/{job_name}_%j.err
-#SBATCH --time=01:00:00
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
+#SBATCH --partition=cpu
+#SBATCH --account=statdept
+#SBATCH --time=04:00:00
+#SBATCH --qos=standby
 
 # Create the output_log directory if it doesn't exist
 mkdir -p ../depot_hyun/hyun/NPE_ABC/NPSE_nets_NABC/logs
