@@ -29,6 +29,13 @@ def Bounds(task_name: str):
         return [[-3, 3]] * 10
     elif task_name in ["mog_10"]:
         return [[-10, 10]] * 10
+    elif task_name in ["mog_2_NABC"]:
+        return [[-10, 10]] * 2
+    elif task_name in ["mog_5_NABC"]:
+        return [[-10, 10]] * 10
+    elif task_name in ["mog_10_NABC"]:
+        return [[-10, 10]] * 10
+    
     else:
         raise ValueError(f"Unknown task name for bounds: {task_name}")
 
@@ -50,6 +57,13 @@ def Priors(task_name: str):
         return BoxUniform(low = -5*torch.ones(20), high = 5*torch.ones(20))
     elif task_name in ["mog_10"]:
         return BoxUniform(low = -10*torch.ones(10), high = 10*torch.ones(10))
+    elif task_name in ["mog_2_NABC"]:
+        return BoxUniform(low = -10*torch.ones(2), high = 10*torch.ones(2))
+    elif task_name in ["mog_5_NABC"]:
+        return BoxUniform(low = -10*torch.ones(5), high = 10*torch.ones(5))
+    elif task_name in ["mog_10_NABC"]:
+        return BoxUniform(low = -10*torch.ones(10), high = 10*torch.ones(10))
+    
     elif task_name in ["slcp_summary_transform2", "slcp_distractors", "slcp"]:
         return BoxUniform(low = -3*torch.ones(5), high = 3*torch.ones(5))
     elif task_name in ["double_slcp_summary_transform2"]:
@@ -64,7 +78,8 @@ task_benchmark = ["two_moons",
                   "my_five_twomoons_err30",
                   "my_five_twomoons_err50",
                   "my_five_twomoons_err70",
-                  "my_five_twomoons_err90"]
+                  "my_five_twomoons_err90",
+                  "mog_2_NABC", "mog_5_NABC", "mog_10_NABC"]
     
 class true_Posteriors:
     def __init__(self, task):
@@ -92,7 +107,13 @@ class true_Posteriors:
             return self.my_five_twomoons_err90(kwargs.get('j', 0))
         elif self.task in ["mog_10"]:
             return self.mog_10(kwargs.get('j', 0))
-        
+        elif self.task in ["mog_2_NABC"]:
+            return self.mog_2_NABC(kwargs.get('j', 0))
+        elif self.task in ["mog_5_NABC"]:
+            return self.mog_5_NABC(kwargs.get('j', 0))
+        elif self.task in ["mog_10_NABC"]:
+            return self.mog_10_NABC(kwargs.get('j', 0))
+
         elif self.task in ["my_twomoons"]:
             return self.my_twomoons(obs, n_samples, bounds)
         elif self.task in ["my_five_twomoons", "my_five_twomoons_err2", "my_five_twomoons_err5", "my_five_twomoons_err10"]:    
@@ -253,6 +274,34 @@ class true_Posteriors:
             raise ValueError(f"File for posterior not found.")
         return post_sample
     
+    def mog_2_NABC(self, j):
+        try:
+            # Get the directory of the current file (simulator.py)
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            file_path = os.path.join(current_dir, f"../depot_hyun/NeuralABC_R/MoG_2/post_{j}.pt")
+            post_sample = torch.load(file_path)
+        except FileNotFoundError:
+            raise ValueError(f"File for posterior not found.")
+        return post_sample
+    def mog_5_NABC(self, j):
+        try:
+            # Get the directory of the current file (simulator.py)
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            file_path = os.path.join(current_dir, f"../depot_hyun/NeuralABC_R/MoG_5/post_{j}.pt")
+            post_sample = torch.load(file_path)
+        except FileNotFoundError:
+            raise ValueError(f"File for posterior not found.")
+        return post_sample
+    def mog_10_NABC(self, j):
+        try:
+            # Get the directory of the current file (simulator.py)
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            file_path = os.path.join(current_dir, f"../depot_hyun/NeuralABC_R/MoG_10/post_{j}.pt")
+            post_sample = torch.load(file_path)
+        except FileNotFoundError:
+            raise ValueError(f"File for posterior not found.")
+        return post_sample
+    
 
 def observation_lists(task_name:str):
     task_name = task_name.lower()
@@ -291,6 +340,15 @@ def observation_lists(task_name:str):
         obs = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{task_name}_obs.pt")    
         return obs 
         
+    elif task_name in ["mog_2_NABC", "mog_5_NABC", "mog_10_NABC"]:
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        if task_name == "mog_2_NABC":
+            obs = torch.load(f"{current_dir}/../depot_hyun/NeuralABC_R/MoG_2/obs.pt")
+        elif task_name == "mog_5_NABC":
+            obs = torch.load(f"{current_dir}/../depot_hyun/NeuralABC_R/MoG_5/obs.pt")           
+        elif task_name == "mog_10_NABC":
+            obs = torch.load(f"{current_dir}/../depot_hyun/NeuralABC_R/MoG_10/obs.pt")
+        return obs
 
     elif task_name in ["double_slcp_summary_transform2"]:
         current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -698,7 +756,7 @@ def Simulators(task_name: str):
 
     elif task_name in ["my_ten_twomoons"]:
         return simulator_my_ten_twomoons
-    elif task_name in ["mog_10"]:
+    elif task_name in ["mog_10", "mog_2_NABC", "mog_5_NABC", "mog_10_NABC"]:
         return simulator_MoG
     elif task_name in ["slcp_distractors"]:
         return simulator_slcp_distractors
