@@ -343,11 +343,11 @@ def observation_lists(task_name:str):
     elif task_name in ["mog_2_nabc", "mog_5_nabc", "mog_10_nabc"]:
         current_dir = os.path.dirname(os.path.abspath(__file__))
         if task_name == "mog_2_nabc":
-            obs = torch.load(f"{current_dir}/../depot_hyun/NeuralABC_R/MoG_2/obs.pt")
+            obs = torch.load(f"{current_dir}/../depot_hyun/NeuralABC_R/MoG_2/MoG_2_x0.pt")
         elif task_name == "mog_5_nabc":
-            obs = torch.load(f"{current_dir}/../depot_hyun/NeuralABC_R/MoG_5/obs.pt")           
+            obs = torch.load(f"{current_dir}/../depot_hyun/NeuralABC_R/MoG_5/MoG_x0.pt")           
         elif task_name == "mog_10_nabc":
-            obs = torch.load(f"{current_dir}/../depot_hyun/NeuralABC_R/MoG_10/obs.pt")
+            obs = torch.load(f"{current_dir}/../depot_hyun/NeuralABC_R/MoG_10/MoG_10_x0.pt")
         return obs
 
     elif task_name in ["double_slcp_summary_transform2"]:
