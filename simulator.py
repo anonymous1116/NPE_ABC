@@ -348,7 +348,7 @@ def observation_lists(task_name:str):
             obs = torch.load(f"{current_dir}/../depot_hyun/NeuralABC_R/MoG_5/MoG_x0.pt")           
         elif task_name == "mog_10_nabc":
             obs = torch.load(f"{current_dir}/../depot_hyun/NeuralABC_R/MoG_10/MoG_10_x0.pt")
-        return obs
+        return torch.tensor(obs, dtype = torch.float32)
 
     elif task_name in ["double_slcp_summary_transform2"]:
         current_dir = os.path.dirname(os.path.abspath(__file__))
