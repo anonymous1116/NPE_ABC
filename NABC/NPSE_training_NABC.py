@@ -19,20 +19,24 @@ def submit_eval_job(task, seed, num_training, obs_idx):
 #SBATCH --output=../depot_hyun/hyun/NPE_ABC/NPSE_nets_NABC/logs/{job_name}_%j.out
 #SBATCH --error=../depot_hyun/hyun/NPE_ABC/NPSE_nets_NABC/logs/{job_name}_%j.err
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=4
+#SBATCH --cpus-per-task=1
 #SBATCH --partition=cpu
 #SBATCH --account=statdept
-#SBATCH --time=04:00:00
+#SBATCH --time=00:59:00
 #SBATCH --qos=standby
 
 # Create the output_log directory if it doesn't exist
 mkdir -p ../depot_hyun/hyun/NPE_ABC/NPSE_nets_NABC/logs
 
+# Change to the directory where the job was submitted from
+SLURM_SUBMIT_DIR=/home/hyun18/NPE_ABC
+cd $SLURM_SUBMIT_DIR
+
 # Load the required Python environment
 module load conda
 conda activate /depot/wangxiao/apps/hyun18/NPE_NABC
 
-python eval_NPSE.py --task {task} --seed {seed} --num_training {num_training} --obs_idx {obs_idx}
+python NABC/eval_NPSE.py --task {task} --seed {seed} --num_training {num_training} --obs_idx {obs_idx}
 """
     slurm_dir = f"../depot_hyun/hyun/NPE_ABC/NPSE_nets_NABC/slurm_scripts"
     os.makedirs(slurm_dir, exist_ok=True)
