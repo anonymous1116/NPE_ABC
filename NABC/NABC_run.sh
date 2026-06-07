@@ -30,7 +30,7 @@ seeds=$((seed_START + SLURM_ARRAY_TASK_ID - 1))
 # Run the Python script with the specified N_EPOCHS value
 echo "Running with seed=$seeds"
 #python NPE_training/NPE_run_embed.py --task "slcp_distractors" --seed $seeds --cond_den "nsf" --num_training 1000000 --cdim 5
-python NABC/NPSE_training_NABC.py --task "mog_5_nabc" --seed $seeds --num_training 1500000
+python NABC/NPSE_training_NABC.py --task "mog_10_nabc" --seed $seeds --num_training 300000
 #python NPE_training/NPE_run.py --task "my_five_twomoons_err70" --seed $seeds --num_training 3000000
 #python NPE_training/NPE_run.py --task "double_slcp_summary_transform2" --seed $seed --num_training 300000 --cond_den "nsf"
 #python NPE_training/SNPE_run.py --task "two_moons" --seed 1 --num_training 1000 --cond_den "nsf" --x0_ind 0
