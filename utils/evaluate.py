@@ -108,4 +108,4 @@ if __name__ == "__main__":
     main(args)  # Pass the entire args object to the main function
 
 
-#python utils/evaluate.py --task "bernoulli_glm2_err50" --measure "c2st" --num_training 3000000 --method "NPE" 
+#python utils/evaluate.py --task "bernoulli_glm2" --measure "c2st" --num_training 300000 --method "FMPE" 
