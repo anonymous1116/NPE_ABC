@@ -32,6 +32,8 @@ def main(args):
             noise_num = 70
         elif args.task == "my_five_twomoons_err90": 
             noise_num = 90
+        elif args.task == "my_five_twomoons":
+            noise_num = 0
         else:
             raise ValueError("Invalid task name for error level.")
         
@@ -39,7 +41,8 @@ def main(args):
         permute = torch.randperm(10+noise_num)
         current_dir = os.path.dirname(os.path.abspath(__file__))
         
-        torch.save(permute, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{args.task}_permutation.pt")
+        if noise_num > 0:
+            torch.save(permute, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{args.task}_permutation.pt")
         
         random.seed(2826)
         torch.manual_seed(2826)
