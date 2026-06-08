@@ -10,6 +10,48 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from simulator import Simulators, Priors, observation_lists, Bounds, true_Posteriors, task_benchmark
 from utils.evaluate import create_c2st_job_script
 from sbibm.metrics.c2st import c2st
+import subprocess
+
+def submit_eval_job(task, seed, num_training, obs_idx):
+    job_name = f"eval_{task}_x0{obs_idx}_s{seed}"
+    script = f"""#!/bin/bash
+#SBATCH --job-name={job_name}
+#SBATCH --output=../depot_hyun/hyun/NPE_ABC/NPSE_nets/logs/{job_name}_%j.out
+#SBATCH --error=../depot_hyun/hyun/NPE_ABC/NPSE_nets/logs/{job_name}_%j.err
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=1
+#SBATCH --partition=cpu
+#SBATCH --account=statdept
+#SBATCH --time=00:59:00
+#SBATCH --qos=standby
+
+# Create the output_log directory if it doesn't exist
+mkdir -p ../depot_hyun/hyun/NPE_ABC/NPSE_nets/logs
+
+# Change to the directory where the job was submitted from
+SLURM_SUBMIT_DIR=/home/hyun18/NPE_ABC
+cd $SLURM_SUBMIT_DIR
+
+# Load the required Python environment
+module load conda
+conda activate /depot/wangxiao/apps/hyun18/NPE_NABC
+
+python utils/eval_NPSE.py --task {task} --seed {seed} --num_training {num_training} --obs_idx {obs_idx}
+"""
+    slurm_dir = f"../depot_hyun/hyun/NPE_ABC/NPSE_nets/slurm_scripts"
+    os.makedirs(slurm_dir, exist_ok=True)
+    slurm_path = os.path.join(slurm_dir, f"{job_name}.sh")
+
+    with open(slurm_path, 'w') as f:
+        f.write(script)
+
+    result = subprocess.run(['sbatch', slurm_path], capture_output=True, text=True)
+    print(f"Submitted {job_name}: {result.stdout.strip()}", flush=True)
+    if result.returncode != 0:
+        print(f"  ERROR: {result.stderr.strip()}", flush=True)
+
+
+
 
 def main(args):
     # Set the random seed
@@ -49,46 +91,28 @@ def main(args):
     else:
         print(f"Directory '{output_dir}' already exists.")
 
-    # Save the inference object using pickle in the specified directory
-    # Save the inference object and elapsed time using pickle in the specified directory
-    #output_file_path = os.path.join(output_dir, f"{args.task}_{args.seed}.pkl")
-    #with open(output_file_path, 'wb') as f:
-    #    pickle.dump({'density_estimator': density_estimator, 'posterior': inference.build_posterior(density_estimator), 'elapsed_time': elapsed_time}, f)
-    
-    #print(f"Saved inference object and elapsed time to '{output_file_path}'.")
-
     torch.save(elapsed_time, f"{output_dir}/{args.task}_{args.seed}_time.pt")
 
+    # Generate and save samples for each x0
     x0_list = observation_lists(args.task)
-    limits = Bounds(args.task)
-    posterior = true_Posteriors(args.task)
-    
-    for j in range(len(x0_list)):
-        x_o = x0_list[j]
-        x_o = torch.tensor(x_o, dtype = torch.float32)
+    samples_dir = f"../depot_hyun/hyun/NPE_ABC/NPSE_nets/NPSE_samples/{args.task}/J_{int(args.num_training/1000)}K"
+    os.makedirs(samples_dir, exist_ok=True)
 
+    for j, x_o in enumerate(x0_list):
+        x_o = torch.tensor(x_o, dtype=torch.float32)
         posterior_NPSE = inference.build_posterior().set_default_x(x_o)
-        time0 = time.time()
+
+        t0 = time.time()
         sample_post = posterior_NPSE.sample((10000,))
-        time1 = time.time()
+        elapsed_sample = time.time() - t0
 
-        elapsed_time =time1-time0
-        # Get true posterior      
-        if args.task in task_benchmark:
-            true_sample = posterior(j = j+1)
-        else:
-            true_sample = posterior(torch.tensor(x_o), n_samples=10_000, bounds=limits)
-        
-        measure = "c2st"
+        torch.save(sample_post, os.path.join(samples_dir, f"samples_x0_{j}_seed_{args.seed}.pt"))
+        torch.save(elapsed_sample, os.path.join(samples_dir, f"samples_x0_{j}_seed_{args.seed}_time.pt"))
+        print(f"Saved samples for x0={j}", flush=True)
 
-        dist = c2st(true_sample, sample_post)
-        print(f"{measure}: {dist}")
-        output_dir = f"../depot_hyun/hyun/NPE_ABC/NPSE_{measure}_results/{args.task}/J_{int(args.num_training/1000)}K"   
-        
-        os.makedirs(output_dir, exist_ok=True)
-        torch.save(dist, os.path.join(output_dir, f"result_x0_{j}_seed_{args.seed}.pt"))  # Customize filename as needed
-        torch.save(elapsed_time, os.path.join(output_dir, f"result_x0_{j}_seed_{args.seed}_time.pt"))  # Customize filename as needed
-        
+        # Submit eval job for this x0
+        submit_eval_job(args.task, args.seed, args.num_training, obs_idx=j)
+     
     print(f"Saved inference object and elapsed time to '{output_dir}/{args.task}_{args.seed}'.",flush =True)
 
 
