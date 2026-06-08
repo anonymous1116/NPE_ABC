@@ -20,7 +20,7 @@ def main(args):
         print(x0_list)
     
 
-    elif args.task.startswith("my_five_twomoons_err"):
+    elif args.task.startswith("my_five_twomoons"):
         #permunation
         if args.task == "my_five_twomoons_err10":
             noise_num = 10
@@ -52,23 +52,32 @@ def main(args):
         theta_obs = torch.rand((10,10)) * 8 - 4 #support: [-4,4]
         
         X_obs = Simulators("my_five_twomoons")(theta_obs)
+        
+        if args.task == "my_five_twomoons":
+            torch.save(X_obs, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/my_five_twomoons_obs.pt")
+            for j in range(10):
+                tmp = X_obs[j]
+                post_sample = true_posterior(torch.tensor(tmp)[None, :], n_samples=10_000, bounds=bounds)
+                torch.save(post_sample, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{args.task}_post_{j+1}.pt")
+                
 
-        for j in range(10):
-            noise = torch.randn( (noise_num,)) * 2.0 
-            tmp = X_obs[j]
+        else:
+            for j in range(10):
+                noise = torch.randn( (noise_num,)) * 2.0 
+                tmp = X_obs[j]
 
-            post_sample = true_posterior(torch.tensor(tmp)[None, :], n_samples=10_000, bounds=bounds)
-            torch.save(post_sample, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{args.task}_post_{j+1}.pt")
-            tmp = torch.cat([tmp, noise])
-            print(tmp)
-            x0_list.append(tmp[permute].tolist())
+                post_sample = true_posterior(torch.tensor(tmp)[None, :], n_samples=10_000, bounds=bounds)
+                torch.save(post_sample, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{args.task}_post_{j+1}.pt")
+                tmp = torch.cat([tmp, noise])
+                print(tmp)
+                x0_list.append(tmp[permute].tolist())
 
-        x0_list = torch.tensor(x0_list, dtype = torch.float32)
-        current_dir = os.path.dirname(os.path.abspath(__file__))
+            x0_list = torch.tensor(x0_list, dtype = torch.float32)
+            current_dir = os.path.dirname(os.path.abspath(__file__))
 
-        torch.save(x0_list, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{args.task}_obs.pt")    
-        print(x0_list)
-    
+            torch.save(x0_list, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{args.task}_obs.pt")    
+            print(x0_list)
+        
 
     elif args.task == "mog_10":
         random.seed(2826)

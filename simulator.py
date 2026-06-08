@@ -692,9 +692,6 @@ def simulator_my_five_twomoons_err(theta, err_num =90):
     return torch.cat(X, dim = 1).cpu()[:,permute]
 
 
-
-
-
 def simulator_slcp3(theta):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     theta = theta.to(device)
