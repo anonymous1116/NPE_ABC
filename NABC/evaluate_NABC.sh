@@ -9,9 +9,6 @@
 #SBATCH --array=0-99
 #SBATCH --output=NABC/log/measure_NABC_%A_%a.out
 #SBATCH --error=NABC/log/measure_NABC_%A_%a.err
-#SBATCH --time=01:00:00
-#SBATCH --mem=8G
-#SBATCH --cpus-per-task=4
 
 
 # Create the output_log directory if it doesn't exist
