@@ -35,11 +35,6 @@ echo "Job array ID : $SLURM_ARRAY_TASK_ID"
 echo "x0_ind       : $X0_IND"
 echo "seed         : $SEED"
 
-mkdir -p logs
-
-module load anaconda
-conda activate sbi   # change to your env name if different
-
 python utils/get_measure_NABC.py \
     --task        "mog_5_nabc"  \
     --measure     "c2st"        \
