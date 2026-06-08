@@ -41,6 +41,6 @@ python utils/get_measure_NABC.py \
     --x0_ind      "$X0_IND"     \
     --seed        "$SEED"       \
     --post_n_samples  10000     \
-    --num_training    500000      \
+    --num_training    1000000      \
     --cond_den    "nsf"         \
     --method      "FMPE"
