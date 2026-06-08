@@ -6,7 +6,7 @@
 #SBATCH --account=statdept
 #SBATCH --time=00:30:00
 #SBATCH --qos=standby
-#SBATCH --array=0-99
+#SBATCH --array=0-49
 #SBATCH --output=NABC/log/measure_NABC_%A_%a.out
 #SBATCH --error=NABC/log/measure_NABC_%A_%a.err
 
