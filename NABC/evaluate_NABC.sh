@@ -36,11 +36,11 @@ echo "x0_ind       : $X0_IND"
 echo "seed         : $SEED"
 
 python utils/get_measure_NABC.py \
-    --task        "mog_5_nabc"  \
+    --task        "mog_10_nabc"  \
     --measure     "c2st"        \
     --x0_ind      "$X0_IND"     \
     --seed        "$SEED"       \
     --post_n_samples  10000     \
-    --num_training    1500000      \
+    --num_training    500000      \
     --cond_den    "nsf"         \
     --method      "FMPE"
