@@ -96,7 +96,8 @@ def main(args):
     plt.close()
     
     torch.save(NABC_results, f"{output_dir}/x0{args.x0_ind}_seed{args.seed}.pt")
-    torch.save([torch.cuda.get_device_name(0), elapsed_time], f"{output_dir}/x0{args.x0_ind}_seed{args.seed}_info.pt")
+    if torch.cuda.is_available():
+        torch.save([torch.cuda.get_device_name(0), elapsed_time], f"{output_dir}/x0{args.x0_ind}_seed{args.seed}_info.pt")
 
 def get_args():
     parser = argparse.ArgumentParser(description="Run simulation with customizable parameters.")
