@@ -12,6 +12,8 @@ from sbibm.metrics.c2st import c2st
 from simulator import Priors, Simulators, Bounds, observation_lists, true_Posteriors, task_benchmark
 from help_functions import UnifSample, param_box, truncated_mvn_sample, ABC_rej2
 
+# Use context for ABC compared with calibrating_flow.py I guess this is better
+
 def main(args):
     seed = args.seed
     #torch.set_default_device("cpu")
