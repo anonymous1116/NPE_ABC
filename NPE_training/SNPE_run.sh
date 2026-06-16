@@ -26,7 +26,7 @@ seed=$((SLURM_ARRAY_TASK_ID / 10 + 1))
 # Run the calibrate_amor.py
 x0_ind=$((SLURM_ARRAY_TASK_ID % 10)) 
 num_training=150000
-task="mog_5_nabc"
+task="mog_10_nabc"
 total_round=10
 echo "[$(date)] Starting job: x0_ind=$x0_ind, seed=$seed, L=$L"
 python NPE_training/SNPE_run.py --task $task --seed $seed --x0_ind $x0_ind --num_training $num_training --cond_den "nsf" --total_round $total_round
