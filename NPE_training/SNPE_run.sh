@@ -6,7 +6,7 @@
 #SBATCH --account=statdept
 #SBATCH --time=14-00:00:00
 #SBATCH --qos=normal
-#SBATCH --array=0-49               # Create a job array with indices from 1 to 10
+#SBATCH --array=50-99               # Create a job array with indices from 1 to 10
 #SBATCH --output=SNPE/NPE_nsf/output_log/output_log_%A_%a.log
 #SBATCH --error=SNPE/NPE_nsf/output_log/error_log_%A_%a.txt
 
@@ -26,7 +26,7 @@ seed=$((SLURM_ARRAY_TASK_ID / 10 + 1))
 # Run the calibrate_amor.py
 x0_ind=$((SLURM_ARRAY_TASK_ID % 10)) 
 num_training=150000
-task="mog_10_nabc"
+task="my_twomoons"
 total_round=10
 echo "[$(date)] Starting job: x0_ind=$x0_ind, seed=$seed, L=$L"
 python NPE_training/SNPE_run.py --task $task --seed $seed --x0_ind $x0_ind --num_training $num_training --cond_den "nsf" --total_round $total_round
