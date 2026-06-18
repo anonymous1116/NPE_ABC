@@ -6,7 +6,7 @@
 #SBATCH --account=statdept
 #SBATCH --time=14-00:00:00
 #SBATCH --qos=normal
-#SBATCH --array=43,49,57,63,76,79,82,83               # Create a job array with indices from 1 to 10
+#SBATCH --array=1,10,13,17,33,39,42,46,47,48,53,54,55,56,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99
 #SBATCH --output=SNPE/NPE_nsf/output_log/output_log_%A_%a.log
 #SBATCH --error=SNPE/NPE_nsf/output_log/error_log_%A_%a.txt
 
@@ -25,7 +25,7 @@ cd $SLURM_SUBMIT_DIR
 seed=$((SLURM_ARRAY_TASK_ID / 10 + 1))
 # Run the calibrate_amor.py
 x0_ind=$((SLURM_ARRAY_TASK_ID % 10)) 
-num_training=300000
+num_training=500000
 task="bernoulli_glm2"
 total_round=10
 echo "[$(date)] Starting job: x0_ind=$x0_ind, seed=$seed, L=$L"
