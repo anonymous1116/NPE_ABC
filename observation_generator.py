@@ -33,7 +33,7 @@ def main(args):
             tmp =X_obs[j]
             post = []
             for k in range(50):
-                tmp2 = X_obs[2*k:(2*k+2)]
+                tmp2 = tmp[2*k:(2*k+2)]
                 print(tmp2.size())
                 two_moons_post = true_posterior(torch.tensor(tmp2)[None, :], n_samples=10_000, bounds=Bounds("my_twomoons"))
                 post.append(two_moons_post)
