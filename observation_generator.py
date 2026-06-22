@@ -25,10 +25,17 @@ def main(args):
         x0_list = []
         theta_obs = torch.rand((100,10)) * 8 - 4 #support: [-4,4]
         X_obs = Simulators("my_fifty_twomoons")(theta_obs)
+        true_posterior = true_Posteriors("my_twomoons")
+        
         torch.save(X_obs, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/my_fifty_twomoons_obs.pt")
         for j in range(10):
             tmp =X_obs[j]
-            post_sample = true_posterior(torch.tensor(tmp)[None, :], n_samples=10_000, bounds=bounds)
+            post = []
+            for k in range(50):
+                tmp2 = X_obs[2*k:(2*k+2)]
+                two_moons_post = true_posterior(torch.tensor(tmp2)[None, :], n_samples=10_000, bounds=Bounds("my_twomoons"))
+                post.append(two_moons_post)
+            post_sample = torch.cat(post, dim = 0)
             torch.save(post_sample, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{args.task}_post_{j+1}.pt")
             print(f"{j}th obs: {tmp}")
             
