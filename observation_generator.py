@@ -23,7 +23,7 @@ def main(args):
         random.seed(2826)
         torch.manual_seed(2826)
         x0_list = []
-        theta_obs = torch.rand((100,10)) * 8 - 4 #support: [-4,4]
+        theta_obs = torch.rand((10,100)) * 8 - 4 #support: [-4,4]
         X_obs = Simulators("my_fifty_twomoons")(theta_obs)
         true_posterior = true_Posteriors("my_twomoons")
         
