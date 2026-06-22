@@ -18,6 +18,19 @@ def main(args):
         current_dir = os.path.dirname(os.path.abspath(__file__))
         torch.save(x0_list, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/my_ten_twomoons_obs.pt")    
         print(x0_list)
+    elif args.task == "my_fifty_twomoons":
+        random.seed(2826)
+        torch.manual_seed(2826)
+        x0_list = []
+        for j in range(50):
+            sample = np.random.choice(np.arange(0, 50), size=50, replace=True)
+            tmp = observation_lists("my_twomoons")
+            tmp = np.array(tmp)
+            x0_list.append(np.concatenate(tmp[sample],0).tolist())
+        x0_list = torch.tensor(x0_list, dtype = torch.float32)
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        torch.save(x0_list, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/my_fifty_twomoons_obs.pt")    
+        print(x0_list)
     
 
     elif args.task.startswith("my_five_twomoons"):

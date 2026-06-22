@@ -23,6 +23,8 @@ def Bounds(task_name: str):
         return [[-5, 5]] * 10
     elif task_name in ["my_ten_twomoons"]:
         return [[-5,5]] * 20
+    elif task_name in ["my_fifty_twomoons"]:
+        return [[-5,5]] * 100
     elif task_name in ["slcp_summary_transform2", "slcp_distractors", "slcp"]:    
         return [[-3, 3]] * 5
     elif task_name in ["double_slcp_summary_transform2"]:
@@ -53,6 +55,8 @@ def Priors(task_name: str):
         return BoxUniform(low = -5*torch.ones(2), high = 5*torch.ones(2))
     elif task_name.startswith("my_five_twomoons"):
         return BoxUniform(low = -5*torch.ones(10), high = 5*torch.ones(10))
+    elif task_name.startswith("my_fifty_twomoons"):
+        return BoxUniform(low = -5*torch.ones(100), high = 5*torch.ones(100))
     elif task_name in ["my_ten_twomoons"]:
         return BoxUniform(low = -5*torch.ones(20), high = 5*torch.ones(20))
     elif task_name in ["mog_10"]:
@@ -79,7 +83,8 @@ task_benchmark = ["two_moons",
                   "my_five_twomoons_err50",
                   "my_five_twomoons_err70",
                   "my_five_twomoons_err90",
-                  "mog_2_nabc", "mog_5_nabc", "mog_10_nabc"]
+                  "mog_2_nabc", "mog_5_nabc", "mog_10_nabc",
+                  "my_fifty_twomoons"]
     
 class true_Posteriors:
     def __init__(self, task):
@@ -105,6 +110,9 @@ class true_Posteriors:
             return self.my_five_twomoons_err70(kwargs.get('j', 0))
         elif self.task in ["my_five_twomoons_err90"]:
             return self.my_five_twomoons_err90(kwargs.get('j', 0))
+        elif self.task in ["my_fifty_twomoons"]:
+            return self.my_fifty_twomoons(kwargs.get('j', 0))
+
         elif self.task in ["mog_10"]:
             return self.mog_10(kwargs.get('j', 0))
         elif self.task in ["mog_2_nabc"]:
@@ -230,6 +238,11 @@ class true_Posteriors:
         current_dir = os.path.dirname(os.path.abspath(__file__))
         post_sample = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/my_five_twomoons_err90_post_{j}.pt")    
         return post_sample
+    
+    def my_fifty_twomoons(self, j):
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        post_sample = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/my_fifty_twomoons_post_{j}.pt")    
+        return post_sample
 
     def slcp(self, j):
         try:
@@ -330,7 +343,7 @@ def observation_lists(task_name:str):
     elif task_name in ["my_five_twomoons", "my_five_twomoons_err2", "my_five_twomoons_err5", 
                        "my_five_twomoons_err10", "my_five_twomoons_err30", "my_five_twomoons_err50",
                           "my_five_twomoons_err70", "my_five_twomoons_err90", 
-                       "bernoulli_glm2_err10", "bernoulli_glm2_err30", "bernoulli_glm2_err50", "bernoulli_glm2_err70", "bernoulli_glm2_err90"]:
+                       "bernoulli_glm2_err10", "bernoulli_glm2_err30", "bernoulli_glm2_err50", "bernoulli_glm2_err70", "bernoulli_glm2_err90", "my_fifty_twomoons"]:
         current_dir = os.path.dirname(os.path.abspath(__file__))
         obs = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{task_name}_obs.pt")    
         return obs 
@@ -622,6 +635,15 @@ def simulator_my_ten_twomoons(theta):
         X.append(tmp2)
     return torch.cat(X, dim = 1)
 
+def simulator_my_fifty_twomoons(theta):
+    # theta: N * 100 dimensions
+    X = []
+    for i in range(50):
+        tmp = torch.clone(theta[:, 2*i : (2*i + 2 )] )
+        tmp2 = simulator_my_twomoons(tmp)
+        X.append(tmp2)
+    return torch.cat(X, dim = 1)
+
 
 def simulator_my_five_twomoons_err2(theta):
     # theta: N * 10 dimensions
@@ -753,6 +775,10 @@ def Simulators(task_name: str):
 
     elif task_name in ["my_ten_twomoons"]:
         return simulator_my_ten_twomoons
+    elif task_name in ["my_ten_twomoons"]:
+        return simulator_my_ten_twomoons
+    elif task_name in ["my_fifty_twomoons"]:
+        return simulator_my_fifty_twomoons
     elif task_name in ["mog_10", "mog_2_nabc", "mog_5_nabc", "mog_10_nabc"]:
         return simulator_MoG
     elif task_name in ["slcp_distractors"]:
