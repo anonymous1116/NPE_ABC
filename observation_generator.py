@@ -26,6 +26,7 @@ def main(args):
         theta_obs = torch.rand((10,100)) * 8 - 4 #support: [-4,4]
         X_obs = Simulators("my_fifty_twomoons")(theta_obs)
         true_posterior = true_Posteriors("my_twomoons")
+        current_dir = os.path.dirname(os.path.abspath(__file__))
         
         torch.save(X_obs, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/my_fifty_twomoons_obs.pt")
         for j in range(10):
