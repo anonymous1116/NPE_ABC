@@ -38,7 +38,7 @@ def main(args):
                 tmp2 = tmp[2*k:(2*k+2)]
                 two_moons_post = true_posterior(torch.tensor(tmp2)[None, :], n_samples=10_000, bounds=Bounds("my_twomoons"))
                 post.append(two_moons_post)
-            post_sample = torch.cat(post, dim = 0)
+            post_sample = torch.cat(post, dim = 1)
             torch.save(post_sample, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{args.task}_post_{j+1}.pt")
             print(f"{j}th obs: {tmp}")
             
