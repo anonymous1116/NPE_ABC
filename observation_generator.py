@@ -32,6 +32,8 @@ def main(args):
         for j in range(10):
             tmp =X_obs[j]
             post = []
+            torch.manual_seed(2826+j)
+        
             for k in range(50):
                 tmp2 = tmp[2*k:(2*k+2)]
                 two_moons_post = true_posterior(torch.tensor(tmp2)[None, :], n_samples=10_000, bounds=Bounds("my_twomoons"))
