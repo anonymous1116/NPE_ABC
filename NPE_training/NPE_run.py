@@ -24,6 +24,8 @@ def main(args):
     # Run the simulator
     X = simulators(theta)
 
+    print("simulation generated")
+
     # Create inference object
     if args.method == "FMPE":
         inference = FMPE(prior=priors)
