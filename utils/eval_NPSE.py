@@ -57,3 +57,5 @@ def get_args():
 
 if __name__ == "__main__":
     main(get_args())
+
+# utils/eval_NPSE.py --task "my_five_twomooons" --seed 1 --num_training 3000000 --obs_idx 1

@@ -37,7 +37,6 @@ def Bounds(task_name: str):
         return [[-10, 10]] * 10
     elif task_name in ["mog_10_nabc"]:
         return [[-10, 10]] * 10
-    
     else:
         raise ValueError(f"Unknown task name for bounds: {task_name}")
 
