@@ -15,8 +15,14 @@ def main(args):
     torch.manual_seed(args.seed)
 
     # Initialize the Priors and Simulators classes
-    alpha = torch.ones(4)                # Dirichlet(1,1,1,1), change if needed
-    
+    if args.task == "table_dp_22":
+        alpha = torch.ones(4)                # Dirichlet(1,1,1,1), change if needed
+    elif args.task == "table_dp_33":
+        alpha = torch.ones(9)                # Dirichlet(1,1,1,1,1,1,1,1,1), change if needed   
+    elif args.task == "table_dp_44":
+        alpha = torch.ones(16)               # Dirichlet(1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1), change if needed 
+    else:
+        raise ValueError("Unknown task. Please choose either 'table_dp_22', 'table_dp_33', or 'table_dp_44'.")
     simulators = Simulators(args.task)
     # Sample theta from the prior
     theta = torch.distributions.Dirichlet(alpha).sample((args.num_training,))   # [N,4]
