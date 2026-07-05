@@ -80,9 +80,9 @@ def Priors(task_name: str):
     elif task_name in ["table_dp_22"]:
         return Dirichlet(torch.tensor([1.0, 1.0, 1.0, 1.0]))
     elif task_name in ["table_dp_33"]:
-        return Dirichlet(torch.tensor([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]))
+        return Dirichlet(torch.tensor([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]))
     elif task_name in ["table_dp_44"]:
-        return Dirichlet(torch.tensor([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]))
+        return Dirichlet(torch.tensor([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]))
     else:
         raise ValueError(f"Unknown task name for prior: {task_name}")
 
