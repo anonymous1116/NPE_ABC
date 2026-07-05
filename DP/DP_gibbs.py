@@ -135,7 +135,8 @@ def main(args):
 
     # Run Gibbs
     n_iter = 2000000
-    samples, info = gibbs_rr_2x2(y, p1=p1, p2=p2, n_iter=n_iter, burn=int(n_iter/10), thin=50, seed=1)
+    print("Gibbs sampling for task:", task, "x0 index:", i)
+    samples, _ = gibbs_rr_2x2(y, p1=p1, p2=p2, n_iter=n_iter, burn=int(n_iter/10), thin=50, seed=1)
     samples = samples.to(torch.float32)
 
     # Randomly permute and take 10000
