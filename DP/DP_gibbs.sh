@@ -29,5 +29,5 @@ seeds=$((seed_START + SLURM_ARRAY_TASK_ID - 1))
 
 # Run the Python script with the specified N_EPOCHS value
 echo "Running with seed=$seeds"
-python DP/DP_gibbs.py --task "table_dp_22" --seed $seeds
+python DP/DP_gibbs.py --task "table_dp_22" --i $seeds
 echo "## Run Completed for seed=$seeds ##"
