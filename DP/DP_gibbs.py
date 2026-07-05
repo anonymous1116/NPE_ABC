@@ -128,7 +128,7 @@ def main(args):
         task ="table_dp_33"
 
 
-    y = torch.load(f"/home/hyun18/depot_hyun/hyun/NPE_ABC/seeds/{task}/{task}_obs.pt")[i-1]
+    y = torch.load(f"/home/hyun18/depot_hyun/hyun/NPE_ABC/seeds/{task}_obs.pt")[i-1]
     y = torch.tensor(y, dtype = torch.int64)
 
     # Run Gibbs
@@ -143,7 +143,7 @@ def main(args):
     samples = samples[idx]
 
     print(f"Number of samples: {samples.size(0)}")
-    torch.save(samples, f"/home/hyun18/depot_hyun/hyun/NPE_ABC/seeds/{task}/{task}_post_{i}.pt")
+    torch.save(samples, f"/home/hyun18/depot_hyun/hyun/NPE_ABC/seeds/{task}_post_{i}.pt")
     
 if __name__ == "__main__":
     # Set up argument parsing
