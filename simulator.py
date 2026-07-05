@@ -95,7 +95,8 @@ task_benchmark = ["two_moons",
                   "my_five_twomoons_err70",
                   "my_five_twomoons_err90",
                   "mog_2_nabc", "mog_5_nabc", "mog_10_nabc",
-                  "my_fifty_twomoons", "table_dp_22"]
+                  "my_fifty_twomoons", 
+                  "table_dp_22", "table_dp_33", "table_dp_44"]
     
 class true_Posteriors:
     def __init__(self, task):
