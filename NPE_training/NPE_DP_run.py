@@ -27,14 +27,19 @@ def main(args):
     # Create inference object
     if args.method == "FMPE":
         inference = FMPE()
-    else:
+    elif args.method == "NPE":
         inference = NPE(density_estimator=args.cond_den)
+    else:
+        raise ValueError("Unknown method. Please choose either 'FMPE' or 'NPE'.")
+
     if args.task == "table_dp_22":
         inference = inference.append_simulations(theta[:,:3], X[:,:3])
     elif args.task == "table_dp_33":     
         inference = inference.append_simulations(theta[:,:8], X[:,:8])
     elif args.task == "table_dp_44":
         inference = inference.append_simulations(theta[:,:15], X[:,:15])
+    else:
+        print("Unknown task for inference. Please check the task name.")
 
     # Train the density estimator and build the posterior
     print(f"training_start")
