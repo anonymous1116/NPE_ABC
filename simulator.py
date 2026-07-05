@@ -840,7 +840,6 @@ def simulator_rr_cont_table_22(
     return torch.cat(out, dim=0).to(torch.float32)
 
 
-
 def Simulators(task_name: str):
     task_name = task_name.lower()
     if task_name in ["bernoulli_glm2"]:
