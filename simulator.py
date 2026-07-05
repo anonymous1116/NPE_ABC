@@ -39,6 +39,10 @@ def Bounds(task_name: str):
         return [[-10, 10]] * 10
     elif task_name in ["table_dp_22"]:
         return [[0,1]] * 3
+    elif task_name in ["table_dp_33"]:
+        return [[0,1]] * 8
+    elif task_name in ["table_dp_44"]:
+        return [[0,1]] * 15
     else:
         raise ValueError(f"Unknown task name for bounds: {task_name}")
 
@@ -75,7 +79,10 @@ def Priors(task_name: str):
         return BoxUniform(low = -3*torch.ones(10), high = 3*torch.ones(10))
     elif task_name in ["table_dp_22"]:
         return Dirichlet(torch.tensor([1.0, 1.0, 1.0, 1.0]))
-    
+    elif task_name in ["table_dp_33"]:
+        return Dirichlet(torch.tensor([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]))
+    elif task_name in ["table_dp_44"]:
+        return Dirichlet(torch.tensor([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]))
     else:
         raise ValueError(f"Unknown task name for prior: {task_name}")
 
@@ -127,6 +134,10 @@ class true_Posteriors:
             return self.mog_10_nabc(kwargs.get('j', 0))
         elif self.task in ["table_dp_22"]:
             return self.table_dp_22(kwargs.get('j', 0))
+        elif self.task in ["table_dp_33"]:
+            return self.table_dp_33(kwargs.get('j', 0))
+        elif self.task in ["table_dp_44"]:
+            return self.table_dp_44(kwargs.get('j', 0))
 
         elif self.task in ["my_twomoons"]:
             return self.my_twomoons(obs, n_samples, bounds)
@@ -367,7 +378,7 @@ def observation_lists(task_name:str):
                        "my_five_twomoons_err10", "my_five_twomoons_err30", "my_five_twomoons_err50",
                           "my_five_twomoons_err70", "my_five_twomoons_err90", 
                        "bernoulli_glm2_err10", "bernoulli_glm2_err30", "bernoulli_glm2_err50", "bernoulli_glm2_err70", "bernoulli_glm2_err90", "my_fifty_twomoons",
-                       "table_dp_22"]:
+                       "table_dp_22", "table_dp_33", "table_dp_44"]:
         current_dir = os.path.dirname(os.path.abspath(__file__))
         obs = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{task_name}_obs.pt")    
         return obs 
@@ -849,6 +860,76 @@ def simulator_rr_cont_table_22(
         out.append(y.cpu())
     return torch.cat(out, dim=0).to(torch.float32)
 
+def channel_ternary(p: float) -> torch.Tensor:
+    """
+    Ternary randomized response channel C(p):
+      with prob p -> report truth; with prob (1-p) -> uniform random category.
+    Returns a 3x3 matrix with rows=reported, cols=true.
+    """
+    same = (1 + 2 * p) / 3
+    diff = (1 - p) / 3
+    C = torch.tensor([
+        [same, diff, diff],
+        [diff, same, diff],
+        [diff, diff, same]
+    ], dtype=torch.double)
+    return C
+
+
+def channel_3x3(p1: float, p2: float) -> torch.Tensor:
+    """
+    Joint channel for two independent ternary variables.
+    Returns a 9x9 matrix R with rows=reported cells, cols=true cells,
+    under fixed cell order [00, 01, 02, 10, 11, 12, 20, 21, 22].
+    """
+    C1 = channel_ternary(p1)
+    C2 = channel_ternary(p2)
+    R = torch.kron(C1, C2)  # shape (9, 9)
+    return R
+
+
+def simulator_rr_cont_table_3x3(
+    theta: torch.Tensor,
+    p: float = 0.5,
+    n: int = 400,
+    batch_size: int = 1_000_000,
+) -> torch.Tensor:
+    """
+    Simulate privatized counts y ~ Multinomial(n, q) with q = R(p) @ theta
+    for a 3x3 contingency table under randomized response.
+
+    Args:
+        theta: (N, 9) tensor; each row sums to 1; 
+               order [00, 01, 02, 10, 11, 12, 20, 21, 22].
+        p: truthful-report probability (p in [0,1]).
+        n: total count per table draw.
+        batch_size: chunk size for memory efficiency.
+
+    Returns:
+        reported_counts: (N, 9) tensor of privatized counts.
+    """
+    assert theta.dim() == 2 and theta.size(1) == 9, "theta must be (N, 9)."
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    theta = theta.to(device).to(torch.double)
+
+    R = channel_3x3(p, p).to(device)
+
+    N = theta.size(0)
+    out = []
+    for start in range(0, N, batch_size):
+        end = min(start + batch_size, N)
+        th = theta[start:end]
+
+        q = (th @ R.T).clamp(min=0)
+        q = q / q.sum(dim=1, keepdim=True)
+
+        m = Multinomial(total_count=n, probs=q)
+        y = m.sample()
+        out.append(y.cpu())
+
+    return torch.cat(out, dim=0).to(torch.float32)
+
+
 
 def Simulators(task_name: str):
     task_name = task_name.lower()
@@ -874,6 +955,16 @@ def Simulators(task_name: str):
             return simulator_rr_cont_table_22(theta, p = 0.8, n = 4526, batch_size = 100_000)
         return cont_table_dp_generator
     
+    elif task_name in ["table_dp_33"]:
+        def cont_table_dp_generator(theta):
+            return simulator_rr_cont_table_3x3(theta, p = 0.8, n = 4526, batch_size = 100_000)
+        return cont_table_dp_generator
+
+    #elif task_name in ["table_dp_44"]:
+    #    def cont_table_dp_generator(theta):
+    #        return simulator_rr_cont_table_4x4(theta, p = 0.8, n = 4526, batch_size = 100_000)
+    #    return cont_table_dp_generator
+
     elif task_name in ["my_ten_twomoons"]:
         return simulator_my_ten_twomoons
     elif task_name in ["my_ten_twomoons"]:
