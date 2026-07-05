@@ -130,14 +130,20 @@ def main(args):
         task ="table_dp_33"
 
 
-    y = torch.load(f"/home/hyun18/depot_hyun/NeuralABC_R/{task}/{task}_x0_list.pt")[i-1]
+    y = torch.load(f"/home/hyun18/depot_hyun/hyun/NPE_ABC/seeds/{task}/{task}_obs.pt")[i-1]
     y = torch.tensor(y, dtype = torch.int64)
 
     # Run Gibbs
     n_iter = 2000000
     samples, info = gibbs_rr_2x2(y, p1=p1, p2=p2, n_iter=n_iter, burn=int(n_iter/10), thin=50, seed=1)
     samples = samples.to(torch.float32)
-    torch.save(samples, f"/home/hyun18/depot_hyun/NeuralABC_R/{task}/post_{i}.pt")
+
+    # Randomly permute and take 10000
+    idx = torch.randperm(samples.size(0))[:10000]
+    samples = samples[idx]
+
+    print(f"Number of samples: {samples.size(0)}")
+    torch.save(samples, f"/home/hyun18/depot_hyun/hyun/NPE_ABC/seeds/{task}/{task}_post_{i}.pt")
     
 if __name__ == "__main__":
     # Set up argument parsing

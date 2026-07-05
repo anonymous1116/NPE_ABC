@@ -177,7 +177,7 @@ def main(args):
         theta = Priors(args.task).sample((10000,))
         X = Simulators(args.task)(theta)
 
-        # Keep only rows where all elements > 20
+        # Keep only rows where all elements > 30
         mask = (X > 30).all(dim=1)
         theta_filtered = theta[mask]
         X_filtered = X[mask]
