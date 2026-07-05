@@ -178,7 +178,7 @@ def main(args):
         X = Simulators(args.task)(theta)
 
         # Keep only rows where all elements > 20
-        mask = (X > 20).all(dim=1)
+        mask = (X > 30).all(dim=1)
         theta_filtered = theta[mask]
         X_filtered = X[mask]
 
