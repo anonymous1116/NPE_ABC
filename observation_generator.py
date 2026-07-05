@@ -170,9 +170,11 @@ def main(args):
 
     elif args.task in ["table_dp_22", "table_dp_33"]:
         import warnings
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        
         random.seed(2826)
         torch.manual_seed(2826)
-        theta = Priors(args.task).sample((1000,))
+        theta = Priors(args.task).sample((10000,))
         X = Simulators(args.task)(theta)
 
         # Keep only rows where all elements > 20
@@ -191,7 +193,6 @@ def main(args):
         else:
             idx = torch.randperm(n_filtered)[:n_select]
 
-        theta_selected = theta_filtered[idx]
         X_selected = X_filtered[idx]
         torch.save(X_selected, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{args.task}_obs.pt")  
     else:
