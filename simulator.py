@@ -37,6 +37,8 @@ def Bounds(task_name: str):
         return [[-10, 10]] * 10
     elif task_name in ["mog_10_nabc"]:
         return [[-10, 10]] * 10
+    elif task_name in ["table_dp_22"]:
+        return [[0,1]] * 3
     else:
         raise ValueError(f"Unknown task name for bounds: {task_name}")
 
@@ -71,6 +73,9 @@ def Priors(task_name: str):
         return BoxUniform(low = -3*torch.ones(5), high = 3*torch.ones(5))
     elif task_name in ["double_slcp_summary_transform2"]:
         return BoxUniform(low = -3*torch.ones(10), high = 3*torch.ones(10))
+    elif task_name in ["table_dp_22"]:
+        return Dirichlet(torch.tensor([1.0, 1.0, 1.0, 1.0]))
+    
     else:
         raise ValueError(f"Unknown task name for prior: {task_name}")
 
@@ -83,7 +88,7 @@ task_benchmark = ["two_moons",
                   "my_five_twomoons_err70",
                   "my_five_twomoons_err90",
                   "mog_2_nabc", "mog_5_nabc", "mog_10_nabc",
-                  "my_fifty_twomoons"]
+                  "my_fifty_twomoons", "table_dp_22"]
     
 class true_Posteriors:
     def __init__(self, task):
@@ -120,11 +125,14 @@ class true_Posteriors:
             return self.mog_5_nabc(kwargs.get('j', 0))
         elif self.task in ["mog_10_nabc"]:
             return self.mog_10_nabc(kwargs.get('j', 0))
+        elif self.task in ["table_dp_22"]:
+            return self.table_dp_22(kwargs.get('j', 0))
 
         elif self.task in ["my_twomoons"]:
             return self.my_twomoons(obs, n_samples, bounds)
         elif self.task in ["my_five_twomoons", "my_five_twomoons_err2", "my_five_twomoons_err5", "my_five_twomoons_err10"]:    
             return self.my_five_twomoons(obs, n_samples, bounds)
+    
         else:
             raise ValueError(f"Unknown task: {self.task}")
     def apply_bounds(self, samples, bounds):
@@ -243,6 +251,12 @@ class true_Posteriors:
         post_sample = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/my_fifty_twomoons_post_{j}.pt")    
         return post_sample
 
+    def table_dp_22(self, j):
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        post_sample = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/table_dp_22_post_{j}.pt")    
+        return post_sample
+
+
     def slcp(self, j):
         try:
             # Get the directory of the current file (simulator.py)
@@ -342,7 +356,8 @@ def observation_lists(task_name:str):
     elif task_name in ["my_five_twomoons", "my_five_twomoons_err2", "my_five_twomoons_err5", 
                        "my_five_twomoons_err10", "my_five_twomoons_err30", "my_five_twomoons_err50",
                           "my_five_twomoons_err70", "my_five_twomoons_err90", 
-                       "bernoulli_glm2_err10", "bernoulli_glm2_err30", "bernoulli_glm2_err50", "bernoulli_glm2_err70", "bernoulli_glm2_err90", "my_fifty_twomoons"]:
+                       "bernoulli_glm2_err10", "bernoulli_glm2_err30", "bernoulli_glm2_err50", "bernoulli_glm2_err70", "bernoulli_glm2_err90", "my_fifty_twomoons",
+                       "table_dp_22"]:
         current_dir = os.path.dirname(os.path.abspath(__file__))
         obs = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{task_name}_obs.pt")    
         return obs 
@@ -752,6 +767,80 @@ def simulator_double_slcp_summary(theta):
         X.append(tmp2)
     return torch.cat(X, dim = 1)
 
+
+
+# ---- Channel builders ----
+def channel_binary(p: float) -> torch.Tensor:
+    """
+    One-bit randomized response channel C(p):
+      with prob p -> report truth; with prob (1-p) -> uniform random bit.
+    Returns a 2x2 matrix with rows=reported, cols=true.
+    """
+    same = 0.5 * (1 + p)
+    flip = 0.5 * (1 - p)
+    C = torch.tensor([[same, flip],
+                      [flip, same]], dtype=torch.double)
+    return C
+
+def channel_2x2(p1: float, p2: float) -> torch.Tensor:
+    """
+    Joint channel for two independent binary variables.
+    If both use the same p, pass p1=p2=p.
+    Returns a 4x4 matrix R with rows=reported cells, cols=true cells,
+    under the fixed cell order [00, 01, 10, 11].
+    """
+    C1 = channel_binary(p1)  # for variable 1
+    C2 = channel_binary(p2)  # for variable 2
+    R = torch.kron(C1, C2)   # Kronecker product
+    return R  # shape (4,4)
+
+# ---- Simulator ----
+def simulator_rr_cont_table_22(
+    theta: torch.Tensor,
+    p: float = 0.5,
+    n: int = 400,
+    batch_size: int = 1_000_000,
+) -> torch.Tensor:
+    """
+    Simulate privatized counts y ~ Multinomial(n, q) with q = R(p) @ theta
+    for a 2x2 contingency table under randomized response.
+
+    Args:
+        theta: (N, 4) tensor; each row sums to 1; order [00, 01, 10, 11].
+        p: truthful-report probability for each variable (use p in [0,1]).
+           If you want different ps per variable, change call to channel_2x2(p1,p2).
+        n: total count per table draw (e.g., 400).
+        batch_size: process rows of theta in chunks for memory efficiency.
+
+    Returns:
+        reported_counts: (N, 4) tensor of privatized counts.
+    """
+    assert theta.dim() == 2 and theta.size(1) == 4, "theta must be (N,4)."
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    theta = theta.to(device)
+    theta = theta.to(torch.double)
+
+    # Build joint channel R (4x4)
+    R = channel_2x2(p, p).to(theta.device)  # use (p,p); change if p1!=p2
+
+    N = theta.size(0)
+    out = []
+    for start in range(0, N, batch_size):
+        end = min(start + batch_size, N)
+        th = theta[start:end].to(device)  # (B,4)
+
+        # Compute q = R @ th^T  -> but batched as th @ R^T  (shape (B,4))
+        q = (th @ R.T).clamp(min=0)  # numerical safety
+        q = q / q.sum(dim=1, keepdim=True)  # re-normalize exactly
+
+        # Batched multinomial sampling: one draw per row
+        m = Multinomial(total_count=n, probs=q)
+        y = m.sample()  # (B,4)
+        out.append(y.cpu())
+    return torch.cat(out, dim=0).to(torch.float32)
+
+
+
 def Simulators(task_name: str):
     task_name = task_name.lower()
     if task_name in ["bernoulli_glm2"]:
@@ -771,7 +860,11 @@ def Simulators(task_name: str):
     elif task_name in ["my_five_twomoons"]:
         return simulator_my_five_twomoons
     
-
+    elif task_name in ["table_dp_22"]:
+        def cont_table_dp_generator(theta):
+            return simulator_rr_cont_table_22(theta, p = 0.8, n = 4526, batch_size = 100_000)
+        return cont_table_dp_generator
+    
     elif task_name in ["my_ten_twomoons"]:
         return simulator_my_ten_twomoons
     elif task_name in ["my_ten_twomoons"]:

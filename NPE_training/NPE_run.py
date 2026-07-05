@@ -23,9 +23,6 @@ def main(args):
 
     # Run the simulator
     X = simulators(theta)
-
-    print("simulation generated")
-
     # Create inference object
     if args.method == "FMPE":
         inference = FMPE(prior=priors)
@@ -35,7 +32,7 @@ def main(args):
 
     # Train the density estimator and build the posterior
     print(f"training_start")
-    start_time = time.time()  # Start timer
+    start_time = time.time()  # Start time
     density_estimator = inference.train()
     end_time = time.time()  # End timer
 
