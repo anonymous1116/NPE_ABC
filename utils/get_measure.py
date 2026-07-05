@@ -11,7 +11,16 @@ def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, c
     x0_list = observation_lists(task)
     x0 = x0_list[x0_ind]
     torch.manual_seed(seed)
+    if args.task in ["table_dp_22"]:
+        x0 = x0[:3]
+    elif args.task in ["table_dp_33"]:
+        x0 = x0[:8]
+    elif args.task in ["table_dp_44"]:
+        x0 = x0[:15]
+    
     print(x0)
+    
+
     limits = Bounds(task)
     posterior = true_Posteriors(task)
     #task_benchmark = ["two_moons", "bernoulli_glm2", "slcp_summary_transform2", "double_slcp_summary_transform2", "mog_10", "slcp_distractors"]
@@ -76,4 +85,4 @@ if __name__ == "__main__":
     run_similiarity(args.task, args.measure, args.x0_ind, args.seed, args.post_n_samples, args.num_training, args.cond_den, args.method)
 
 
-#python utils/get_measure.py --task "my_fifty_twomoons" --measure "c2st" --x0_ind 1 --seed 1 --post_n_samples 10000 --num_training 10000 --cond_den "nsf" --method "NPE"
+#python utils/get_measure.py --task "table_dp_22" --measure "c2st" --x0_ind 1 --seed 1 --post_n_samples 10000 --num_training 1000 --cond_den "nsf" --method "NPE"
