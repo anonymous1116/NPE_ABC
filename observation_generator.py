@@ -167,6 +167,33 @@ def main(args):
 
         torch.save(x0_list, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{args.task}_obs.pt")    
         print(x0_list)
+
+    elif args.task in ["table_dp_22", "table_dp_33"]:
+        import warnings
+        random.seed(2826)
+        torch.manual_seed(2826)
+        theta = Priors(args.task).sample((1000,))
+        X = Simulators(args.task)(theta)
+
+        # Keep only rows where all elements > 20
+        mask = (X > 20).all(dim=1)
+        theta_filtered = theta[mask]
+        X_filtered = X[mask]
+
+        n_filtered = mask.sum().item()
+        print(f"Kept {n_filtered} / {len(mask)} observations")
+
+        # Take 10 random samples
+        n_select = 10
+        if n_filtered < n_select:
+            warnings.warn(f"Only {n_filtered} observations available, fewer than {n_select} requested.")
+            idx = torch.randperm(n_filtered)
+        else:
+            idx = torch.randperm(n_filtered)[:n_select]
+
+        theta_selected = theta_filtered[idx]
+        X_selected = X_filtered[idx]
+        torch.save(X_selected, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{args.task}_obs.pt")  
     else:
         print("Task not recognized.")
 
