@@ -120,8 +120,6 @@ def main(args):
     Example: simulate privatized counts from known true p, then run Gibbs.
     """
     
-    p1 = 0.8
-    p2 = 0.8
     i = args.i
     
     if args.table_num ==2:
@@ -136,7 +134,8 @@ def main(args):
     # Run Gibbs
     n_iter = 2000000
     print("Gibbs sampling for task:", task, "x0 index:", i)
-    samples, _ = gibbs_rr_2x2(y, p1=p1, p2=p2, n_iter=n_iter, burn=int(n_iter/10), thin=50, seed=1)
+    if args.table_num ==2:
+        samples, _ = gibbs_rr_2x2(y, p1=0.8, p2=0.8, n_iter=n_iter, burn=int(n_iter/10), thin=50, seed=1)
     samples = samples.to(torch.float32)
 
     # Randomly permute and take 10000
