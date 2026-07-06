@@ -204,15 +204,14 @@ def main(args):
 
     adj = torch.column_stack((adj, theta_minus1))  # Append theta_{K-1} to adj
     
-
-    slack = 0.005
-    max_vals = (max_vals + slack).clamp(max=1.0)
-    min_vals = (min_vals - slack).clamp(min=0.0)
-
     with torch.no_grad():
         max_vals = torch.max(adj,0).values
         min_vals = torch.min(adj,0).values
     
+    slack = 0.005
+    max_vals = (max_vals + slack).clamp(max=1.0)
+    min_vals = (min_vals - slack).clamp(min=0.0)
+
     print("max_vals:", max_vals)   
     print("min_vals:", min_vals)
 
