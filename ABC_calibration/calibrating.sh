@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=10
-#SBATCH --time=00:39:00
+#SBATCH --time=00:29:00
 #SBATCH --account=statdept
 #SBATCH --gpus-per-node=1
 #SBATCH --mem=170G
@@ -29,8 +29,8 @@ seed=$((SLURM_ARRAY_TASK_ID / 10 + 1))
 #L=100000000
 
 L=1000000000
-task="table_dp_22"
-num_training=2000000 
+task="table_dp_33"
+num_training=500000 
 tol=1e-5
 #cdim=10
 # Run the calibrate_amor.py
