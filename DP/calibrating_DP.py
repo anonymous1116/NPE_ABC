@@ -84,6 +84,9 @@ def truncated_dirichletK_stick(L, K, lower, upper, *, device=None, dtype=torch.f
         ak = torch.maximum(ak_from_tk, ak_from_rem)
         bk = torch.minimum(bk_from_tk, bk_from_rem)
 
+        # Fix infeasible intervals numerically
+        bk = torch.maximum(bk, ak + eps)
+
         if torch.any(ak >= bk):
             raise ValueError(f"Infeasible bounds at step k={k}.")
 
