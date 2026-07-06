@@ -87,6 +87,15 @@ def truncated_dirichletK_stick(L, K, lower, upper, *, device=None, dtype=torch.f
         # Fix infeasible intervals numerically
         bk = torch.maximum(bk, ak + eps)
 
+        print(f"k={k}")
+        print(f"ak: {ak[:5]}")
+        print(f"bk: {bk[:5]}")
+        print(f"any nan ak: {torch.isnan(ak).any()}")
+        print(f"any nan bk: {torch.isnan(bk).any()}")
+        print(f"any inf ak: {torch.isinf(ak).any()}")
+        print(f"any inf bk: {torch.isinf(bk).any()}")
+        print(f"still bad: {(ak >= bk).any()}")
+
         if torch.any(ak >= bk):
             print(f"ak: {ak}")
             print(f"bk: {bk}")
