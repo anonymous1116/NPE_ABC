@@ -151,7 +151,7 @@ def main(args):
         
     print("x0_size", x0.size(), flush = True)
     
-    Y_cal = priors.sample((10_000_000,))
+    Y_cal = priors.sample((1_000_000,))
     X_cal = simulators(Y_cal)
 
 
