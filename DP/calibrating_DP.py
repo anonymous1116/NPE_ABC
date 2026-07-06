@@ -12,6 +12,28 @@ from sbibm.metrics.c2st import c2st
 from simulator import Priors, Simulators, Bounds, observation_lists, true_Posteriors, task_benchmark
 from help_functions import UnifSample, param_box, ABC_rej2
 
+def rtrunc_beta1b_torch(size, beta, a=0.0, b=1.0, *, device=None, dtype=torch.float32, generator=None):
+    if isinstance(size, int):
+        size = (size,)
+    beta_t = torch.as_tensor(beta, device=device, dtype=dtype).expand(size)
+    a_t = torch.as_tensor(a, device=device, dtype=dtype).expand(size)
+    b_t = torch.as_tensor(b, device=device, dtype=dtype).expand(size)
+
+    if torch.any(beta_t <= 0):
+        raise ValueError("beta must be > 0.")
+    if torch.any((a_t < 0) | (a_t >= b_t) | (b_t > 1)):
+        raise ValueError("Require 0 <= a < b <= 1.")
+
+    A = torch.exp(beta_t * torch.log1p(-b_t))  # (1-b)^beta
+    B = torch.exp(beta_t * torch.log1p(-a_t))  # (1-a)^beta
+
+    U = torch.rand(size, device=device, dtype=dtype, generator=generator)
+    U = A + (B - A) * U
+    X = 1.0 - torch.pow(U, 1.0 / beta_t)
+    return X
+
+
+
 def truncated_dirichletK_stick(L, K, lower, upper, *, device=None, dtype=torch.float32, generator=None, eps=1e-12):
     """
     Draw L samples from Dirichlet(1,...,1) (K components) with component-wise truncation.
@@ -84,7 +106,6 @@ def truncated_dirichletK_stick(L, K, lower, upper, *, device=None, dtype=torch.f
     thetas.append(leftover)
 
     return torch.stack(thetas, dim=1)
-
 
 def truncated_dirichlet_batch_K(L, K, lower, upper, *, batch_size=1_000_000, device=None, dtype=torch.float32):
     """
