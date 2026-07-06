@@ -32,8 +32,6 @@ def rtrunc_beta1b_torch(size, beta, a=0.0, b=1.0, *, device=None, dtype=torch.fl
     X = 1.0 - torch.pow(U, 1.0 / beta_t)
     return X
 
-
-
 def truncated_dirichletK_stick(L, K, lower, upper, *, device=None, dtype=torch.float32, generator=None, eps=1e-12):
     """
     Draw L samples from Dirichlet(1,...,1) (K components) with component-wise truncation.
