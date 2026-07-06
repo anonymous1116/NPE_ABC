@@ -32,7 +32,7 @@ def rtrunc_beta1b_torch(size, beta, a=0.0, b=1.0, *, device=None, dtype=torch.fl
     X = 1.0 - torch.pow(U, 1.0 / beta_t)
     return X
 
-def truncated_dirichletK_stick(L, K, lower, upper, *, device=None, dtype=torch.float32, generator=None, eps=1e-6):
+def truncated_dirichletK_stick(L, K, lower, upper, *, device=None, dtype=torch.float32, generator=None, eps=1e-12):
     """
     Draw L samples from Dirichlet(1,...,1) (K components) with component-wise truncation.
     Uses stick-breaking: theta_k = V_k * prod_{j<k}(1 - V_j), V_k ~ Beta(1, K-k).
@@ -85,7 +85,7 @@ def truncated_dirichletK_stick(L, K, lower, upper, *, device=None, dtype=torch.f
         bk = torch.minimum(bk_from_tk, bk_from_rem)
 
         # Fix infeasible intervals numerically
-        bk = torch.maximum(bk, ak + eps)
+        bk = torch.maximum(bk, ak + 1e-4)
 
         bad_mask = ak >= bk
         if bad_mask.any():
