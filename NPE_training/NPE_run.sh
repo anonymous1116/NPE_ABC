@@ -5,7 +5,7 @@
 #SBATCH --account=statdept
 #SBATCH --time=6-04:00:00
 #SBATCH --qos=normal
-#SBATCH --array=1-10               # Create a job array with indices from 1 to 10
+#SBATCH --array=2,5,10               # Create a job array with indices from 1 to 10
 #SBATCH --output=NPE/NPE_nsf/output_log/output_log_%A_%a.log
 #SBATCH --error=NPE/NPE_nsf/output_log/error_log_%A_%a.txt
 
@@ -31,7 +31,7 @@ seeds=$((seed_START + SLURM_ARRAY_TASK_ID - 1))
 echo "Running with seed=$seeds"
 #python NPE_training/NPE_run_embed.py --task "slcp_distractors" --seed $seeds --cond_den "nsf" --num_training 1000000 --cdim 5
 #python NPE_training/NPSE_run.py --task "bernoulli_glm2" --seed $seeds --num_training 1500000
-python NPE_training/NPE_DP_run.py --task "table_dp_22" --seed $seeds --num_training 3000000
+python NPE_training/NPE_DP_run.py --task "table_dp_33" --seed $seeds --num_training 2000000
 #python NPE_training/NPE_run.py --task "double_slcp_summary_transform2" --seed $seed --num_training 300000 --cond_den "nsf"
 #python NPE_training/SNPE_run.py --task "two_moons" --seed 1 --num_training 1000 --cond_den "nsf" --x0_ind 0
 echo "## Run Completed for seed=$seeds ##"
