@@ -7,7 +7,7 @@
 #SBATCH --mem=170G
 #SBATCH --qos=standby
 #SBATCH --partition=a10,a100-80gb
-#SBATCH --array=0-99
+#SBATCH --array=3,5,7,8,13,15,17,18,23,25,27,28,33,35,37,38,43,45,47,48,53,55,57,58,63,65,67,68,73,75,77,78,83,85,87,88,93,95,97,98
 #SBATCH --output=ABC_calibration/log/output_log_%A_%a.out
 #SBATCH --error=ABC_calibration/log/error_log_%A_%a.txt
 
@@ -29,7 +29,7 @@ seed=$((SLURM_ARRAY_TASK_ID / 10 + 1))
 #L=100000000
 
 L=1000000000
-task="table_dp_22"
+task="table_dp_44"
 num_training=3000000 
 tol=1e-5
 #cdim=10
@@ -59,4 +59,4 @@ echo "[$(date)] Job complete: x0_ind=$x0_ind, seed=$seed"
 #conda activate /depot/wangxiao/apps/hyun18/NPE_NABC
 #python ABC_calibration/calibrating_flow_latent2.py --x0_ind 1 --seed 1 --L 1000000 --task "my_five_twomoons_err40" --num_training 3000000 --tol 1e-2 
 #python ABC_calibration/calibrating_flow_experiment.py --x0_ind 1 --seed 1 --L 1000000 --task "my_five_twomoons_err40" --num_training 3000000 --tol 1e-2
-#python DP/calibrating_DP.py --x0_ind 1 --seed 1 --L 1000000 --task "table_dp_22" --num_training 1000000 --tol 1e-2
+#python DP/calibrating_DP.py --x0_ind 8 --seed 1 --L 1000000 --task "table_dp_44" --num_training 3000000 --tol 1e-2
