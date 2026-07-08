@@ -55,7 +55,10 @@ def main(args):
 
     # Save the inference object using pickle in the specified directory
     # Save the inference object and elapsed time using pickle in the specified directory
-    output_file_path = os.path.join(output_dir, f"{args.task}_{args.seed}_{args.cond_den}.pkl")
+    if args.method in ["FMPE", "NPSE"]:
+        output_file_path = os.path.join(output_dir, f"{args.task}_{args.seed}.pkl")
+    else:
+        output_file_path = os.path.join(output_dir, f"{args.task}_{args.seed}_{args.cond_den}.pkl")
     with open(output_file_path, 'wb') as f:
         pickle.dump({'density_estimator': density_estimator, 'posterior': inference.build_posterior(density_estimator), 'elapsed_time': elapsed_time}, f)
     
