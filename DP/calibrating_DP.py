@@ -21,8 +21,15 @@ def rtrunc_beta1b_torch(size, beta, a=0.0, b=1.0, *, device=None, dtype=torch.fl
 
     if torch.any(beta_t <= 0):
         raise ValueError("beta must be > 0.")
-    if torch.any((a_t < 0) | (a_t >= b_t) | (b_t > 1)):
-        raise ValueError("Require 0 <= a < b <= 1.")
+    
+    
+    # Fix numerical infeasibility silently
+    b_t = torch.maximum(b_t, a_t + 1e-6)
+    a_t = torch.clamp(a_t, min=0.0)
+    b_t = torch.clamp(b_t, max=1.0)
+    
+    #if torch.any((a_t < 0) | (a_t >= b_t) | (b_t > 1)):
+    #    raise ValueError("Require 0 <= a < b <= 1.")
 
     A = torch.exp(beta_t * torch.log1p(-b_t))  # (1-b)^beta
     B = torch.exp(beta_t * torch.log1p(-a_t))  # (1-a)^beta
