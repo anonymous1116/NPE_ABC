@@ -183,7 +183,6 @@ def param_box(unifsam, sample, num):
         del sam
     return torch.cat(theta_new, 1)
 
-
 def intervals_connect(heights, indices):
     a = list()
     b = list()
@@ -198,7 +197,6 @@ def intervals_connect(heights, indices):
             elif indices[i+1] == False:
                 b.append(i+1)
     return [a,b]
-
 
 def truncated_normal(shape, mean=0.0, std=1.0, lower=-0.5, upper=0.5):
     """
