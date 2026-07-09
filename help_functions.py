@@ -68,7 +68,6 @@ def TABC_Jacobian(s, theta, sobs, density_estimator, device = "cpu"):
     transform = flow._transform
     embed = flow._embedding_net
 
-    
     if theta.ndim == 1:
         theta  = torch.reshape(theta, (1, theta.size(0)))
     if s.ndim == 1:
@@ -77,9 +76,7 @@ def TABC_Jacobian(s, theta, sobs, density_estimator, device = "cpu"):
         sobs = torch.reshape(sobs, (1, sobs.size(0)))
     
     with torch.no_grad():
-        
         z, _ = transform.forward(theta.to(device), context = embed(s.to(device)))
-
         _, numerator = transform.inverse(z, context = embed(sobs.to(device)))
         _, denominator = transform.inverse(z, context = embed(s.to(device)))
 
