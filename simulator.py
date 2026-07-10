@@ -43,6 +43,8 @@ def Bounds(task_name: str):
         return [[0,1]] * 8
     elif task_name in ["table_dp_44"]:
         return [[0,1]] * 15
+    elif task_name in ["table_dp_55"]:
+        return [[0,1]] * 24
     else:
         raise ValueError(f"Unknown task name for bounds: {task_name}")
 
@@ -83,6 +85,8 @@ def Priors(task_name: str):
         return Dirichlet(torch.tensor([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]))
     elif task_name in ["table_dp_44"]:
         return Dirichlet(torch.tensor([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]))
+    elif task_name in ["table_dp_55"]:
+        return Dirichlet(torch.tensor([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]))
     else:
         raise ValueError(f"Unknown task name for prior: {task_name}")
 
@@ -96,7 +100,7 @@ task_benchmark = ["two_moons",
                   "my_five_twomoons_err90",
                   "mog_2_nabc", "mog_5_nabc", "mog_10_nabc",
                   "my_fifty_twomoons", 
-                  "table_dp_22", "table_dp_33", "table_dp_44"]
+                  "table_dp_22", "table_dp_33", "table_dp_44", "table_dp_55"]
     
 class true_Posteriors:
     def __init__(self, task):
@@ -139,6 +143,8 @@ class true_Posteriors:
             return self.table_dp_33(kwargs.get('j', 0))
         elif self.task in ["table_dp_44"]:
             return self.table_dp_44(kwargs.get('j', 0))
+        elif self.task in ["table_dp_55"]:
+            return self.table_dp_55(kwargs.get('j', 0))
 
         elif self.task in ["my_twomoons"]:
             return self.my_twomoons(obs, n_samples, bounds)
@@ -278,6 +284,11 @@ class true_Posteriors:
         post_sample = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/table_dp_44_post_{j}.pt")    
         return post_sample[:, :15]  # Return only the first fifteen columns of the posterior samples
 
+    def table_dp_55(self, j):
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        post_sample = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/table_dp_55_post_{j}.pt")    
+        return post_sample[:, :24]  # Return only the first twenty-four columns of the posterior samples
+
 
     def slcp(self, j):
         try:
@@ -379,7 +390,7 @@ def observation_lists(task_name:str):
                        "my_five_twomoons_err10", "my_five_twomoons_err30", "my_five_twomoons_err50",
                           "my_five_twomoons_err70", "my_five_twomoons_err90", 
                        "bernoulli_glm2_err10", "bernoulli_glm2_err30", "bernoulli_glm2_err50", "bernoulli_glm2_err70", "bernoulli_glm2_err90", "my_fifty_twomoons",
-                       "table_dp_22", "table_dp_33", "table_dp_44"]:
+                       "table_dp_22", "table_dp_33", "table_dp_44", "table_dp_55"]:
         current_dir = os.path.dirname(os.path.abspath(__file__))
         obs = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{task_name}_obs.pt")    
         return obs 
@@ -942,7 +953,6 @@ def channel_quaternary(p: float) -> torch.Tensor:
     ], dtype=torch.double)
     return C
 
-
 def channel_4x4(p1: float, p2: float) -> torch.Tensor:
     """
     Joint channel for two independent quaternary variables.
@@ -953,7 +963,6 @@ def channel_4x4(p1: float, p2: float) -> torch.Tensor:
     C2 = channel_quaternary(p2)
     R = torch.kron(C1, C2)  # shape (16, 16)
     return R
-
 
 def simulator_rr_cont_table_4x4(
     theta: torch.Tensor,
@@ -996,6 +1005,76 @@ def simulator_rr_cont_table_4x4(
 
     return torch.cat(out, dim=0).to(torch.float32)
 
+def channel_quinary(p: float) -> torch.Tensor:
+    """
+    Quinary randomized response channel C(p):
+      with prob p -> report truth; with prob (1-p) -> uniform random category.
+    Returns a 5x5 matrix with rows=reported, cols=true.
+    """
+    same = (1 + 4 * p) / 5
+    diff = (1 - p) / 5
+    C = torch.tensor([
+        [same, diff, diff, diff, diff],
+        [diff, same, diff, diff, diff],
+        [diff, diff, same, diff, diff],
+        [diff, diff, diff, same, diff],
+        [diff, diff, diff, diff, same]
+    ], dtype=torch.double)
+    return C
+
+
+def channel_5x5(p1: float, p2: float) -> torch.Tensor:
+    """
+    Joint channel for two independent quinary variables.
+    Returns a 25x25 matrix R with rows=reported cells, cols=true cells,
+    under fixed cell order [00,01,...,04,10,...,44].
+    """
+    C1 = channel_quinary(p1)
+    C2 = channel_quinary(p2)
+    R = torch.kron(C1, C2)  # shape (25, 25)
+    return R
+
+
+def simulator_rr_cont_table_5x5(
+    theta: torch.Tensor,
+    p: float = 0.5,
+    n: int = 400,
+    batch_size: int = 1_000_000,
+) -> torch.Tensor:
+    """
+    Simulate privatized counts y ~ Multinomial(n, q) with q = R(p) @ theta
+    for a 5x5 contingency table under randomized response.
+
+    Args:
+        theta: (N, 25) tensor; each row sums to 1;
+               order [00,01,...,04,10,...,44].
+        p: truthful-report probability (p in [0,1]).
+        n: total count per table draw.
+        batch_size: chunk size for memory efficiency.
+
+    Returns:
+        reported_counts: (N, 25) tensor of privatized counts.
+    """
+    assert theta.dim() == 2 and theta.size(1) == 25, "theta must be (N, 25)."
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    theta = theta.to(device).to(torch.double)
+
+    R = channel_5x5(p, p).to(device)
+
+    N = theta.size(0)
+    out = []
+    for start in range(0, N, batch_size):
+        end = min(start + batch_size, N)
+        th = theta[start:end]
+
+        q = (th @ R.T).clamp(min=0)
+        q = q / q.sum(dim=1, keepdim=True)
+
+        m = Multinomial(total_count=n, probs=q)
+        y = m.sample()
+        out.append(y.cpu())
+
+    return torch.cat(out, dim=0).to(torch.float32)
 
 def Simulators(task_name: str):
     task_name = task_name.lower()
@@ -1029,6 +1108,11 @@ def Simulators(task_name: str):
     elif task_name in ["table_dp_44"]:
         def cont_table_dp_generator(theta):
             return simulator_rr_cont_table_4x4(theta, p = 0.8, n = 4526, batch_size = 100_000)
+        return cont_table_dp_generator
+
+    elif task_name in ["table_dp_55"]:
+        def cont_table_dp_generator(theta):
+            return simulator_rr_cont_table_5x5(theta, p = 0.8, n = 4526, batch_size = 100_000)
         return cont_table_dp_generator
 
     elif task_name in ["my_ten_twomoons"]:

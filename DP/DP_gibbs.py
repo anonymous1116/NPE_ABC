@@ -3,7 +3,7 @@ import argparse
 import os, sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from simulator import channel_binary, channel_ternary, channel_quaternary
-from simulator import channel_2x2, channel_3x3, channel_4x4
+from simulator import channel_2x2, channel_3x3, channel_4x4, channel_5x5
 
 # ---------- Gibbs sampler ----------
 @torch.no_grad()
@@ -212,6 +212,70 @@ def gibbs_rr_4x4(
     }
     return p_samples, info
 
+@torch.no_grad()
+def gibbs_rr_5x5(
+    y_obs: torch.Tensor,              # shape (25,)
+    p1: float = 0.5,
+    p2: float = 0.5,
+    alpha: torch.Tensor = None,       # Dirichlet prior shape (25,)
+    n_iter: int = 5000,
+    burn: int = 1000,
+    thin: int = 1,
+    seed: int = 0,
+):
+    torch.manual_seed(seed)
+    y = y_obs.to(torch.int64).view(-1)
+    assert y.numel() == 25, "y_obs must have 25 cells."
+    if alpha is None:
+        alpha = torch.ones(25, dtype=torch.float32)
+    else:
+        alpha = alpha.to(torch.float32).view(-1)
+        assert alpha.numel() == 25
+
+    R = channel_5x5(p1, p2).to(torch.float32)
+    n = int(y.sum().item())
+    p = torch.full((25,), 1/25, dtype=torch.float32)
+
+    kept = []
+    z = torch.zeros(25, 25, dtype=torch.int64)
+    m = torch.distributions.Multinomial
+
+    for t in range(n_iter):
+        # Step 1: latent allocation
+        W = R * p.view(1, 25)
+        row_sums = W.sum(dim=1, keepdim=True).clamp_min(1e-12)
+        W = W / row_sums
+
+        for i in range(25):
+            yi = int(y[i].item())
+            if yi > 0:
+                z[i] = m(total_count=yi, probs=W[i]).sample().to(torch.int64)
+            else:
+                z[i] = torch.zeros(25, dtype=torch.int64)
+
+        # Step 2: update p
+        z_true = z.sum(dim=0).to(torch.float32)
+        p = torch.distributions.Dirichlet(alpha + z_true).sample()
+
+        if t >= burn and ((t - burn) % thin == 0):
+            kept.append(p.clone())
+
+        if (t + 1) % 1000 == 0:
+            print(f"Iteration {t+1}/{n_iter}", flush=True)
+
+    p_samples = torch.stack(kept, dim=0)  # (S, 25)
+
+    info = {
+        "R": R,
+        "n": n,
+        "n_iter": n_iter,
+        "burn": burn,
+        "thin": thin,
+        "kept": p_samples.size(0),
+    }
+    return p_samples, info
+
+
 def main(args):
     """
     Example: simulate privatized counts from known true p, then run Gibbs.
@@ -225,8 +289,10 @@ def main(args):
         task ="table_dp_33"
     elif args.table_num ==4:
         task ="table_dp_44"
+    elif args.table_num ==5:
+        task ="table_dp_55"
     else:
-        raise ValueError("table_num must be 2, 3, or 4.")
+        raise ValueError("table_num must be 2, 3, 4 or 5.")
 
 
     y = torch.load(f"/home/hyun18/depot_hyun/hyun/NPE_ABC/seeds/{task}_obs.pt")[i-1]
@@ -241,6 +307,10 @@ def main(args):
         samples, _ = gibbs_rr_3x3(y, p1=0.8, p2=0.8, n_iter=n_iter, burn=int(n_iter/10), thin=50, seed=1)
     elif args.table_num ==4:
         samples, _ = gibbs_rr_4x4(y, p1=0.8, p2=0.8, n_iter=n_iter, burn=int(n_iter/10), thin=50, seed=1)
+    elif args.table_num ==5:
+        samples, _ = gibbs_rr_5x5(y, p1=0.8, p2=0.8, n_iter=n_iter, burn=int(n_iter/10), thin=50, seed=1)
+    else:
+        raise ValueError("table_num must be 2, 3, 4 or 5.")
     samples = samples.to(torch.float32)
 
     # Randomly permute and take 10000
