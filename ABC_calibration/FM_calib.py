@@ -11,6 +11,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from sbibm.metrics.c2st import c2st
 from simulator import Priors, Simulators, Bounds, observation_lists, true_Posteriors, task_benchmark
 from help_functions import UnifSample, param_box, truncated_mvn_sample, ABC_rej2
+from torchdiffeq import odeint
 
 # Use context for ABC compared with calibrating_flow.py I guess this is better
 
@@ -64,7 +65,58 @@ def main(args):
     posterior = saved_data["posterior"]
     theta_1 = posterior.sample((10000,), x=x0)
     print(theta_1)
+        
+    # embedding net
+    embed = density_estimator._embedding_net
+
+    # ODE function
+    ode_fn = density_estimator.ode_fn
+
+    # vector field MLP
+    vf = density_estimator.net
+
+    # Compute context from x_obs
+    context = embed(x0)  # (1, context_dim)
+
+    def reverse_ode(t, theta):
+        t_tensor = (1 - t) * torch.ones(theta.shape[0], device=theta.device)
+        return -ode_fn(
+            input=theta,
+            condition=context.expand(theta.shape[0], -1),
+            times=t_tensor
+        )
+
+    def forward_ode(t, theta):
+        t_tensor = t * torch.ones(theta.shape[0], device=theta.device)
+        return ode_fn(
+            input=theta,
+            condition=context.expand(theta.shape[0], -1),
+            times=t_tensor
+        )
     
+
+    z = odeint(
+        reverse_ode,
+        theta_1,
+        t=torch.linspace(0, 1, 100),
+        method='dopri5',
+        atol=1e-7,
+        rtol=1e-7,
+    )[-1]
+
+    theta_1_new = odeint(
+        forward_ode,
+        z,
+        t=torch.linspace(0, 1, 100),
+        method='dopri5',
+        atol=1e-7,
+        rtol=1e-7,
+    )[-1]
+
+    #c2st(theta_1,theta_1_new.detach())
+    print(theta_1)
+    print(theta_1_new)
+
     if (1==0):
         with torch.no_grad():
             tmp, _ =  transform.forward(Y_cal.to(device), context = embed(X_cal.to(device)) )
