@@ -104,14 +104,14 @@ def main(args):
         rtol=1e-7,
     )[-1]
 
-    #theta_1_new = odeint(
-    #    forward_ode,
-    #    z,
-    #    t=torch.linspace(0, 1, 100),
-    #    method='dopri5',
-    #    atol=1e-7,
-    #    rtol=1e-7,
-    #)[-1]
+    theta_1_new = odeint(
+        forward_ode,
+        z,
+        t=torch.linspace(0, 1, 100),
+        method='dopri5',
+        atol=1e-7,
+        rtol=1e-7,
+    )[-1]
 
     #c2st(theta_1,theta_1_new.detach())
     print(theta_1)
