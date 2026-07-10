@@ -62,15 +62,15 @@ def main(args):
     with open(output_file_path, 'rb') as f:
         saved_data = pickle.load(f)
     density_estimator = saved_data["density_estimator"]
-    
-    density_estimator = density_estimator.to(device).eval()
-    embed = density_estimator._embedding_net
-    ode_fn = density_estimator.ode_fn
-    ode_fn_compiled = torch.compile(ode_fn)
-    
     posterior = saved_data["posterior"]
     theta_1 = posterior.sample((1000,), x=x0)
     print(theta_1)
+        
+    # embedding net
+    embed = density_estimator._embedding_net
+
+    # ODE function
+    ode_fn = density_estimator.ode_fn
 
     # vector field MLP
     vf = density_estimator.net
@@ -78,35 +78,22 @@ def main(args):
     # Compute context from x_obs
     context = embed(x0)  # (1, context_dim)
 
-    #def reverse_ode(t, theta):
-    #    t_tensor = (1 - t) * torch.ones(theta.shape[0], device=theta.device)
-    #    return -ode_fn(
-    #        input=theta,
-    #        condition=context.expand(theta.shape[0], -1),
-    #        times=t_tensor
-    #    )
-
-    #def forward_ode(t, theta):
-    #    t_tensor = t * torch.ones(theta.shape[0], device=theta.device)
-    #    return ode_fn(
-    #        input=theta,
-    #        condition=context.expand(theta.shape[0], -1),
-    #        times=t_tensor
-    #    )
-
-    def forward_ode(t, theta):
-        return ode_fn_compiled(
+    def reverse_ode(t, theta):
+        t_tensor = (1 - t) * torch.ones(theta.shape[0], device=theta.device)
+        return -ode_fn(
             input=theta,
             condition=context.expand(theta.shape[0], -1),
-            times=t.expand(theta.shape[0])
+            times=t_tensor
         )
 
-    def reverse_ode(t, theta):
-        return -ode_fn_compiled(
+    def forward_ode(t, theta):
+        t_tensor = t * torch.ones(theta.shape[0], device=theta.device)
+        return ode_fn(
             input=theta,
             condition=context.expand(theta.shape[0], -1),
-            times=(1-t).expand(theta.shape[0])
-        )    
+            times=t_tensor
+        )
+    
 
     z = odeint(
         reverse_ode,
