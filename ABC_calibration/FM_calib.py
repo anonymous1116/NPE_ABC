@@ -63,7 +63,7 @@ def main(args):
         saved_data = pickle.load(f)
     density_estimator = saved_data["density_estimator"]
     posterior = saved_data["posterior"]
-    theta_1 = posterior.sample((10000,), x=x0)
+    theta_1 = posterior.sample((1000,), x=x0)
     print(theta_1)
         
     # embedding net
@@ -104,14 +104,14 @@ def main(args):
         rtol=1e-7,
     )[-1]
 
-    theta_1_new = odeint(
-        forward_ode,
-        z,
-        t=torch.linspace(0, 1, 100),
-        method='dopri5',
-        atol=1e-7,
-        rtol=1e-7,
-    )[-1]
+    #theta_1_new = odeint(
+    #    forward_ode,
+    #    z,
+    #    t=torch.linspace(0, 1, 100),
+    #    method='dopri5',
+    #    atol=1e-7,
+    #    rtol=1e-7,
+    #)[-1]
 
     #c2st(theta_1,theta_1_new.detach())
     print(theta_1)
