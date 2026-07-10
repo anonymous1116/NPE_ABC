@@ -57,7 +57,7 @@ def main(args):
     index_ABC = ABC_rej2(x0, X_cal, 1e-2, device)
     X_cal, Y_cal = X_cal[index_ABC], Y_cal[index_ABC]
 
-    output_file_path = os.path.join(f'../depot_hyun/hyun/NPE_ABC/FMPE_nets/{args.task}/J_{int(args.num_training/1000)}K/{args.task}_{seed}_{args.cond_den}.pkl')
+    output_file_path = os.path.join(f'../depot_hyun/hyun/NPE_ABC/FMPE_nets/{args.task}/J_{int(args.num_training/1000)}K/{args.task}_{seed}.pkl')
     with open(output_file_path, 'rb') as f:
         saved_data = pickle.load(f)
     density_estimator = saved_data["density_estimator"]
@@ -186,8 +186,6 @@ def get_args():
                         help="Number of training data of NPE (default: 100_000)")
     parser.add_argument("--tol", type=float, default=1e-4,
                     help="Tolerance value for ABC (any positive float, default: 1e-4 but less than 1e-2)")
-    parser.add_argument('--cond_den', type=str, default='nsf', 
-                        help='Conditional density estimator type: mdn, maf, nsf')
     return parser.parse_args()
 
 if __name__ == "__main__":
@@ -199,4 +197,3 @@ if __name__ == "__main__":
     print(f"task: {args.task}")
     print(f"num_training: {args.num_training}")
     print(f"tol: {args.tol}")
-    print(f"cond_den: {args.cond_den}")
