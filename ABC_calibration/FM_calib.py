@@ -15,22 +15,12 @@ from torchdiffeq import odeint
 
 
 # Use context for ABC compared with calibrating_flow.py I guess this is better
-def make_ode_functions(ode_fn, device):
-    """
-    Create forward and reverse ODE functions with per-sample conditioning.
-
-    Args:
-        ode_fn:  density_estimator.ode_fn
-        device:  torch device
-
-    Returns:
-        forward_ode, reverse_ode — functions (t, theta, condition) -> d_theta/dt
-    """
+def make_ode_functions(ode_fn, embed, device):
     def forward_ode(t, theta, condition):
         t_tensor = t * torch.ones(theta.shape[0], device=device)
         return ode_fn(
             input=theta,
-            condition=condition,
+            condition=embed(condition),
             times=t_tensor
         )
 
@@ -38,7 +28,7 @@ def make_ode_functions(ode_fn, device):
         t_tensor = (1 - t) * torch.ones(theta.shape[0], device=device)
         return -ode_fn(
             input=theta,
-            condition=condition,
+            condition=embed(condition),
             times=t_tensor
         )
 
@@ -135,36 +125,22 @@ def main(args):
     density_estimator = saved_data["density_estimator"]
     posterior = saved_data["posterior"]
     
-    print(density_estimator._embedding_net)
-    import inspect
-    print(inspect.getsource(density_estimator.ode_fn))
+    
     density_estimator = density_estimator.to(device).eval()
     embed = density_estimator._embedding_net
     ode_fn = density_estimator.ode_fn
 
     forward_ode, reverse_ode = make_ode_functions(ode_fn, device)
 
-    # Precompute X_cal embeddings in batches
-    with torch.no_grad():
-        context_list = []
-        for start in range(0, X_cal.size(0), 1_000):
-            end = min(start + 1_000, X_cal.size(0))
-            context_list.append(embed(X_cal[start:end].to(device)).cpu())
-            torch.cuda.empty_cache()
-        context_cal = torch.cat(context_list, dim=0)  # (N, ctx_dim) on CPU
-
-    # Also compute x0 context for forward ODE
-    with torch.no_grad():
-        context_x0 = embed(x0.to(device)).cpu()  # (1, ctx_dim)
-        context_x0 = context_x0.expand(Y_cal.size(0), -1)  # (N, ctx_dim)
-
     t_span = torch.linspace(0, 1, 100, device=device)
 
-    # Reverse: Y_cal conditioned on X_cal -> z
-    z_tmp = batched_odeint(reverse_ode, Y_cal, context_cal, t_span, device, batch_size=500)
+    # Raw X_cal as condition
+    z_tmp = batched_odeint(reverse_ode, Y_cal, X_cal, t_span, device, batch_size=100)
 
-    # Forward: z conditioned on x0 -> adj
-    adj = batched_odeint(forward_ode, z_tmp, context_x0, t_span, device, batch_size=500)
+    # Raw x0 expanded as condition
+    x0_expanded = x0.expand(Y_cal.size(0), -1)  # (N, d_x)
+    adj = batched_odeint(forward_ode, z_tmp, x0_expanded, t_span, device, batch_size=100)
+
 
     X_abc = []
     Y_abc = []
@@ -225,26 +201,15 @@ def main(args):
     
     print("post_sample size", post_sample.size())
     
-    # Precompute X_abc embeddings in batches
-    with torch.no_grad():
-        context_list = []
-        for start in range(0, X_abc.size(0), 1_000):
-            end = min(start + 1_000, X_abc.size(0))
-            context_list.append(embed(X_abc[start:end].to(device)).cpu())
-            torch.cuda.empty_cache()
-        context_cal = torch.cat(context_list, dim=0)  # (N, ctx_dim) on CPU
-
-    # Also compute x0 context for forward ODE
-    with torch.no_grad():
-        context_x0 = embed(x0.to(device)).cpu()  # (1, ctx_dim)
-        context_x0 = context_x0.expand(Y_abc.size(0), -1)  # (N, ctx_dim)
-
+    
 
     # Reverse: Y_cal conditioned on X_cal -> z
-    z_tmp = batched_odeint(reverse_ode, Y_abc, context_cal, t_span, device, batch_size=500)
+    z_tmp = batched_odeint(reverse_ode, Y_abc, X_abc, t_span, device, batch_size=500)
 
     # Forward: z conditioned on x0 -> adj
-    new_theta = batched_odeint(forward_ode, z_tmp, context_x0, t_span, device, batch_size=500)
+    x0_expanded = x0.expand(z_tmp.size(0), -1)  # (N, d_x)
+    
+    new_theta = batched_odeint(forward_ode, z_tmp, x0_expanded, t_span, device, batch_size=500)
 
     new_theta = new_theta.cpu()
     # 4) Now call your fast function (or sbi’s sample_batched) on GPU
