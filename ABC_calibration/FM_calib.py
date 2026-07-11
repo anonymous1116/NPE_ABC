@@ -63,9 +63,7 @@ def main(args):
         saved_data = pickle.load(f)
     density_estimator = saved_data["density_estimator"]
     posterior = saved_data["posterior"]
-    theta_1 = posterior.sample((1000,), x=x0)
-    print(theta_1)
-        
+    
     # embedding net
     embed = density_estimator._embedding_net
 
@@ -76,10 +74,11 @@ def main(args):
     vf = density_estimator.net
 
     # Compute context from x_obs
-    context = embed(x0)  # (1, context_dim)
-
+    context = embed(x0.to(device))  # (1, context_dim) on GPU
+    
     def reverse_ode(t, theta):
-        t_tensor = (1 - t) * torch.ones(theta.shape[0], device=theta.device)
+        # theta is already on GPU since theta_1 is on GPU
+        t_tensor = (1 - t) * torch.ones(theta.shape[0], device=device)
         return -ode_fn(
             input=theta,
             condition=context.expand(theta.shape[0], -1),
@@ -87,42 +86,36 @@ def main(args):
         )
 
     def forward_ode(t, theta):
-        t_tensor = t * torch.ones(theta.shape[0], device=theta.device)
+        t_tensor = t * torch.ones(theta.shape[0], device=device)
         return ode_fn(
             input=theta,
             condition=context.expand(theta.shape[0], -1),
             times=t_tensor
         )
-    
+        
 
-    z = odeint(
+    z_tmp = odeint(
         reverse_ode,
-        theta_1,
-        t=torch.linspace(0, 1, 100),
+        Y_cal,
+        t=torch.linspace(0, 1, 100, device=device),
         method='dopri5',
         atol=1e-7,
         rtol=1e-7,
     )[-1]
 
-    theta_1_new = odeint(
+    adj = odeint(
         forward_ode,
-        z,
-        t=torch.linspace(0, 1, 100),
+        z_tmp,
+        t=torch.linspace(0, 1, 100, device=device),
         method='dopri5',
         atol=1e-7,
         rtol=1e-7,
     )[-1]
+    adj = adj.cpu()
 
-    #c2st(theta_1,theta_1_new.detach())
-    print(theta_1)
-    print(theta_1_new)
 
     if (1==0):
-        with torch.no_grad():
-            tmp, _ =  transform.forward(Y_cal.to(device), context = embed(X_cal.to(device)) )
-            adj, _ = transform.inverse(tmp, context = embed(x0.expand((tmp.size(0),x0.size(1))).to(device)))    
-        adj = adj.cpu()
-
+        
         X_abc = []
         Y_abc = []
         
