@@ -21,6 +21,8 @@ def main(args):
         alpha = torch.ones(9)                # Dirichlet(1,1,1,1,1,1,1,1,1), change if needed   
     elif args.task == "table_dp_44":
         alpha = torch.ones(16)               # Dirichlet(1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1), change if needed 
+    elif args.task == "table_dp_55":
+        alpha = torch.ones(25)               # Dirichlet(1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1), change if needed 
     else:
         raise ValueError("Unknown task. Please choose either 'table_dp_22', 'table_dp_33', or 'table_dp_44'.")
     simulators = Simulators(args.task)
@@ -44,6 +46,8 @@ def main(args):
         inference = inference.append_simulations(theta[:,:8], X[:,:8])
     elif args.task == "table_dp_44":
         inference = inference.append_simulations(theta[:,:15], X[:,:15])
+    elif args.task == "table_dp_55":
+        inference = inference.append_simulations(theta[:,:24], X[:,:24])
     else:
         print("Unknown task for inference. Please check the task name.")
 
