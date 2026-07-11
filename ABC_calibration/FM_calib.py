@@ -133,66 +133,67 @@ def main(args):
 
     adj = torch.cat(adj_list, dim=0)
     
-    print("completed adj", flush = True)
-    if (1==0):
-        
-        X_abc = []
-        Y_abc = []
-        
-        if bounds is not None:
-            adj = torch.clamp(adj, min = torch.tensor(bounds)[:,0], max = torch.tensor(bounds)[:,1])
+    
+    X_abc = []
+    Y_abc = []
+    
+    if bounds is not None:
+        adj = torch.clamp(adj, min = torch.tensor(bounds)[:,0], max = torch.tensor(bounds)[:,1])
 
-        with torch.no_grad():
-            max_vals = torch.max(adj,0).values
-            min_vals = torch.min(adj,0).values
-        
-        priors_mean = torch.zeros(10)
-        priors_std = torch.ones(10) * np.sqrt(2)
+    with torch.no_grad():
+        max_vals = torch.max(adj,0).values
+        min_vals = torch.min(adj,0).values
+    
+    priors_mean = torch.zeros(10)
+    priors_std = torch.ones(10) * np.sqrt(2)
 
-        print("max_vals:", max_vals)   
-        print("min_vals:", min_vals)
+    print("max_vals:", max_vals)   
+    print("min_vals:", min_vals)
 
-        for i in range(num_chunks + 1): 
-            start = i * chunk_size
-            end = (i + 1) * chunk_size if (i + 1) * chunk_size < L else L
-            nums = end-start
+    for i in range(num_chunks + 1): 
+        start = i * chunk_size
+        end = (i + 1) * chunk_size if (i + 1) * chunk_size < L else L
+        nums = end-start
 
-            if nums == 0:
-                break
-            if args.task.startswith("bernoulli_glm2"):
-                Y_chunk = truncated_mvn_sample(nums, priors_mean, priors_std, min_vals, max_vals)
-            else:
-                Y_chunk = param_box(UnifSample(bins = 10), adj, num=nums)
-            
-            X_chunk = simulators(Y_chunk)
-            
-            x0_embed = embed(x0.to(device))
-            X_chunk_embed = embed(X_chunk.to(device))
-        
-
-            index_ABC = ABC_rej2(x0_embed, X_chunk_embed, args.tol*100, device)
-            X_chunk, Y_chunk = X_chunk[index_ABC], Y_chunk[index_ABC]
-            X_abc.append(X_chunk)
-            Y_abc.append(Y_chunk)
-            print(f"{i}th iteration out of {num_chunks}", flush = True)
-
-            
-        X_abc = torch.cat(X_abc)
-        Y_abc = torch.cat(Y_abc)    
-
-        X_abc_embed = embed(X_abc.to(device))
-        index_ABC = ABC_rej2(x0_embed, X_abc_embed, 0.01, device)
-        X_abc, Y_abc = X_abc[index_ABC], Y_abc[index_ABC]
-
-        print("X_abc size", X_abc.size())
-
-        if args.task in task_benchmark:
-            post_sample = true_posteriors(j = args.x0_ind+1)
-        elif args.task in ["my_five_twomoons"]:    
-            post_sample = torch.load(f"../depot_hyun/hyun/NPE_ABC/seeds/my_five_twomoons_post_{args.x0_ind+1}.pt")
+        if nums == 0:
+            break
+        if args.task.startswith("bernoulli_glm2"):
+            Y_chunk = truncated_mvn_sample(nums, priors_mean, priors_std, min_vals, max_vals)
         else:
-            post_sample = true_posteriors(torch.tensor(x0), n_samples=10_000, bounds=bounds)
+            Y_chunk = param_box(UnifSample(bins = 10), adj, num=nums)
         
+        X_chunk = simulators(Y_chunk)
+        
+        x0_embed = embed(x0.to(device))
+        X_chunk_embed = embed(X_chunk.to(device))
+    
+
+        index_ABC = ABC_rej2(x0_embed, X_chunk_embed, args.tol*100, device)
+        X_chunk, Y_chunk = X_chunk[index_ABC], Y_chunk[index_ABC]
+        X_abc.append(X_chunk)
+        Y_abc.append(Y_chunk)
+        print(f"{i}th iteration out of {num_chunks}", flush = True)
+
+        
+    X_abc = torch.cat(X_abc)
+    Y_abc = torch.cat(Y_abc)    
+
+    X_abc_embed = embed(X_abc.to(device))
+    index_ABC = ABC_rej2(x0_embed, X_abc_embed, 0.01, device)
+    X_abc, Y_abc = X_abc[index_ABC], Y_abc[index_ABC]
+
+    print("X_abc size", X_abc.size())
+
+    if args.task in task_benchmark:
+        post_sample = true_posteriors(j = args.x0_ind+1)
+    elif args.task in ["my_five_twomoons"]:    
+        post_sample = torch.load(f"../depot_hyun/hyun/NPE_ABC/seeds/my_five_twomoons_post_{args.x0_ind+1}.pt")
+    else:
+        post_sample = true_posteriors(torch.tensor(x0), n_samples=10_000, bounds=bounds)
+    
+    print("post_sample size", post_sample.size())
+    if (1==0):
+
         with torch.no_grad():
             tmp, _ =  transform.forward(Y_abc.to(device), context = embed(X_abc.to(device)) )
             new_theta, _ = transform.inverse(tmp, context = embed(x0.expand((tmp.size(0),x0.size(1))).to(device)))    
