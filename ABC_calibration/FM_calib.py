@@ -23,8 +23,7 @@ def main(args):
     np.random.seed(seed)
 
     L = args.L
-    NABC_results = []
-    
+
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     priors = Priors(args.task)
@@ -64,10 +63,8 @@ def main(args):
     density_estimator = saved_data["density_estimator"]
     posterior = saved_data["posterior"]
     
-    # embedding net
+    density_estimator = density_estimator.to(device).eval()
     embed = density_estimator._embedding_net
-
-    # ODE function
     ode_fn = density_estimator.ode_fn
 
     # vector field MLP
