@@ -134,7 +134,7 @@ def main(args):
     density_estimator = saved_data["density_estimator"]
     posterior = saved_data["posterior"]
     
-    
+    print(density_estimator._embedding_net)
     density_estimator = density_estimator.to(device).eval()
     embed = density_estimator._embedding_net
     ode_fn = density_estimator.ode_fn
