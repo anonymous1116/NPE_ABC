@@ -90,16 +90,28 @@ def main(args):
             times=t_tensor
         )
         
+    ode_batch_size = 500
+    z_tmp_list = []
 
-    z_tmp = odeint(
-        reverse_ode,
-        Y_cal.to(device),
-        t=torch.linspace(0, 1, 100, device=device),
-        method='dopri5',
-        atol=1e-7,
-        rtol=1e-7,
-    )[-1]
+    with torch.no_grad():
+        for start in range(0, Y_cal.size(0), ode_batch_size):
+            end = min(start + ode_batch_size, Y_cal.size(0))
+            Y_batch = Y_cal[start:end].to(device)
+            
+            z_batch = odeint(
+                reverse_ode,
+                Y_batch,
+                t=torch.linspace(0, 1, 100, device=device),
+                method='dopri5',
+                atol=1e-7,
+                rtol=1e-7,
+            )[-1]
+            z_tmp_list.append(z_batch.cpu())
+            del Y_batch, z_batch
+            torch.cuda.empty_cache()
 
+    z_tmp = torch.cat(z_tmp_list, dim=0)
+    
     adj = odeint(
         forward_ode,
         z_tmp.to(device),
