@@ -222,19 +222,38 @@ def main(args):
     
     print("post_sample size", post_sample.size())
     
+    # Precompute X_abc embeddings in batches
+    with torch.no_grad():
+        context_list = []
+        for start in range(0, X_abc.size(0), 1_000):
+            end = min(start + 1_000, X_abc.size(0))
+            context_list.append(embed(X_abc[start:end].to(device)).cpu())
+            torch.cuda.empty_cache()
+        context_cal = torch.cat(context_list, dim=0)  # (N, ctx_dim) on CPU
+
+
+    # Reverse: Y_cal conditioned on X_cal -> z
+    z_tmp = batched_odeint(reverse_ode, Y_abc, context_cal, t_span, device, batch_size=100)
+
+    # Forward: z conditioned on x0 -> adj
+    new_theta = batched_odeint(forward_ode, z_tmp, context_x0, t_span, device, batch_size=100)
+
+    new_theta = new_theta.cpu()
+    # 4) Now call your fast function (or sbi’s sample_batched) on GPU
+    end_time = time.time()
     
+    
+    elapsed_time = end_time - start_time  # Calculate elapsed time
+    print("TABC sample size: ", new_theta.size())
+    results_size = min(10_000, new_theta.size(0))
+
+    tmp = c2st(post_sample[:results_size].cpu(), new_theta[:results_size] )
+    print(tmp)    
+    
+
     if (1==0):
 
-        with torch.no_grad():
-            tmp, _ =  transform.forward(Y_abc.to(device), context = embed(X_abc.to(device)) )
-            new_theta, _ = transform.inverse(tmp, context = embed(x0.expand((tmp.size(0),x0.size(1))).to(device)))    
-
-        new_theta = new_theta.cpu()
-        # 4) Now call your fast function (or sbi’s sample_batched) on GPU
-        end_time = time.time()
         
-        
-        elapsed_time = end_time - start_time  # Calculate elapsed time
         
         print("TABC sample size: ", new_theta.size())
         results_size = min(10_000, new_theta.size(0))
