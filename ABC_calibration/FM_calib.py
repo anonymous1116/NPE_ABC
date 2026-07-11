@@ -15,6 +15,44 @@ from torchdiffeq import odeint
 
 # Use context for ABC compared with calibrating_flow.py I guess this is better
 
+def batched_odeint(ode_func, y0, t_span, device, batch_size=500, method='dopri5', atol=1e-7, rtol=1e-7):
+    """
+    Run odeint in batches to avoid GPU OOM.
+
+    Args:
+        ode_func:   function (t, y) -> dy/dt
+        y0:         (N, d) initial conditions on CPU
+        t_span:     time points tensor
+        device:     torch device
+        batch_size: number of samples per batch
+        method:     ODE solver method
+        atol, rtol: solver tolerances
+
+    Returns:
+        (N, d) tensor on CPU — solution at t_span[-1]
+    """
+    results = []
+
+    with torch.no_grad():
+        for start in range(0, y0.size(0), batch_size):
+            end = min(start + batch_size, y0.size(0))
+            y_batch = y0[start:end].to(device)
+
+            out = odeint(
+                ode_func,
+                y_batch,
+                t=t_span,
+                method=method,
+                atol=atol,
+                rtol=rtol,
+            )[-1]
+            results.append(out.cpu())
+
+            del y_batch, out
+            torch.cuda.empty_cache()
+
+    return torch.cat(results, dim=0)
+
 def main(args):
     seed = args.seed
     #torch.set_default_device("cpu")
@@ -93,46 +131,12 @@ def main(args):
     ode_batch_size = 500
     z_tmp_list = []
 
-    with torch.no_grad():
-        for start in range(0, Y_cal.size(0), ode_batch_size):
-            end = min(start + ode_batch_size, Y_cal.size(0))
-            Y_batch = Y_cal[start:end].to(device)
-            
-            z_batch = odeint(
-                reverse_ode,
-                Y_batch,
-                t=torch.linspace(0, 1, 100, device=device),
-                method='dopri5',
-                atol=1e-7,
-                rtol=1e-7,
-            )[-1]
-            z_tmp_list.append(z_batch.cpu())
-            del Y_batch, z_batch
-            torch.cuda.empty_cache()
 
-    z_tmp = torch.cat(z_tmp_list, dim=0)
-    
-    adj_list = []
+    t_span = torch.linspace(0, 1, 100, device=device)
 
-    with torch.no_grad():
-        for start in range(0, z_tmp.size(0), ode_batch_size):
-            end = min(start + ode_batch_size, z_tmp.size(0))
-            z_batch = z_tmp[start:end].to(device)
-            
-            adj_batch = odeint(
-                forward_ode,
-                z_batch,
-                t=torch.linspace(0, 1, 100, device=device),
-                method='dopri5',
-                atol=1e-7,
-                rtol=1e-7,
-            )[-1]
-            adj_list.append(adj_batch.cpu())
-            del z_batch, adj_batch
-            torch.cuda.empty_cache()
-
-    adj = torch.cat(adj_list, dim=0)
-    
+    z_tmp = batched_odeint(reverse_ode, Y_cal, t_span, device, batch_size=100)
+    adj   = batched_odeint(forward_ode, z_tmp, t_span, device, batch_size=100)
+    adj   = adj.cpu()
     
     X_abc = []
     Y_abc = []
@@ -192,6 +196,8 @@ def main(args):
         post_sample = true_posteriors(torch.tensor(x0), n_samples=10_000, bounds=bounds)
     
     print("post_sample size", post_sample.size())
+    
+    
     if (1==0):
 
         with torch.no_grad():
