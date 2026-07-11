@@ -130,8 +130,8 @@ def main(args):
     embed = density_estimator._embedding_net
     ode_fn = density_estimator.ode_fn
 
-    forward_ode, reverse_ode = make_ode_functions(ode_fn, device)
-
+    forward_ode, reverse_ode = make_ode_functions(ode_fn, embed, device)
+    
     t_span = torch.linspace(0, 1, 100, device=device)
 
     # Raw X_cal as condition
