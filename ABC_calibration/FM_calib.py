@@ -134,8 +134,8 @@ def main(args):
 
     t_span = torch.linspace(0, 1, 100, device=device)
 
-    z_tmp = batched_odeint(reverse_ode, Y_cal, t_span, device, batch_size=100)
-    adj   = batched_odeint(forward_ode, z_tmp, t_span, device, batch_size=100)
+    z_tmp = batched_odeint(reverse_ode, Y_cal, t_span, device, batch_size=500)
+    adj   = batched_odeint(forward_ode, z_tmp, t_span, device, batch_size=500)
     adj   = adj.cpu()
     
     X_abc = []
