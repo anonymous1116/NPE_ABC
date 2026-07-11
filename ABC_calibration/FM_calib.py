@@ -112,16 +112,27 @@ def main(args):
 
     z_tmp = torch.cat(z_tmp_list, dim=0)
     
-    adj = odeint(
-        forward_ode,
-        z_tmp.to(device),
-        t=torch.linspace(0, 1, 100, device=device),
-        method='dopri5',
-        atol=1e-7,
-        rtol=1e-7,
-    )[-1]
-    adj = adj.cpu()
+    adj_list = []
 
+    with torch.no_grad():
+        for start in range(0, z_tmp.size(0), ode_batch_size):
+            end = min(start + ode_batch_size, z_tmp.size(0))
+            z_batch = z_tmp[start:end].to(device)
+            
+            adj_batch = odeint(
+                forward_ode,
+                z_batch,
+                t=torch.linspace(0, 1, 100, device=device),
+                method='dopri5',
+                atol=1e-7,
+                rtol=1e-7,
+            )[-1]
+            adj_list.append(adj_batch.cpu())
+            del z_batch, adj_batch
+            torch.cuda.empty_cache()
+
+    adj = torch.cat(adj_list, dim=0)
+    
 
     if (1==0):
         
