@@ -231,6 +231,11 @@ def main(args):
             torch.cuda.empty_cache()
         context_cal = torch.cat(context_list, dim=0)  # (N, ctx_dim) on CPU
 
+    # Also compute x0 context for forward ODE
+    with torch.no_grad():
+        context_x0 = embed(x0.to(device)).cpu()  # (1, ctx_dim)
+        context_x0 = context_x0.expand(Y_abc.size(0), -1)  # (N, ctx_dim)
+
 
     # Reverse: Y_cal conditioned on X_cal -> z
     z_tmp = batched_odeint(reverse_ode, Y_abc, context_cal, t_span, device, batch_size=500)
