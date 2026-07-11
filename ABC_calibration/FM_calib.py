@@ -158,10 +158,10 @@ def main(args):
     t_span = torch.linspace(0, 1, 100, device=device)
 
     # Reverse: Y_cal conditioned on X_cal -> z
-    z_tmp = batched_odeint(reverse_ode, Y_cal, context_cal, t_span, device, batch_size=100)
+    z_tmp = batched_odeint(reverse_ode, Y_cal, context_cal, t_span, device, batch_size=500)
 
     # Forward: z conditioned on x0 -> adj
-    adj = batched_odeint(forward_ode, z_tmp, context_x0, t_span, device, batch_size=100)
+    adj = batched_odeint(forward_ode, z_tmp, context_x0, t_span, device, batch_size=500)
 
     X_abc = []
     Y_abc = []
@@ -233,10 +233,10 @@ def main(args):
 
 
     # Reverse: Y_cal conditioned on X_cal -> z
-    z_tmp = batched_odeint(reverse_ode, Y_abc, context_cal, t_span, device, batch_size=100)
+    z_tmp = batched_odeint(reverse_ode, Y_abc, context_cal, t_span, device, batch_size=500)
 
     # Forward: z conditioned on x0 -> adj
-    new_theta = batched_odeint(forward_ode, z_tmp, context_x0, t_span, device, batch_size=100)
+    new_theta = batched_odeint(forward_ode, z_tmp, context_x0, t_span, device, batch_size=500)
 
     new_theta = new_theta.cpu()
     # 4) Now call your fast function (or sbi’s sample_batched) on GPU
