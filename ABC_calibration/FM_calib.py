@@ -300,7 +300,7 @@ def get_args():
                         help='Simulation type: Lapl, MoG')
     parser.add_argument("--num_training", type=int, default=100_000, 
                         help="Number of training data of NPE (default: 100_000)")
-    parser.add_argument("--tol", type=float, default=1e-4,
+    parser.add_argument("--tol", type=float, default=1e-3,
                     help="Tolerance value for ABC (any positive float, default: 1e-4 but less than 1e-2)")
     return parser.parse_args()
 
