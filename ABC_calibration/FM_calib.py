@@ -133,7 +133,7 @@ def main(args):
 
     adj = torch.cat(adj_list, dim=0)
     
-
+    print("completed adj", flush = True)
     if (1==0):
         
         X_abc = []
