@@ -13,6 +13,7 @@ from simulator import Priors, Simulators, Bounds, observation_lists, true_Poster
 from help_functions import UnifSample, param_box, truncated_mvn_sample, ABC_rej2
 from torchdiffeq import odeint
 
+
 # Use context for ABC compared with calibrating_flow.py I guess this is better
 def make_ode_functions(ode_fn, device):
     """
@@ -135,6 +136,8 @@ def main(args):
     posterior = saved_data["posterior"]
     
     print(density_estimator._embedding_net)
+    import inspect
+    print(inspect.getsource(density_estimator.ode_fn))
     density_estimator = density_estimator.to(device).eval()
     embed = density_estimator._embedding_net
     ode_fn = density_estimator.ode_fn
