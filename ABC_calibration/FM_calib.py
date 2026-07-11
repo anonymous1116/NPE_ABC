@@ -15,22 +15,14 @@ from torchdiffeq import odeint
 
 
 # Use context for ABC compared with calibrating_flow.py I guess this is better
-def make_ode_functions(ode_fn, embed, device):
+def make_ode_functions(ode_fn, device):
     def forward_ode(t, theta, condition):
         t_tensor = t * torch.ones(theta.shape[0], device=device)
-        return ode_fn(
-            input=theta,
-            condition=embed(condition),
-            times=t_tensor
-        )
+        return ode_fn(input=theta, condition=condition, times=t_tensor)
 
     def reverse_ode(t, theta, condition):
         t_tensor = (1 - t) * torch.ones(theta.shape[0], device=device)
-        return -ode_fn(
-            input=theta,
-            condition=embed(condition),
-            times=t_tensor
-        )
+        return -ode_fn(input=theta, condition=condition, times=t_tensor)
 
     return forward_ode, reverse_ode
 
@@ -130,7 +122,7 @@ def main(args):
     embed = density_estimator._embedding_net
     ode_fn = density_estimator.ode_fn
 
-    forward_ode, reverse_ode = make_ode_functions(ode_fn, embed, device)
+    forward_ode, reverse_ode = make_ode_functions(ode_fn, device)
     
     t_span = torch.linspace(0, 1, 100, device=device)
 
