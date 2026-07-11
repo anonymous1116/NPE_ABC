@@ -96,7 +96,7 @@ def main(args):
 
     z_tmp = odeint(
         reverse_ode,
-        Y_cal,
+        Y_cal.to(device),
         t=torch.linspace(0, 1, 100, device=device),
         method='dopri5',
         atol=1e-7,
@@ -105,7 +105,7 @@ def main(args):
 
     adj = odeint(
         forward_ode,
-        z_tmp,
+        z_tmp.to(device),
         t=torch.linspace(0, 1, 100, device=device),
         method='dopri5',
         atol=1e-7,
