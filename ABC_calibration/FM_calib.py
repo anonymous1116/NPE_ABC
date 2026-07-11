@@ -14,32 +14,65 @@ from help_functions import UnifSample, param_box, truncated_mvn_sample, ABC_rej2
 from torchdiffeq import odeint
 
 # Use context for ABC compared with calibrating_flow.py I guess this is better
-
-def batched_odeint(ode_func, y0, t_span, device, batch_size=500, method='dopri5', atol=1e-7, rtol=1e-7):
+def make_ode_functions(ode_fn, device):
     """
-    Run odeint in batches to avoid GPU OOM.
+    Create forward and reverse ODE functions with per-sample conditioning.
 
     Args:
-        ode_func:   function (t, y) -> dy/dt
-        y0:         (N, d) initial conditions on CPU
-        t_span:     time points tensor
-        device:     torch device
-        batch_size: number of samples per batch
-        method:     ODE solver method
-        atol, rtol: solver tolerances
+        ode_fn:  density_estimator.ode_fn
+        device:  torch device
 
     Returns:
-        (N, d) tensor on CPU — solution at t_span[-1]
+        forward_ode, reverse_ode — functions (t, theta, condition) -> d_theta/dt
+    """
+    def forward_ode(t, theta, condition):
+        t_tensor = t * torch.ones(theta.shape[0], device=device)
+        return ode_fn(
+            input=theta,
+            condition=condition,
+            times=t_tensor
+        )
+
+    def reverse_ode(t, theta, condition):
+        t_tensor = (1 - t) * torch.ones(theta.shape[0], device=device)
+        return -ode_fn(
+            input=theta,
+            condition=condition,
+            times=t_tensor
+        )
+
+    return forward_ode, reverse_ode
+
+def batched_odeint(ode_func, y0, condition, t_span, device, 
+                   batch_size=500, method='dopri5', atol=1e-7, rtol=1e-7):
+    """
+    Run odeint in batches with per-sample conditioning.
+
+    Args:
+        ode_func:   function (t, theta, condition) -> d_theta/dt
+        y0:         (N, d) initial conditions on CPU
+        condition:  (N, ctx_dim) per-sample context on CPU
+        t_span:     time points tensor on device
+        device:     torch device
+        batch_size: number of samples per batch
+
+    Returns:
+        (N, d) tensor on CPU
     """
     results = []
 
     with torch.no_grad():
         for start in range(0, y0.size(0), batch_size):
             end = min(start + batch_size, y0.size(0))
-            y_batch = y0[start:end].to(device)
+            y_batch   = y0[start:end].to(device)
+            cond_batch = condition[start:end].to(device)
+
+            # Close over cond_batch for this batch
+            def ode_func_batch(t, theta):
+                return ode_func(t, theta, cond_batch)
 
             out = odeint(
-                ode_func,
+                ode_func_batch,
                 y_batch,
                 t=t_span,
                 method=method,
@@ -48,7 +81,7 @@ def batched_odeint(ode_func, y0, t_span, device, batch_size=500, method='dopri5'
             )[-1]
             results.append(out.cpu())
 
-            del y_batch, out
+            del y_batch, cond_batch, out
             torch.cuda.empty_cache()
 
     return torch.cat(results, dim=0)
@@ -101,43 +134,35 @@ def main(args):
     density_estimator = saved_data["density_estimator"]
     posterior = saved_data["posterior"]
     
+    
     density_estimator = density_estimator.to(device).eval()
     embed = density_estimator._embedding_net
     ode_fn = density_estimator.ode_fn
 
-    # vector field MLP
-    vf = density_estimator.net
+    forward_ode, reverse_ode = make_ode_functions(ode_fn, device)
 
-    # Compute context from x_obs
-    context = embed(x0.to(device))  # (1, context_dim) on GPU
-    
-    def reverse_ode(t, theta):
-        # theta is already on GPU since theta_1 is on GPU
-        t_tensor = (1 - t) * torch.ones(theta.shape[0], device=device)
-        return -ode_fn(
-            input=theta,
-            condition=context.expand(theta.shape[0], -1),
-            times=t_tensor
-        )
+    # Precompute X_cal embeddings in batches
+    with torch.no_grad():
+        context_list = []
+        for start in range(0, X_cal.size(0), 1_000):
+            end = min(start + 1_000, X_cal.size(0))
+            context_list.append(embed(X_cal[start:end].to(device)).cpu())
+            torch.cuda.empty_cache()
+        context_cal = torch.cat(context_list, dim=0)  # (N, ctx_dim) on CPU
 
-    def forward_ode(t, theta):
-        t_tensor = t * torch.ones(theta.shape[0], device=device)
-        return ode_fn(
-            input=theta,
-            condition=context.expand(theta.shape[0], -1),
-            times=t_tensor
-        )
-        
-    ode_batch_size = 500
-    z_tmp_list = []
-
+    # Also compute x0 context for forward ODE
+    with torch.no_grad():
+        context_x0 = embed(x0.to(device)).cpu()  # (1, ctx_dim)
+        context_x0 = context_x0.expand(Y_cal.size(0), -1)  # (N, ctx_dim)
 
     t_span = torch.linspace(0, 1, 100, device=device)
 
-    z_tmp = batched_odeint(reverse_ode, Y_cal, t_span, device, batch_size=500)
-    adj   = batched_odeint(forward_ode, z_tmp, t_span, device, batch_size=500)
-    adj   = adj.cpu()
-    
+    # Reverse: Y_cal conditioned on X_cal -> z
+    z_tmp = batched_odeint(reverse_ode, Y_cal, context_cal, t_span, device, batch_size=100)
+
+    # Forward: z conditioned on x0 -> adj
+    adj = batched_odeint(forward_ode, z_tmp, context_x0, t_span, device, batch_size=100)
+
     X_abc = []
     Y_abc = []
     
