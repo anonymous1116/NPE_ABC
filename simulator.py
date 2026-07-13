@@ -149,7 +149,7 @@ class true_Posteriors:
             return self.table_dp_44(kwargs.get('j', 0))
         elif self.task in ["table_dp_55"]:
             return self.table_dp_55(kwargs.get('j', 0))
-        elif self.task in ["table_dp_55"]:
+        elif self.task in ["table_dp_66"]:
             return self.table_dp_66(kwargs.get('j', 0))
 
         elif self.task in ["my_twomoons"]:
