@@ -221,31 +221,30 @@ def main(args):
     TABC_results = []    
     TABC_results.append(tmp)
 
-    if (1==0):   
-        sci_str = format(args.tol, ".0e")
-        print(sci_str)  # Output: '1e-02'
-        
+    sci_str = format(args.tol, ".0e")
+    print(sci_str)  # Output: '1e-02'
+    
 
-        output_dir = f"../depot_hyun/hyun/NPE_ABC/flow_c2st_results/{args.task}_context/J_{int(args.num_training/1000)}K/{int(args.L/1_000_000)}M_eta{sci_str}"
-        ## Create the directory if it doesn't exist
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
-            print(f"Directory '{output_dir}' created.")
-        else:
-            print(f"Directory '{output_dir}' already exists.")
+    output_dir = f"../depot_hyun/hyun/NPE_ABC/FM_flow_c2st_results/{args.task}_context/J_{int(args.num_training/1000)}K/{int(args.L/1_000_000)}M_eta{sci_str}"
+    ## Create the directory if it doesn't exist
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+        print(f"Directory '{output_dir}' created.")
+    else:
+        print(f"Directory '{output_dir}' already exists.")
 
-        # Save to output_dir
-        pairplot(post_sample, figsize=(6,6), limits = bounds)
-        plt.savefig(Path(output_dir) / f"x0{args.x0_ind}_seed{args.seed}_reference.png")
-        plt.close()
+    # Save to output_dir
+    pairplot(post_sample, figsize=(6,6), limits = bounds)
+    plt.savefig(Path(output_dir) / f"x0{args.x0_ind}_seed{args.seed}_reference.png")
+    plt.close()
 
-        pairplot(new_theta[:10000], figsize=(6,6), limits = bounds)
-        plt.savefig(Path(output_dir) / f"x0{args.x0_ind}_seed{args.seed}_calibrated.png")
-        plt.close()
-        
-        torch.save(NABC_results, f"{output_dir}/x0{args.x0_ind}_seed{args.seed}.pt")
-        if torch.cuda.is_available():
-            torch.save([torch.cuda.get_device_name(0), elapsed_time], f"{output_dir}/x0{args.x0_ind}_seed{args.seed}_info.pt")
+    pairplot(new_theta[:10000], figsize=(6,6), limits = bounds)
+    plt.savefig(Path(output_dir) / f"x0{args.x0_ind}_seed{args.seed}_calibrated.png")
+    plt.close()
+    
+    torch.save(TABC_results, f"{output_dir}/x0{args.x0_ind}_seed{args.seed}.pt")
+    if torch.cuda.is_available():
+        torch.save([torch.cuda.get_device_name(0), elapsed_time], f"{output_dir}/x0{args.x0_ind}_seed{args.seed}_info.pt")
 
 def get_args():
     parser = argparse.ArgumentParser(description="Run simulation with customizable parameters.")
