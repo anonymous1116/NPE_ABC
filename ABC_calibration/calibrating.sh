@@ -29,8 +29,8 @@ seed=$((SLURM_ARRAY_TASK_ID / 10 + 1))
 #L=100000000
 
 L=1000000000
-task="double_slcp_summary_transform2"
-num_training=500000 
+task="mog_10"
+num_training=3000000 
 tol=1e-5
 #cdim=10
 # Run the calibrate_amor.py
@@ -60,4 +60,4 @@ echo "[$(date)] Job complete: x0_ind=$x0_ind, seed=$seed"
 #python ABC_calibration/calibrating_flow_latent2.py --x0_ind 1 --seed 1 --L 1000000 --task "my_five_twomoons_err40" --num_training 3000000 --tol 1e-2 
 #python ABC_calibration/calibrating_flow_experiment.py --x0_ind 1 --seed 1 --L 1000000 --task "my_five_twomoons_err40" --num_training 3000000 --tol 1e-2
 #python DP/calibrating_DP.py --x0_ind 8 --seed 1 --L 1000000 --task "table_dp_55" --num_training 500000 --tol 1e-2
-#python ABC_calibration/FM_calib.py --x0_ind 1 --seed 1 --L 10000000 --task "double_slcp_summary_transform2" --num_training 3000000 --tol 1e-3
+#python ABC_calibration/FM_calib.py --x0_ind 1 --seed 1 --L 10000000 --task "mog_10" --num_training 3000000 --tol 1e-3
