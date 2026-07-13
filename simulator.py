@@ -1046,7 +1046,6 @@ def channel_5x5(p1: float, p2: float) -> torch.Tensor:
     R = torch.kron(C1, C2)  # shape (25, 25)
     return R
 
-
 def simulator_rr_cont_table_5x5(
     theta: torch.Tensor,
     p: float = 0.5,
@@ -1088,7 +1087,6 @@ def simulator_rr_cont_table_5x5(
 
     return torch.cat(out, dim=0).to(torch.float32)
 
-
 def channel_senary(p: float) -> torch.Tensor:
     """
     Senary randomized response channel C(p):
@@ -1101,7 +1099,6 @@ def channel_senary(p: float) -> torch.Tensor:
     C.fill_diagonal_(same)
     return C
 
-
 def channel_6x6(p1: float, p2: float) -> torch.Tensor:
     """
     Joint channel for two independent senary variables.
@@ -1112,7 +1109,6 @@ def channel_6x6(p1: float, p2: float) -> torch.Tensor:
     C2 = channel_senary(p2)
     R = torch.kron(C1, C2)  # shape (36, 36)
     return R
-
 
 def simulator_rr_cont_table_6x6(
     theta: torch.Tensor,
@@ -1156,6 +1152,7 @@ def simulator_rr_cont_table_6x6(
     return torch.cat(out, dim=0).to(torch.float32)
 
 
+
 def Simulators(task_name: str):
     task_name = task_name.lower()
     if task_name in ["bernoulli_glm2"]:
@@ -1194,6 +1191,12 @@ def Simulators(task_name: str):
         def cont_table_dp_generator(theta):
             return simulator_rr_cont_table_5x5(theta, p = 0.8, n = 4526, batch_size = 100_000)
         return cont_table_dp_generator
+
+    elif task_name in ["table_dp_66"]:
+        def cont_table_dp_generator(theta):
+            return simulator_rr_cont_table_6x6(theta, p = 0.8, n = 4526, batch_size = 100_000)
+        return cont_table_dp_generator
+
 
     elif task_name in ["my_ten_twomoons"]:
         return simulator_my_ten_twomoons
