@@ -298,7 +298,7 @@ class true_Posteriors:
     def table_dp_66(self, j):
         current_dir = os.path.dirname(os.path.abspath(__file__))
         post_sample = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/table_dp_66_post_{j}.pt")    
-        return post_sample[:, :24]  # Return only the first twenty-four columns of the posterior samples
+        return post_sample[:, :35]  # Return only the first twenty-four columns of the posterior samples
 
 
 
