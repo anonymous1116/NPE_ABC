@@ -21,8 +21,8 @@ def make_ode_functions(ode_fn, device):
         return ode_fn(input=theta, condition=condition, times=t_tensor)
 
     def reverse_ode(t, theta, condition):
-        t_tensor = (1 - t) * torch.ones(theta.shape[0], device=device)
-        return -ode_fn(input=theta, condition=condition, times=t_tensor)
+        t_tensor = t * torch.ones(theta.shape[0], device=device)
+        return ode_fn(input=theta, condition=condition, times=t_tensor)
 
     return forward_ode, reverse_ode
 
@@ -118,153 +118,110 @@ def main(args):
     posterior = saved_data["posterior"]
     
     
+    
+    
     density_estimator = density_estimator.to(device).eval()
-    embed = density_estimator._embedding_net
     ode_fn = density_estimator.ode_fn
 
-    print(inspect.getsource(posterior.potential_fn.neural_ode))
-    print(inspect.getsource(posterior.potential_fn.__class__))
-    if (1 == 0):
-        forward_ode, reverse_ode = make_ode_functions(ode_fn, device)
-        t_span = torch.linspace(0, 1, 100, device=device)
+    forward_ode, reverse_ode = make_ode_functions(ode_fn, device)
 
-        # Precompute x0 embedding once — used for all forward ODEs
-        with torch.no_grad():
-            x0_embed = embed(x0.to(device))  # (1, ctx_dim) on GPU
+    # Forward: t: 1->0
+    t_span_forward = torch.linspace(1, 0, 100, device=device)
+    # Reverse: t: 0->1
+    t_span_reverse = torch.linspace(0, 1, 100, device=device)
 
-        # ----------------------------------------------------------------
-        # Step 1: adj = T(T^{-1}(Y_cal; X_cal); x0) for prior box
-        # ----------------------------------------------------------------
+    # x0 condition — raw, not embedded
+    x0_condition = x0.to(device)  # (1, d_x)
 
-        # Embed X_cal in batches (condition for reverse ODE)
-        print("Precomputing X_cal embeddings...", flush=True)
-        X_cal_embed_list = []
-        with torch.no_grad():
-            for start in range(0, X_cal.size(0), 1_000):
-                end = min(start + 1_000, X_cal.size(0))
-                X_cal_embed_list.append(embed(X_cal[start:end].to(device)).cpu())
-                torch.cuda.empty_cache()
-        X_cal_embed = torch.cat(X_cal_embed_list, dim=0)  # (N, ctx_dim) on CPU
+    # ----------------------------------------------------------------
+    # Step 1: adj = T(T^{-1}(Y_cal; X_cal); x0) for prior box
+    # ----------------------------------------------------------------
 
-        # Reverse: Y_cal -> z, conditioned on embedded X_cal
-        z_tmp = batched_odeint(reverse_ode, Y_cal, X_cal_embed, t_span, device, batch_size=100)
+    # Reverse: Y_cal -> z, conditioned on raw X_cal
+    z_tmp = batched_odeint(reverse_ode, Y_cal, X_cal, t_span_reverse, device, 
+                           batch_size=100, atol=1e-6, rtol=1e-5)
 
-        # Forward: z -> adj, conditioned on embedded x0
-        x0_embed_expanded = x0_embed.cpu().expand(z_tmp.size(0), -1)  # (N, ctx_dim) on CPU
-        adj = batched_odeint(forward_ode, z_tmp, x0_embed_expanded, t_span, device, batch_size=100)
+    # Forward: z -> adj, conditioned on raw x0
+    x0_expanded = x0_condition.cpu().expand(z_tmp.size(0), -1)  # (N, d_x)
+    adj = batched_odeint(forward_ode, z_tmp, x0_expanded, t_span_forward, device,
+                         batch_size=100, atol=1e-6, rtol=1e-5)
 
-        # Clamp adj to bounds
-        if bounds is not None:
-            adj = torch.clamp(adj, min=torch.tensor(bounds)[:,0], max=torch.tensor(bounds)[:,1])
+    if bounds is not None:
+        adj = torch.clamp(adj, min=torch.tensor(bounds)[:,0], max=torch.tensor(bounds)[:,1])
 
-        with torch.no_grad():
-            max_vals = torch.max(adj, 0).values
-            min_vals = torch.min(adj, 0).values
+    with torch.no_grad():
+        max_vals = torch.max(adj, 0).values
+        min_vals = torch.min(adj, 0).values
 
-        print("max_vals:", max_vals)
-        print("min_vals:", min_vals)
+    print("max_vals:", max_vals)
+    print("min_vals:", min_vals)
 
-        # ----------------------------------------------------------------
-        # Step 2: Generate calibration data Y_abc, X_abc
-        # ----------------------------------------------------------------
-        X_abc_list = []
-        Y_abc_list = []
+    # ----------------------------------------------------------------
+    # Step 2: Generate calibration data Y_abc, X_abc
+    # ----------------------------------------------------------------
+    X_abc_list = []
+    Y_abc_list = []
+    priors_mean = torch.zeros(10)
+    priors_std = torch.ones(10) * np.sqrt(2)
 
-        priors_mean = torch.zeros(10)
-        priors_std = torch.ones(10) * np.sqrt(2)
+    for i in range(num_chunks + 1):
+        start = i * chunk_size
+        end = (i + 1) * chunk_size if (i + 1) * chunk_size < L else L
+        nums = end - start
+        if nums == 0:
+            break
 
-        for i in range(num_chunks + 1):
-            start = i * chunk_size
-            end = (i + 1) * chunk_size if (i + 1) * chunk_size < L else L
-            nums = end - start
-            if nums == 0:
-                break
-
-            if args.task.startswith("bernoulli_glm2"):
-            
-                Y_chunk = truncated_mvn_sample(nums, priors_mean, priors_std, min_vals, max_vals)
-            else:
-                Y_chunk = param_box(UnifSample(bins=10), adj, num=nums)
-
-            X_chunk = simulators(Y_chunk)
-
-            # Embed X_chunk in batches
-            X_chunk_embed_list = []
-            with torch.no_grad():
-                for s in range(0, X_chunk.size(0), 1_000):
-                    e = min(s + 1_000, X_chunk.size(0))
-                    X_chunk_embed_list.append(embed(X_chunk[s:e].to(device)).cpu())
-                    torch.cuda.empty_cache()
-            X_chunk_embed = torch.cat(X_chunk_embed_list, dim=0)  # (chunk, ctx_dim) on CPU
-
-            # ABC rejection using embedded x0 and embedded X_chunk
-            index_ABC = ABC_rej2(x0_embed, X_chunk_embed.to(device), args.tol * 100, device)
-            X_abc_list.append(X_chunk[index_ABC])
-            Y_abc_list.append(Y_chunk[index_ABC])
-            print(f"{i}th iteration out of {num_chunks}", flush=True)
-
-        X_abc = torch.cat(X_abc_list)  # (M, d_x)
-        Y_abc = torch.cat(Y_abc_list)  # (M, d_theta)
-
-        # Final ABC rejection on all collected data
-        X_abc_embed_list = []
-        with torch.no_grad():
-            for s in range(0, X_abc.size(0), 1_000):
-                e = min(s + 1_000, X_abc.size(0))
-                X_abc_embed_list.append(embed(X_abc[s:e].to(device)).cpu())
-                torch.cuda.empty_cache()
-        X_abc_embed = torch.cat(X_abc_embed_list, dim=0)  # (M, ctx_dim) on CPU
-
-        index_ABC = ABC_rej2(x0_embed, X_abc_embed.to(device), 0.01, device)
-        X_abc       = X_abc[index_ABC]        # (M', d_x)
-        Y_abc       = Y_abc[index_ABC]        # (M', d_theta)
-        X_abc_embed = X_abc_embed[index_ABC]  # (M', ctx_dim) — reuse, don't recompute
-
-        print("X_abc size", X_abc.size())
-
-        # ----------------------------------------------------------------
-        # Step 3: new_theta = T(T^{-1}(Y_abc; X_abc); x0)
-        # ----------------------------------------------------------------
-
-        # Reverse: Y_abc -> z, conditioned on embedded X_abc
-        z_tmp = batched_odeint(reverse_ode, Y_abc, X_abc_embed, t_span, device, batch_size=500)
-
-        # Forward: z -> new_theta, conditioned on embedded x0
-        x0_embed_expanded_abc = x0_embed.cpu().expand(z_tmp.size(0), -1)  # (M', ctx_dim) on CPU
-        new_theta = batched_odeint(forward_ode, z_tmp, x0_embed_expanded_abc, t_span, device, batch_size=500)
-        new_theta = new_theta.cpu()
-        # 4) Now call your fast function (or sbi’s sample_batched) on GPU
-        end_time = time.time()
-        
-        
-        elapsed_time = end_time - start_time  # Calculate elapsed time
-        print("TABC sample size: ", new_theta.size())
-        results_size = min(10_000, new_theta.size(0))
-
-        if args.task in task_benchmark:
-            post_sample = true_posteriors(j = args.x0_ind+1)
-        elif args.task in ["my_five_twomoons"]:    
-            post_sample = torch.load(f"../depot_hyun/hyun/NPE_ABC/seeds/my_five_twomoons_post_{args.x0_ind+1}.pt")
+        if args.task.startswith("bernoulli_glm2"):
+            Y_chunk = truncated_mvn_sample(nums, priors_mean, priors_std, min_vals, max_vals)
         else:
-            post_sample = true_posteriors(torch.tensor(x0), n_samples=10_000, bounds=bounds)
-        
+            Y_chunk = param_box(UnifSample(bins=10), adj, num=nums)
 
-        tmp = c2st(post_sample[:results_size].cpu(), new_theta[:results_size] )
-        print(tmp)    
-        
+        X_chunk = simulators(Y_chunk)
 
-    if (1==0):
+        index_ABC = ABC_rej2(x0.to(device), X_chunk.to(device), args.tol * 100, device)
+        X_abc_list.append(X_chunk[index_ABC])
+        Y_abc_list.append(Y_chunk[index_ABC])
+        print(f"{i}th iteration out of {num_chunks}", flush=True)
 
-        
-        
-        print("TABC sample size: ", new_theta.size())
-        results_size = min(10_000, new_theta.size(0))
+    X_abc = torch.cat(X_abc_list)
+    Y_abc = torch.cat(Y_abc_list)
 
-        tmp = c2st(post_sample[:results_size].cpu(), new_theta[:results_size] )
-        print(tmp)    
-        
-        NABC_results.append(tmp)
-        
+    index_ABC = ABC_rej2(x0.to(device), X_abc.to(device), 0.01, device)
+    X_abc = X_abc[index_ABC]
+    Y_abc = Y_abc[index_ABC]
+
+    print("X_abc size", X_abc.size())
+
+    # ----------------------------------------------------------------
+    # Step 3: new_theta = T(T^{-1}(Y_abc; X_abc); x0)
+    # ----------------------------------------------------------------
+    z_tmp = batched_odeint(reverse_ode, Y_abc, X_abc, t_span_reverse, device,
+                           batch_size=500, atol=1e-6, rtol=1e-5)
+
+    x0_expanded_abc = x0_condition.cpu().expand(z_tmp.size(0), -1)
+    new_theta = batched_odeint(forward_ode, z_tmp, x0_expanded_abc, t_span_forward, device,
+                               batch_size=500, atol=1e-6, rtol=1e-5)
+    new_theta = new_theta.cpu()
+
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+
+    if args.task in task_benchmark:
+        post_sample = true_posteriors(j=args.x0_ind + 1)
+    elif args.task in ["my_five_twomoons"]:
+        post_sample = torch.load(f"../depot_hyun/hyun/NPE_ABC/seeds/my_five_twomoons_post_{args.x0_ind+1}.pt")
+    else:
+        post_sample = true_posteriors(torch.tensor(x0), n_samples=10_000, bounds=bounds)
+
+    print("TABC sample size: ", new_theta.size())
+    results_size = min(10_000, new_theta.size(0))
+    tmp = c2st(post_sample[:results_size].cpu(), new_theta[:results_size])
+    print(tmp)
+
+    TABC_results = []    
+    TABC_results.append(tmp)
+
+    if (1==0):   
         sci_str = format(args.tol, ".0e")
         print(sci_str)  # Output: '1e-02'
         
