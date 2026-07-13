@@ -7,7 +7,7 @@
 #SBATCH --mem=170G
 #SBATCH --qos=standby
 #SBATCH --partition=a10,a100-80gb
-#SBATCH --array=10-19,40-59,70-79,90-99
+#SBATCH --array=0-99
 #SBATCH --output=ABC_calibration/log/output_log_%A_%a.out
 #SBATCH --error=ABC_calibration/log/error_log_%A_%a.txt
 
@@ -59,4 +59,4 @@ echo "[$(date)] Job complete: x0_ind=$x0_ind, seed=$seed"
 #conda activate /depot/wangxiao/apps/hyun18/NPE_NABC
 #python ABC_calibration/calibrating_flow_latent2.py --x0_ind 1 --seed 1 --L 1000000 --task "my_five_twomoons_err40" --num_training 3000000 --tol 1e-2 
 #python ABC_calibration/calibrating_flow_experiment.py --x0_ind 1 --seed 1 --L 1000000 --task "my_five_twomoons_err40" --num_training 3000000 --tol 1e-2
-#python DP/calibrating_DP.py --x0_ind 8 --seed 1 --L 1000000 --task "table_dp_44" --num_training 3000000 --tol 1e-2
+#python DP/calibrating_DP.py --x0_ind 8 --seed 1 --L 1000000 --task "table_dp_55" --num_training 500000 --tol 1e-2
