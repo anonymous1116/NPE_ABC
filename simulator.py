@@ -45,6 +45,8 @@ def Bounds(task_name: str):
         return [[0,1]] * 15
     elif task_name in ["table_dp_55"]:
         return [[0,1]] * 24
+    elif task_name in ["table_dp_66"]:
+        return [[0,1]] * 35
     else:
         raise ValueError(f"Unknown task name for bounds: {task_name}")
 
@@ -87,6 +89,8 @@ def Priors(task_name: str):
         return Dirichlet(torch.tensor([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]))
     elif task_name in ["table_dp_55"]:
         return Dirichlet(torch.tensor([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]))
+    elif task_name in ["table_dp_66"]:
+        return Dirichlet(torch.ones(36, dtype=torch.float32))
     else:
         raise ValueError(f"Unknown task name for prior: {task_name}")
 
@@ -100,7 +104,7 @@ task_benchmark = ["two_moons",
                   "my_five_twomoons_err90",
                   "mog_2_nabc", "mog_5_nabc", "mog_10_nabc",
                   "my_fifty_twomoons", 
-                  "table_dp_22", "table_dp_33", "table_dp_44", "table_dp_55"]
+                  "table_dp_22", "table_dp_33", "table_dp_44", "table_dp_55", "table_dp_66"]
     
 class true_Posteriors:
     def __init__(self, task):
@@ -145,6 +149,8 @@ class true_Posteriors:
             return self.table_dp_44(kwargs.get('j', 0))
         elif self.task in ["table_dp_55"]:
             return self.table_dp_55(kwargs.get('j', 0))
+        elif self.task in ["table_dp_55"]:
+            return self.table_dp_66(kwargs.get('j', 0))
 
         elif self.task in ["my_twomoons"]:
             return self.my_twomoons(obs, n_samples, bounds)
@@ -289,6 +295,12 @@ class true_Posteriors:
         post_sample = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/table_dp_55_post_{j}.pt")    
         return post_sample[:, :24]  # Return only the first twenty-four columns of the posterior samples
 
+    def table_dp_66(self, j):
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        post_sample = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/table_dp_66_post_{j}.pt")    
+        return post_sample[:, :24]  # Return only the first twenty-four columns of the posterior samples
+
+
 
     def slcp(self, j):
         try:
@@ -390,7 +402,7 @@ def observation_lists(task_name:str):
                        "my_five_twomoons_err10", "my_five_twomoons_err30", "my_five_twomoons_err50",
                           "my_five_twomoons_err70", "my_five_twomoons_err90", 
                        "bernoulli_glm2_err10", "bernoulli_glm2_err30", "bernoulli_glm2_err50", "bernoulli_glm2_err70", "bernoulli_glm2_err90", "my_fifty_twomoons",
-                       "table_dp_22", "table_dp_33", "table_dp_44", "table_dp_55"]:
+                       "table_dp_22", "table_dp_33", "table_dp_44", "table_dp_55", "table_dp_66"]:
         current_dir = os.path.dirname(os.path.abspath(__file__))
         obs = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{task_name}_obs.pt")    
         return obs 

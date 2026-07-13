@@ -3,7 +3,7 @@ import argparse
 import os, sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from simulator import channel_binary, channel_ternary, channel_quaternary
-from simulator import channel_2x2, channel_3x3, channel_4x4, channel_5x5
+from simulator import channel_2x2, channel_3x3, channel_4x4, channel_5x5, channel_6x6
 
 # ---------- Gibbs sampler ----------
 @torch.no_grad()
@@ -274,6 +274,7 @@ def gibbs_rr_5x5(
         "kept": p_samples.size(0),
     }
     return p_samples, info
+
 
 
 def main(args):
