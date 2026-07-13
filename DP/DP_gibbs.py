@@ -354,8 +354,10 @@ def main(args):
         task ="table_dp_44"
     elif args.table_num ==5:
         task ="table_dp_55"
+    elif args.table_num ==6:
+        task ="table_dp_66"
     else:
-        raise ValueError("table_num must be 2, 3, 4 or 5.")
+        raise ValueError("table_num must be 2, 3, 4, 5 or 6.")
 
 
     y = torch.load(f"/home/hyun18/depot_hyun/hyun/NPE_ABC/seeds/{task}_obs.pt")[i-1]
@@ -372,8 +374,10 @@ def main(args):
         samples, _ = gibbs_rr_4x4(y, p1=0.8, p2=0.8, n_iter=n_iter, burn=int(n_iter/10), thin=50, seed=1)
     elif args.table_num ==5:
         samples, _ = gibbs_rr_5x5(y, p1=0.8, p2=0.8, n_iter=n_iter, burn=int(n_iter/10), thin=50, seed=1)
+    elif args.table_num ==6:
+        samples, _ = gibbs_rr_6x6(y, p1=0.8, p2=0.8, n_iter=n_iter, burn=int(n_iter/10), thin=50, seed=1)
     else:
-        raise ValueError("table_num must be 2, 3, 4 or 5.")
+        raise ValueError("table_num must be 2, 3, 4, 5 or 6.")
     samples = samples.to(torch.float32)
 
     # Randomly permute and take 10000
