@@ -238,6 +238,14 @@ def main(args):
     print("TABC sample size: ", new_theta.size())
     results_size = min(10_000, new_theta.size(0))
 
+    if args.task in task_benchmark:
+        post_sample = true_posteriors(j = args.x0_ind+1)
+    elif args.task in ["my_five_twomoons"]:    
+        post_sample = torch.load(f"../depot_hyun/hyun/NPE_ABC/seeds/my_five_twomoons_post_{args.x0_ind+1}.pt")
+    else:
+        post_sample = true_posteriors(torch.tensor(x0), n_samples=10_000, bounds=bounds)
+    
+
     tmp = c2st(post_sample[:results_size].cpu(), new_theta[:results_size] )
     print(tmp)    
     
