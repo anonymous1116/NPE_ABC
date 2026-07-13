@@ -1088,6 +1088,74 @@ def simulator_rr_cont_table_5x5(
 
     return torch.cat(out, dim=0).to(torch.float32)
 
+
+def channel_senary(p: float) -> torch.Tensor:
+    """
+    Senary randomized response channel C(p):
+      with prob p -> report truth; with prob (1-p) -> uniform random category.
+    Returns a 6x6 matrix with rows=reported, cols=true.
+    """
+    same = (1 + 5 * p) / 6
+    diff = (1 - p) / 6
+    C = torch.full((6, 6), diff, dtype=torch.double)
+    C.fill_diagonal_(same)
+    return C
+
+
+def channel_6x6(p1: float, p2: float) -> torch.Tensor:
+    """
+    Joint channel for two independent senary variables.
+    Returns a 36x36 matrix R with rows=reported cells, cols=true cells,
+    under fixed cell order [00,01,...,05,10,...,55].
+    """
+    C1 = channel_senary(p1)
+    C2 = channel_senary(p2)
+    R = torch.kron(C1, C2)  # shape (36, 36)
+    return R
+
+
+def simulator_rr_cont_table_6x6(
+    theta: torch.Tensor,
+    p: float = 0.5,
+    n: int = 400,
+    batch_size: int = 1_000_000,
+) -> torch.Tensor:
+    """
+    Simulate privatized counts y ~ Multinomial(n, q) with q = R(p) @ theta
+    for a 6x6 contingency table under randomized response.
+
+    Args:
+        theta: (N, 36) tensor; each row sums to 1;
+               order [00,01,...,05,10,...,55].
+        p: truthful-report probability (p in [0,1]).
+        n: total count per table draw.
+        batch_size: chunk size for memory efficiency.
+
+    Returns:
+        reported_counts: (N, 36) tensor of privatized counts.
+    """
+    assert theta.dim() == 2 and theta.size(1) == 36, "theta must be (N, 36)."
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    theta = theta.to(device).to(torch.double)
+
+    R = channel_6x6(p, p).to(device)
+
+    N = theta.size(0)
+    out = []
+    for start in range(0, N, batch_size):
+        end = min(start + batch_size, N)
+        th = theta[start:end]
+
+        q = (th @ R.T).clamp(min=0)
+        q = q / q.sum(dim=1, keepdim=True)
+
+        m = Multinomial(total_count=n, probs=q)
+        y = m.sample()
+        out.append(y.cpu())
+
+    return torch.cat(out, dim=0).to(torch.float32)
+
+
 def Simulators(task_name: str):
     task_name = task_name.lower()
     if task_name in ["bernoulli_glm2"]:

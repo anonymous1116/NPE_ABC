@@ -276,6 +276,68 @@ def gibbs_rr_5x5(
     return p_samples, info
 
 
+@torch.no_grad()
+def gibbs_rr_6x6(
+    y_obs: torch.Tensor,              # shape (36,)
+    p1: float = 0.5,
+    p2: float = 0.5,
+    alpha: torch.Tensor = None,       # Dirichlet prior shape (36,)
+    n_iter: int = 5000,
+    burn: int = 1000,
+    thin: int = 1,
+    seed: int = 0,
+):
+    torch.manual_seed(seed)
+    y = y_obs.to(torch.int64).view(-1)
+    assert y.numel() == 36, "y_obs must have 36 cells."
+    if alpha is None:
+        alpha = torch.ones(36, dtype=torch.float32)
+    else:
+        alpha = alpha.to(torch.float32).view(-1)
+        assert alpha.numel() == 36
+
+    R = channel_6x6(p1, p2).to(torch.float32)
+    n = int(y.sum().item())
+    p = torch.full((36,), 1/36, dtype=torch.float32)
+
+    kept = []
+    z = torch.zeros(36, 36, dtype=torch.int64)
+    m = torch.distributions.Multinomial
+
+    for t in range(n_iter):
+        # Step 1: latent allocation
+        W = R * p.view(1, 36)
+        row_sums = W.sum(dim=1, keepdim=True).clamp_min(1e-12)
+        W = W / row_sums
+
+        for i in range(36):
+            yi = int(y[i].item())
+            if yi > 0:
+                z[i] = m(total_count=yi, probs=W[i]).sample().to(torch.int64)
+            else:
+                z[i] = torch.zeros(36, dtype=torch.int64)
+
+        # Step 2: update p
+        z_true = z.sum(dim=0).to(torch.float32)
+        p = torch.distributions.Dirichlet(alpha + z_true).sample()
+
+        if t >= burn and ((t - burn) % thin == 0):
+            kept.append(p.clone())
+
+        if (t + 1) % 1000 == 0:
+            print(f"Iteration {t+1}/{n_iter}", flush=True)
+
+    p_samples = torch.stack(kept, dim=0)  # (S, 36)
+
+    info = {
+        "R": R,
+        "n": n,
+        "n_iter": n_iter,
+        "burn": burn,
+        "thin": thin,
+        "kept": p_samples.size(0),
+    }
+    return p_samples, info
 
 def main(args):
     """
