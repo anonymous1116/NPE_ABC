@@ -168,6 +168,9 @@ def main(args):
         data_dim = 8
     elif args.task == "table_dp_44":
         data_dim = 15
+    elif args.task == "table_dp_55":
+        data_dim = 24
+        
 
     chunk_size = 10_000_000
     num_chunks = L // chunk_size
