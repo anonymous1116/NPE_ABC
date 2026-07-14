@@ -67,6 +67,7 @@ def main(args):
         torch.save({
             'net_state_dict': density_estimator.net.state_dict(),
             'embedding_net_state_dict': density_estimator._embedding_net.state_dict(),
+            'full_state_dict': density_estimator.state_dict(),  # includes all buffers
             'elapsed_time': elapsed_time
         }, output_file_path.replace('.pkl', '.pt'))
     else:
