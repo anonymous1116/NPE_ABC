@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from sbi.inference import NPSE
 import dill
 def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, cond, method):
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    #device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     x0_list = observation_lists(task)
     x0 = x0_list[x0_ind]
     torch.manual_seed(seed)
@@ -52,7 +52,7 @@ def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, c
         with open(output_file_path, 'rb') as f:
             saved_data = dill.load(f)
 
-        density_estimator = saved_data['density_estimator'].to(device).eval()
+        density_estimator = saved_data['density_estimator'].eval()
         priors = Priors(task)
         inference = NPSE(prior=priors)
         posterior = inference.build_posterior(vector_field_estimator=saved_data['density_estimator'])
