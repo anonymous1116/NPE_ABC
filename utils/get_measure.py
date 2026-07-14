@@ -98,4 +98,4 @@ if __name__ == "__main__":
     run_similiarity(args.task, args.measure, args.x0_ind, args.seed, args.post_n_samples, args.num_training, args.cond_den, args.method)
 
 
-#python utils/get_measure.py --task "table_dp_66" --measure "c2st" --x0_ind 1 --seed 1 --post_n_samples 10000 --num_training 1000 --method "NPE"
+#python utils/get_measure.py --task "bernoulli_glm2" --measure "c2st" --x0_ind 1 --seed 1 --post_n_samples 10000 --num_training 1000 --method "NPSE"
