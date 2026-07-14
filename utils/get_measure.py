@@ -49,18 +49,19 @@ def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, c
         # Step 1: rebuild structure with dummy training
         simulators = Simulators(task)
         priors = Priors(task)
+        
+        # Rebuild structure
         inference = NPSE(prior=priors)
         theta_tmp = priors.sample((10,))
         X_tmp = simulators(theta_tmp)
         inference.append_simulations(theta_tmp, X_tmp)
         density_estimator = inference.train(max_num_epochs=1)
 
-        # Step 2: load saved weights
-        saved_data = torch.load(output_file_path.replace('.pkl', '.pt'), map_location='cpu')
-        density_estimator.net.load_state_dict(saved_data['net_state_dict'])
-        density_estimator._embedding_net.load_state_dict(saved_data['embedding_net_state_dict'])
+        # Load ALL state including buffers
+        density_estimator.load_state_dict(saved_data['full_state_dict'])
         density_estimator = density_estimator.eval()
 
+        
         # Step 3: build posterior
         posterior = inference.build_posterior(vector_field_estimator=density_estimator)
         sample_post = posterior.sample((10_000,), x=x0)
