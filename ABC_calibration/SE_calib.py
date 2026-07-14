@@ -5,6 +5,7 @@ import argparse
 import sbibm
 import time
 import matplotlib.pyplot as plt
+from sbi.inference import NPE, FMPE, NPSE
 from pathlib import Path
 from sbi.analysis import pairplot
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
@@ -110,22 +111,33 @@ def main(args):
     index_ABC = ABC_rej2(x0, X_cal, 1e-2, device)
     X_cal, Y_cal = X_cal[index_ABC], Y_cal[index_ABC]
 
-    output_file_path = os.path.join(f'../depot_hyun/hyun/NPE_ABC/FMPE_nets/{args.task}/J_{int(args.num_training/1000)}K/{args.task}_{seed}.pkl')
-    with open(output_file_path, 'rb') as f:
-        saved_data = pickle.load(f)
-    density_estimator = saved_data["density_estimator"]
-    posterior = saved_data["posterior"]
+    output_file_path = os.path.join(f'../depot_hyun/hyun/NPE_ABC/NPSE_nets/{args.task}/J_{int(args.num_training/1000)}K/{args.task}_{seed}.pkl')
+    saved_data = torch.load(output_file_path.replace('.pkl', '.pt'), map_location='cpu')
+
+    # Rebuild structure
+    inference = NPSE(prior=priors)
+    theta_tmp = priors.sample((10,))
+    X_tmp = simulators(theta_tmp)
+    inference.append_simulations(theta_tmp, X_tmp)
+    density_estimator = inference.train(max_num_epochs=1)
+
+    # Load ALL state including buffers
+    density_estimator.load_state_dict(saved_data['full_state_dict'])
+    density_estimator = density_estimator.eval()
     
     
     density_estimator = density_estimator.to(device).eval()
     ode_fn = density_estimator.ode_fn
+    t_min = density_estimator.t_min
+    t_max = density_estimator.t_max
 
     forward_ode, reverse_ode = make_ode_functions(ode_fn, device)
 
     # Forward: t: 1->0
-    t_span_forward = torch.linspace(1, 0, 100, device=device)
+    t_span_forward = torch.linspace(t_max, t_min, 100, device=device),
+        
     # Reverse: t: 0->1
-    t_span_reverse = torch.linspace(0, 1, 100, device=device)
+    t_span_reverse = torch.linspace(t_min, t_max, 100, device=device)
 
     # x0 condition — raw, not embedded
     x0_condition = x0.to(device)  # (1, d_x)
@@ -222,7 +234,7 @@ def main(args):
     print(sci_str)  # Output: '1e-02'
     
 
-    output_dir = f"../depot_hyun/hyun/NPE_ABC/FM_flow_c2st_results/{args.task}_context/J_{int(args.num_training/1000)}K/{int(args.L/1_000_000)}M_eta{sci_str}"
+    output_dir = f"../depot_hyun/hyun/NPE_ABC/SE_flow_c2st_results/{args.task}_context/J_{int(args.num_training/1000)}K/{int(args.L/1_000_000)}M_eta{sci_str}"
     ## Create the directory if it doesn't exist
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
