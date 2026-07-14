@@ -1,11 +1,12 @@
 
-import os, sys, torch,pickle, argparse 
+import os, sys, torch, pickle, argparse 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
-from simulator import observation_lists, Bounds, true_Posteriors, task_benchmark
+from simulator import observation_lists, Bounds, true_Posteriors, task_benchmark, Priors
 from sbibm.metrics.c2st import c2st
 from pathlib import Path
 from sbi.analysis import pairplot
 import matplotlib.pyplot as plt
+from sbi.inference import NPSE
 
 def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, cond, method):
     x0_list = observation_lists(task)
@@ -43,11 +44,20 @@ def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, c
     with open(output_file_path, 'rb') as f:
         saved_data = pickle.load(f)
     
-    posterior = saved_data['posterior']
     x0 = torch.tensor(x0, dtype = torch.float32)
     if x0.ndim == 1:
         x0= torch.reshape(x0, (1, x0.size(0)))
-    sample_post = posterior.sample((post_n_samples,), x=torch.tensor(x0))
+
+
+    if method == "NPSE":
+        priors = Priors(task)
+        inference = NPSE(prior=priors)
+        posterior = inference.build_posterior(vector_field_estimator=saved_data['density_estimator'])
+        posterior.set_default_x(x0)
+        sample_post = posterior.sample((10_000,), x=x0)
+    else:
+        posterior = saved_data['posterior']
+        sample_post = posterior.sample((post_n_samples,), x=torch.tensor(x0))
 
     if measure == "c2st":
         sample_post_size = sample_post.size(0)
