@@ -63,8 +63,10 @@ def main(args):
         output_file_path = os.path.join(output_dir, f"{args.task}_{args.seed}_{args.cond_den}.pkl")
     
     if args.method in ["NPSE"]:
-        with open(output_file_path, 'wb') as f:
-            pickle.dump({'density_estimator': density_estimator, 'elapsed_time': elapsed_time}, f)
+        torch.save({
+            'net_state_dict': density_estimator.net.state_dict(),
+            'elapsed_time': elapsed_time
+        }, output_file_path.replace('.pkl', '.pt'))    
     else:
         with open(output_file_path, 'wb') as f:
             pickle.dump({'density_estimator': density_estimator, 'posterior': inference.build_posterior(density_estimator), 'elapsed_time': elapsed_time}, f)
