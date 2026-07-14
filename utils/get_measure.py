@@ -38,7 +38,8 @@ def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, c
         output_file_path = f"../depot_hyun/hyun/NPE_ABC/{method}_nets/{task}/J_{int(num_training/1000)}K/{task}_{seed}.pkl"    
     else:    
         output_file_path = f"../depot_hyun/hyun/NPE_ABC/nets/{task}/J_{int(num_training/1000)}K/{task}_{seed}_{cond}.pkl"    
-        
+    
+    
     
     x0 = torch.tensor(x0, dtype = torch.float32)
     if x0.ndim == 1:
@@ -50,6 +51,8 @@ def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, c
         simulators = Simulators(task)
         priors = Priors(task)
         
+        saved_data = torch.load(output_file_path.replace('.pkl', '.pt'), map_location='cpu')
+
         # Rebuild structure
         inference = NPSE(prior=priors)
         theta_tmp = priors.sample((10,))
@@ -60,7 +63,6 @@ def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, c
         # Load ALL state including buffers
         density_estimator.load_state_dict(saved_data['full_state_dict'])
         density_estimator = density_estimator.eval()
-
         
         # Step 3: build posterior
         posterior = inference.build_posterior(vector_field_estimator=density_estimator)
