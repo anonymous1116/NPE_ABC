@@ -1,7 +1,7 @@
 
 import os, sys, torch, pickle, argparse 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
-from simulator import observation_lists, Bounds, true_Posteriors, task_benchmark, Priors
+from simulator import observation_lists, Bounds, true_Posteriors, task_benchmark, Priors, Simulators
 from sbibm.metrics.c2st import c2st
 from pathlib import Path
 from sbi.analysis import pairplot
@@ -49,14 +49,23 @@ def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, c
 
 
     if method == "NPSE":
-        with open(output_file_path, 'rb') as f:
-            saved_data = dill.load(f)
-
-        density_estimator = saved_data['density_estimator'].eval()
+        # Step 1: rebuild structure with dummy training
+        simulators = Simulators(task)
         priors = Priors(task)
         inference = NPSE(prior=priors)
-        posterior = inference.build_posterior(vector_field_estimator=saved_data['density_estimator'])
-        posterior.set_default_x(x0)
+        theta_tmp = priors.sample((10,))
+        X_tmp = simulators(theta_tmp)
+        inference.append_simulations(theta_tmp, X_tmp)
+        density_estimator = inference.train(max_num_epochs=1)
+
+        # Step 2: load saved weights
+        saved_data = torch.load(output_file_path.replace('.pkl', '.pt'), map_location='cpu')
+        density_estimator.net.load_state_dict(saved_data['net_state_dict'])
+        density_estimator._embedding_net.load_state_dict(saved_data['embedding_net_state_dict'])
+        density_estimator = density_estimator.eval()
+
+        # Step 3: build posterior
+        posterior = inference.build_posterior(vector_field_estimator=density_estimator)
         sample_post = posterior.sample((10_000,), x=x0)
     else:
         with open(output_file_path, 'rb') as f:
