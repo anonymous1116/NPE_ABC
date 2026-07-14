@@ -64,7 +64,7 @@ def main(args):
     
     if args.method in ["NPSE"]:
         with open(output_file_path, 'wb') as f:
-            pickle.dump({'density_estimator': density_estimator, 'posterior': inference.build_posterior(vector_field_estimator=density_estimator), 'elapsed_time': elapsed_time}, f)
+            pickle.dump({'density_estimator': density_estimator, 'elapsed_time': elapsed_time}, f)
     else:
         with open(output_file_path, 'wb') as f:
             pickle.dump({'density_estimator': density_estimator, 'posterior': inference.build_posterior(density_estimator), 'elapsed_time': elapsed_time}, f)
