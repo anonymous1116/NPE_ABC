@@ -134,7 +134,7 @@ def main(args):
     forward_ode, reverse_ode = make_ode_functions(ode_fn, device)
 
     # Forward: t: 1->0
-    t_span_forward = torch.linspace(t_max, t_min, 100, device=device),
+    t_span_forward = torch.linspace(t_max, t_min, 100, device=device)
         
     # Reverse: t: 0->1
     t_span_reverse = torch.linspace(t_min, t_max, 100, device=device)
