@@ -66,8 +66,9 @@ def main(args):
     if args.method in ["NPSE"]:
         torch.save({
             'net_state_dict': density_estimator.net.state_dict(),
+            'embedding_net_state_dict': density_estimator._embedding_net.state_dict(),
             'elapsed_time': elapsed_time
-        }, output_file_path.replace('.pkl', '.pt'))    
+        }, output_file_path.replace('.pkl', '.pt'))
     else:
         with open(output_file_path, 'wb') as f:
             pickle.dump({'density_estimator': density_estimator, 'posterior': inference.build_posterior(density_estimator), 'elapsed_time': elapsed_time}, f)
