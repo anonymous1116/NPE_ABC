@@ -9,6 +9,7 @@ import time
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from simulator import Simulators, Priors, observation_lists, Bounds
 from utils.evaluate import create_c2st_job_script
+import dill
 
 def main(args):
     # Set the random seed

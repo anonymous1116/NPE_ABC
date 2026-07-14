@@ -7,8 +7,9 @@ from pathlib import Path
 from sbi.analysis import pairplot
 import matplotlib.pyplot as plt
 from sbi.inference import NPSE
-
+import dill
 def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, cond, method):
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     x0_list = observation_lists(task)
     x0 = x0_list[x0_ind]
     torch.manual_seed(seed)
@@ -39,10 +40,8 @@ def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, c
         output_file_path = f"../depot_hyun/hyun/NPE_ABC/nets/{task}/J_{int(num_training/1000)}K/{task}_{seed}_{cond}.pkl"    
     
     if not os.path.exists(output_file_path):
-        raise FileNotFoundError(f"NPE results file not found: {output_file_path}")
+        raise FileNotFoundError(f"results file not found: {output_file_path}")
         
-    with open(output_file_path, 'rb') as f:
-        saved_data = pickle.load(f)
     
     x0 = torch.tensor(x0, dtype = torch.float32)
     if x0.ndim == 1:
@@ -50,12 +49,19 @@ def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, c
 
 
     if method == "NPSE":
+        with open(output_file_path, 'rb') as f:
+            saved_data = dill.load(f)
+
+        density_estimator = saved_data['density_estimator'].to(device).eval()
         priors = Priors(task)
         inference = NPSE(prior=priors)
         posterior = inference.build_posterior(vector_field_estimator=saved_data['density_estimator'])
         posterior.set_default_x(x0)
         sample_post = posterior.sample((10_000,), x=x0)
     else:
+        with open(output_file_path, 'rb') as f:
+            saved_data = pickle.load(f)
+    
         posterior = saved_data['posterior']
         sample_post = posterior.sample((post_n_samples,), x=torch.tensor(x0))
 
