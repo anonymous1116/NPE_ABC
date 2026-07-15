@@ -46,7 +46,7 @@ def main(args):
     print(f"Training with {args.cond_den}")
 
     # Define the output directory
-    if args.method in ["FMPE", "NPSE"]:
+    if args.method in ["FMPE", "NPSE", "NPSE_vp"]:
         output_dir = f"../depot_hyun/hyun/NPE_ABC/{args.method}_nets/{args.task}/J_{int(args.num_training/1000)}K"
     else:    
         output_dir = f"../depot_hyun/hyun/NPE_ABC/nets/{args.task}/J_{int(args.num_training/1000)}K"
