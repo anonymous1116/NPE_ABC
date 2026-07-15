@@ -159,6 +159,12 @@ def main(args):
     if bounds is not None:
         adj = torch.clamp(adj, min=torch.tensor(bounds)[:,0], max=torch.tensor(bounds)[:,1])
 
+    theta_minus1 = torch.ones(adj.size(0)) - torch.sum(adj, dim=1)
+    theta_minus1 = torch.max(theta_minus1, torch.zeros_like(theta_minus1))  # Ensure non-negative
+
+    adj = torch.column_stack((adj, theta_minus1))  # Append theta_{K-1} to adj
+    
+
     with torch.no_grad():
         max_vals = torch.max(adj, 0).values
         min_vals = torch.min(adj, 0).values
@@ -168,10 +174,6 @@ def main(args):
     min_vals = (min_vals - slack).clamp(min=0.0)
 
     print("max_vals:", max_vals)   
-    print("min_vals:", min_vals)
-
-
-    print("max_vals:", max_vals)
     print("min_vals:", min_vals)
 
     # ----------------------------------------------------------------
