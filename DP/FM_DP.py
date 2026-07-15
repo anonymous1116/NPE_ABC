@@ -107,8 +107,9 @@ def main(args):
     print(x0)
     if x0.ndim == 1:
         x0 = torch.reshape(x0, (1,x0.size(0)))
-        
-    chunk_size_cal = 10_000
+    
+
+    x0 = x0[:data_dim]  # Only take the first data_dim elements for calibration
     print("x0_size", x0.size(), flush = True)
     #print("X_cal size", X_cal.size(), flush = True)
     
