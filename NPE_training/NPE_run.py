@@ -65,7 +65,7 @@ def main(args):
     else:
         output_file_path = os.path.join(output_dir, f"{args.task}_{args.seed}_{args.cond_den}.pkl")
     
-    if args.method in ["NPSE"]:
+    if args.method in ["NPSE", "NPSE_vp"]:
         torch.save({
             'net_state_dict': density_estimator.net.state_dict(),
             'embedding_net_state_dict': density_estimator._embedding_net.state_dict(),
