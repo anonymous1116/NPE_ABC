@@ -190,9 +190,10 @@ def main(args):
             break
 
         Y_chunk = truncated_dirichlet_batch_K(L =nums, K = data_dim+1 ,lower = min_vals, upper =max_vals).to(dtype=torch.float32)
-
-        
         X_chunk = simulators(Y_chunk)
+
+        X_chunk = torch.clone(X_chunk[:,:data_dim])
+        Y_chunk = torch.clone(Y_chunk[:,:data_dim])
 
         index_ABC = ABC_rej2(x0.to(device), X_chunk.to(device), args.tol * 100, device)
         X_abc_list.append(X_chunk[index_ABC])
