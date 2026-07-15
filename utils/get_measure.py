@@ -34,7 +34,7 @@ def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, c
     else:
         true_sample = posterior(torch.tensor(x0), n_samples=post_n_samples, bounds=limits)
 
-    if method in ["FMPE", "NPSE"]:
+    if method in ["FMPE", "NPSE", "NPSE_vp"]:
         output_file_path = f"../depot_hyun/hyun/NPE_ABC/{method}_nets/{task}/J_{int(num_training/1000)}K/{task}_{seed}.pkl"    
     else:    
         output_file_path = f"../depot_hyun/hyun/NPE_ABC/nets/{task}/J_{int(num_training/1000)}K/{task}_{seed}_{cond}.pkl"    
@@ -46,7 +46,7 @@ def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, c
         x0= torch.reshape(x0, (1, x0.size(0)))
 
 
-    if method == "NPSE":
+    if method == "NPSE" or method == "NPSE_vp":
         # Step 1: rebuild structure with dummy training
         simulators = Simulators(task)
         priors = Priors(task)
