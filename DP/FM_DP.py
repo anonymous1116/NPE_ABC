@@ -15,8 +15,6 @@ from torchdiffeq import odeint
 import inspect
 from calibrating_DP import rtrunc_beta1b_torch, truncated_dirichletK_stick, truncated_dirichlet_batch_K
 
-
-
 # Use context for ABC compared with calibrating_flow.py I guess this is better
 def make_ode_functions(ode_fn, device):
     def forward_ode(t, theta, condition):
