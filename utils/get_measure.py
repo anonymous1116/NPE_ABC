@@ -105,7 +105,7 @@ def get_args():
     parser.add_argument('--cond_den', type=str, default='nsf', 
                         help='Conditional density estimator type: mdn, maf, nsf')
     parser.add_argument('--method', type=str, default='NPE', 
-                        help='method_type: NPE, FMPE, NPSE')
+                        help='method_type: NPE, FMPE, NPSE, NPSE_vp')
     return parser.parse_args()
     
 if __name__ == "__main__":
