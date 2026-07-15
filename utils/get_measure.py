@@ -54,7 +54,10 @@ def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, c
         saved_data = torch.load(output_file_path.replace('.pkl', '.pt'), map_location='cpu')
 
         # Rebuild structure
-        inference = NPSE(prior=priors)
+        if method == "NPSE":
+            inference = NPSE(prior=priors)
+        else:
+            inference = NPSE(prior = priors, sde_type="vp")
         theta_tmp = priors.sample((10,))
         X_tmp = simulators(theta_tmp)
         inference.append_simulations(theta_tmp, X_tmp)
