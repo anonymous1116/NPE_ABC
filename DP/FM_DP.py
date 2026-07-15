@@ -195,9 +195,6 @@ def main(args):
         X_chunk = torch.clone(X_chunk[:,:data_dim])
         Y_chunk = torch.clone(Y_chunk[:,:data_dim])
 
-        print(x0.size())
-        print(X_chunk.size())
-        
         index_ABC = ABC_rej2(x0.to(device), X_chunk.to(device), args.tol * 100, device)
         X_abc_list.append(X_chunk[index_ABC])
         Y_abc_list.append(Y_chunk[index_ABC])
