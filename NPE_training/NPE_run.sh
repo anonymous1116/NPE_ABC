@@ -50,4 +50,4 @@ echo "## Run Completed for seed=$seeds ##"
 
 #python NPE_training/NPE_run_embed.py --task "slcp_distractors" --seed 1 --cond_den "nsf" --num_training 1000 --cdim 10
 
-#python NPE_training/NPE_run.py --task "mog_10" --seed 1 --num_training 300000 --method "NPSE"
+#python NPE_training/NPE_run.py --task "bernoulli_glm2" --seed 1 --num_training 10000 --method "NPSE_vp"
