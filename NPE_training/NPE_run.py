@@ -29,6 +29,8 @@ def main(args):
         inference = FMPE(prior=priors)
     elif args.method == "NPSE":
         inference = NPSE(prior = priors)
+    elif args.method == "NPSE_vp":
+        inference = NPSE(prior = priors, sde_type="vp")
     else:
         inference = NPE(prior=priors, density_estimator=args.cond_den)
     inference = inference.append_simulations(theta, X)
@@ -83,7 +85,8 @@ def get_args():
     parser.add_argument('--task', type=str, default='twomoons', help='Simulation type: twomoons, MoG, Lapl, GL_U or SLCP')
     parser.add_argument('--seed', type=int, default=1, help='Random seed for reproducibility')
     parser.add_argument('--num_training', type=int, default=500_000, help='Number of simulations to run')
-    parser.add_argument('--cond_den', type=str, default='nsf', help='Conditional density estimator type: mdn, maf, nsf')
+    parser.add_argument('--cond_den', type=str, default='nsf', 
+                        help='Conditional density estimator type: mdn, maf, nsf')
     parser.add_argument('--method', type=str, default='NPE', help='Method type: NPE, FMPE, NPSE')
     return parser.parse_args()
 
