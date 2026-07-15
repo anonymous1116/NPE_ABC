@@ -60,7 +60,7 @@ def main(args):
 
     # Save the inference object using pickle in the specified directory
     # Save the inference object and elapsed time using pickle in the specified directory
-    if args.method in ["FMPE", "NPSE"]:
+    if args.method in ["FMPE", "NPSE", "NPSE_vp"]:
         output_file_path = os.path.join(output_dir, f"{args.task}_{args.seed}.pkl")
     else:
         output_file_path = os.path.join(output_dir, f"{args.task}_{args.seed}_{args.cond_den}.pkl")
