@@ -275,7 +275,6 @@ def gibbs_rr_5x5(
     }
     return p_samples, info
 
-
 @torch.no_grad()
 def gibbs_rr_6x6(
     y_obs: torch.Tensor,              # shape (36,)
