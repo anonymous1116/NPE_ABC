@@ -1,12 +1,12 @@
 #!/bin/bash
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=10
-#SBATCH --time=00:34:00
+#SBATCH --time=00:19:00
 #SBATCH --account=statdept
 #SBATCH --gpus-per-node=1
 #SBATCH --mem=170G
 #SBATCH --qos=normal
-#SBATCH --partition=a10
+#SBATCH --partition=a30
 #SBATCH --array=0-99
 #SBATCH --output=ABC_calibration/log/output_log_%A_%a.out
 #SBATCH --error=ABC_calibration/log/error_log_%A_%a.txt
@@ -29,8 +29,8 @@ seed=$((SLURM_ARRAY_TASK_ID / 10 + 1))
 #L=100000000
 
 L=1000000000
-task="table_dp_55"
-num_training=3000000 
+task="mog_10"
+num_training=300000 
 tol=1e-5
 #cdim=10
 # Run the calibrate_amor.py
@@ -42,7 +42,8 @@ echo "[$(date)] Starting job: x0_ind=$x0_ind, seed=$seed, L=$L"
 #python ABC_calibration/calibrating_flow.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol
 #python ABC_calibration/calibrating_flow_latent5_1.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol 
 #python DP/calibrating_DP.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol 
-python DP/calibrating_DP.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol 
+#python DP/calibrating_DP.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol 
+python ABC_calibration/FM_calib.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol 
 #python ABC_calibration/calibrating_flow_experiment.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol
 #python ABC_calibration/calibrating_flow_experiment.py --x0_ind 1 --seed 1 --L 10000000 --task "slcp" --num_training 3_000_000 --tol 1e-3
 #python ABC_calibration/calibrating_flow_linear_embed.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol
