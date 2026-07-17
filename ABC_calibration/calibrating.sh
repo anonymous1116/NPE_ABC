@@ -7,7 +7,7 @@
 #SBATCH --mem=170G
 #SBATCH --qos=normal
 #SBATCH --partition=a10
-#SBATCH --array=0-99
+#SBATCH --array=0-9,20-59,70-99
 #SBATCH --output=ABC_calibration/log/output_log_%A_%a.out
 #SBATCH --error=ABC_calibration/log/error_log_%A_%a.txt
 
