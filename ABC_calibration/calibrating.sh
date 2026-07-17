@@ -7,7 +7,7 @@
 #SBATCH --mem=170G
 #SBATCH --qos=standby
 #SBATCH --partition=a10,a100-80gb
-#SBATCH --array=0-99
+#SBATCH --array=31,32,34,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,69,70,71,72,88
 #SBATCH --output=ABC_calibration/log/output_log_%A_%a.out
 #SBATCH --error=ABC_calibration/log/error_log_%A_%a.txt
 
@@ -29,7 +29,7 @@ seed=$((SLURM_ARRAY_TASK_ID / 10 + 1))
 #L=100000000
 
 L=1000000000
-task="mog_10"
+task="bernoulli_glm2"
 num_training=3000000 
 tol=1e-5
 #cdim=10
