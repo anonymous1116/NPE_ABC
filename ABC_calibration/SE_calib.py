@@ -124,6 +124,7 @@ def main(args):
     output_file_path = os.path.join(f'../depot_hyun/hyun/NPE_ABC/NPSE_{SDE_name}nets/{args.task}/J_{int(args.num_training/1000)}K/{args.task}_{seed}.pkl')
     saved_data = torch.load(output_file_path.replace('.pkl', '.pt'), map_location='cpu')
 
+
     # Rebuild structure
     if args.SDE == "ve":
         inference = NPSE(prior=priors)
@@ -169,7 +170,8 @@ def main(args):
     # Forward: z -> adj, conditioned on raw x0
     x0_expanded = x0_condition.cpu().expand(z_tmp.size(0), -1)  # (N, d_x)
     adj = batched_odeint(forward_ode, z_tmp, x0_expanded, t_span_forward, device,
-                         batch_size=100, atol=1e-6, rtol=1e-5)
+                         batch_size=100, atol=1e-4, rtol=1e-4,
+                        options={'min_step': 1e-5}  # prevent underflow)
 
     if bounds is not None:
         adj = torch.clamp(adj, min=torch.tensor(bounds)[:,0], max=torch.tensor(bounds)[:,1])
