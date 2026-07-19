@@ -62,4 +62,4 @@ echo "[$(date)] Job complete: x0_ind=$x0_ind, seed=$seed"
 #python ABC_calibration/calibrating_flow_latent2.py --x0_ind 1 --seed 1 --L 1000000 --task "my_five_twomoons_err40" --num_training 3000000 --tol 1e-2 
 #python ABC_calibration/calibrating_flow_experiment.py --x0_ind 1 --seed 1 --L 1000000 --task "my_five_twomoons_err40" --num_training 3000000 --tol 1e-2
 #python DP/calibrating_DP.py --x0_ind 1 --seed 1 --L 10000000 --task "table_dp_55" --num_training 3000000 --tol 1e-3
-#python ABC_calibration/SE_calib.py --x0_ind 1 --seed 4 --L 10000000 --task "bernoulli_glm2" --num_training 300000 --tol 1e-3 --SDE "vp"
+#python ABC_calibration/SE_calib.py --x0_ind 1 --seed 4 --L 10000000 --task "mog_10" --num_training 300000 --tol 1e-3 --SDE "vp"
