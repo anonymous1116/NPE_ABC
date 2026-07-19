@@ -125,7 +125,13 @@ def main(args):
     saved_data = torch.load(output_file_path.replace('.pkl', '.pt'), map_location='cpu')
 
     # Rebuild structure
-    inference = NPSE(prior=priors)
+    if args.SDE == "ve":
+        inference = NPSE(prior=priors)
+    elif args.SDE == "vp":
+        inference = NPSE(prior=priors, sde_type="vp")
+    else:
+        raise ValueError("SDE name has to be determined")
+
     theta_tmp = priors.sample((10,))
     X_tmp = simulators(theta_tmp)
     inference.append_simulations(theta_tmp, X_tmp)
@@ -244,7 +250,7 @@ def main(args):
     print(sci_str)  # Output: '1e-02'
     
 
-    output_dir = f"../depot_hyun/hyun/NPE_ABC/SE_{SDE_name}_flow_c2st_results/{args.task}_context/J_{int(args.num_training/1000)}K/{int(args.L/1_000_000)}M_eta{sci_str}"
+    output_dir = f"../depot_hyun/hyun/NPE_ABC/SE_{SDE_name}flow_c2st_results/{args.task}_context/J_{int(args.num_training/1000)}K/{int(args.L/1_000_000)}M_eta{sci_str}"
     ## Create the directory if it doesn't exist
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
