@@ -32,7 +32,7 @@ echo "Running with seed=$seeds"
 #python NPE_training/NPE_run_embed.py --task "slcp_distractors" --seed $seeds --cond_den "nsf" --num_training 1000000 --cdim 5
 #python NPE_training/NPSE_run.py --task "bernoulli_glm2" --seed $seeds --num_training 1500000
 #python NPE_training/NPE_DP_run.py --task "table_dp_66" --seed $seeds --num_training 2000000 --method "NPE"
-python NPE_training/NPE_run.py --task "double_slcp_summary_transform2" --seed $seeds --num_training 1000000 --method "NPSE_vp"
+python NPE_training/NPE_run.py --task "double_slcp_summary_transform2" --seed $seeds --num_training 500000 --method "NPSE_vp"
 #python NPE_training/SNPE_run.py --task "double_slcp_summary_transform2" --seed 1 --num_training 1000 --cond_den "nsf" --x0_ind 0
 #python NPE_training/NPE_DP_run.py --task "table_dp_66" --seed 1 --num_training 1000 --method "NPE"
 
