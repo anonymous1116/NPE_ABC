@@ -77,9 +77,9 @@ def main(args):
     torch.manual_seed(seed)
     np.random.seed(seed)
 
-    if args.SDE == "VE":
+    if args.SDE == "ve":
         SDE_name = ""
-    elif args.SDE == "VP":
+    elif args.SDE == "vp":
         SDE_name = "vp_"
     else:
         raise ValueError("SDE name has to be determined")
@@ -279,8 +279,8 @@ def get_args():
                         help="Number of training data of NPE (default: 100_000)")
     parser.add_argument("--tol", type=float, default=1e-3,
                     help="Tolerance value for ABC (any positive float, default: 1e-4 but less than 1e-2)")
-    parser.add_argument("--SDE", type=str, default= "VE",
-                    help="VE or VP")
+    parser.add_argument("--SDE", type=str, default= "ve",
+                    help="ve or vp")
     
     return parser.parse_args()
 
