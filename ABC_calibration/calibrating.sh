@@ -29,8 +29,8 @@ seed=$((SLURM_ARRAY_TASK_ID / 10 + 1))
 #L=100000000
 
 L=1000000000
-task="table_dp_55"
-num_training=2000000 
+task="double_slcp_summary_transform2"
+num_training=300000 
 tol=1e-5
 #cdim=10
 # Run the calibrate_amor.py
