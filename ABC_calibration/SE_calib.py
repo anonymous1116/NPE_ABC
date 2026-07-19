@@ -77,9 +77,18 @@ def main(args):
     torch.manual_seed(seed)
     np.random.seed(seed)
 
+    if args.SDE == "VE":
+        SDE_name = ""
+    elif args.SDE == "VP":
+        SDE_name = "vp_"
+    else:
+        raise ValueError("SDE name has to be determined")
+
     L = args.L
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+
 
     priors = Priors(args.task)
     true_posteriors = true_Posteriors(args.task)
@@ -111,7 +120,8 @@ def main(args):
     index_ABC = ABC_rej2(x0, X_cal, 1e-2, device)
     X_cal, Y_cal = X_cal[index_ABC], Y_cal[index_ABC]
 
-    output_file_path = os.path.join(f'../depot_hyun/hyun/NPE_ABC/NPSE_nets/{args.task}/J_{int(args.num_training/1000)}K/{args.task}_{seed}.pkl')
+
+    output_file_path = os.path.join(f'../depot_hyun/hyun/NPE_ABC/NPSE_{SDE_name}nets/{args.task}/J_{int(args.num_training/1000)}K/{args.task}_{seed}.pkl')
     saved_data = torch.load(output_file_path.replace('.pkl', '.pt'), map_location='cpu')
 
     # Rebuild structure
@@ -234,7 +244,7 @@ def main(args):
     print(sci_str)  # Output: '1e-02'
     
 
-    output_dir = f"../depot_hyun/hyun/NPE_ABC/SE_flow_c2st_results/{args.task}_context/J_{int(args.num_training/1000)}K/{int(args.L/1_000_000)}M_eta{sci_str}"
+    output_dir = f"../depot_hyun/hyun/NPE_ABC/SE_{SDE_name}_flow_c2st_results/{args.task}_context/J_{int(args.num_training/1000)}K/{int(args.L/1_000_000)}M_eta{sci_str}"
     ## Create the directory if it doesn't exist
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -269,6 +279,9 @@ def get_args():
                         help="Number of training data of NPE (default: 100_000)")
     parser.add_argument("--tol", type=float, default=1e-3,
                     help="Tolerance value for ABC (any positive float, default: 1e-4 but less than 1e-2)")
+    parser.add_argument("--SDE", type=str, default= "VE",
+                    help="VE or VP")
+    
     return parser.parse_args()
 
 if __name__ == "__main__":
