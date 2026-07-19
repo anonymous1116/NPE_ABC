@@ -128,8 +128,10 @@ def main(args):
     # Rebuild structure
     if args.SDE == "ve":
         inference = NPSE(prior=priors)
+        infer_method = 'dopri5'
     elif args.SDE == "vp":
         inference = NPSE(prior=priors, sde_type="vp")
+        infer_method = 'rk4'
     else:
         raise ValueError("SDE name has to be determined")
 
@@ -170,7 +172,7 @@ def main(args):
     # Forward: z -> adj, conditioned on raw x0
     x0_expanded = x0_condition.cpu().expand(z_tmp.size(0), -1)  # (N, d_x)
     adj = batched_odeint(forward_ode, z_tmp, x0_expanded, t_span_forward, device,
-                         batch_size=100, method ='rk4', atol=1e-6, rtol=1e-4)  # prevent underflow)
+                         batch_size=100, method =infer_method, atol=1e-6, rtol=1e-4)  # prevent underflow)
 
     if bounds is not None:
         adj = torch.clamp(adj, min=torch.tensor(bounds)[:,0], max=torch.tensor(bounds)[:,1])
@@ -226,7 +228,7 @@ def main(args):
 
     x0_expanded_abc = x0_condition.cpu().expand(z_tmp.size(0), -1)
     new_theta = batched_odeint(forward_ode, z_tmp, x0_expanded_abc, t_span_forward, device,
-                               batch_size=500, atol=1e-6, rtol=1e-5)
+                               batch_size=500, method =infer_method, atol=1e-6, rtol=1e-5)
     new_theta = new_theta.cpu()
 
     end_time = time.time()
