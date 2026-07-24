@@ -30,7 +30,7 @@ seed=$((SLURM_ARRAY_TASK_ID / 10 + 1))
 
 L=1000000000
 task="mog_10"
-num_training=500000 
+num_training=1000000 
 tol=1e-5
 #cdim=10
 # Run the calibrate_amor.py
