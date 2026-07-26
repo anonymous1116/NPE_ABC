@@ -1043,7 +1043,6 @@ def channel_quinary(p: float) -> torch.Tensor:
     ], dtype=torch.double)
     return C
 
-
 def channel_5x5(p1: float, p2: float) -> torch.Tensor:
     """
     Joint channel for two independent quinary variables.
@@ -1160,6 +1159,71 @@ def simulator_rr_cont_table_6x6(
 
     return torch.cat(out, dim=0).to(torch.float32)
 
+def channel_septenary(p: float) -> torch.Tensor:
+    """
+    Septenary randomized response channel C(p):
+      with prob p -> report truth; with prob (1-p) -> uniform random category.
+    Returns a 7x7 matrix with rows=reported, cols=true.
+    """
+    same = (1 + 6 * p) / 7
+    diff = (1 - p) / 7
+    C = torch.full((7, 7), diff, dtype=torch.double)
+    C.fill_diagonal_(same)
+    return C
+
+
+def channel_7x7(p1: float, p2: float) -> torch.Tensor:
+    """
+    Joint channel for two independent septenary variables.
+    Returns a 49x49 matrix R with rows=reported cells, cols=true cells,
+    under fixed cell order [00,01,...,06,10,...,66].
+    """
+    C1 = channel_septenary(p1)
+    C2 = channel_septenary(p2)
+    R = torch.kron(C1, C2)  # shape (49, 49)
+    return R
+
+
+def simulator_rr_cont_table_7x7(
+    theta: torch.Tensor,
+    p: float = 0.5,
+    n: int = 400,
+    batch_size: int = 1_000_000,
+) -> torch.Tensor:
+    """
+    Simulate privatized counts y ~ Multinomial(n, q) with q = R(p) @ theta
+    for a 7x7 contingency table under randomized response.
+
+    Args:
+        theta: (N, 49) tensor; each row sums to 1;
+               order [00,01,...,06,10,...,66].
+        p: truthful-report probability (p in [0,1]).
+        n: total count per table draw.
+        batch_size: chunk size for memory efficiency.
+
+    Returns:
+        reported_counts: (N, 49) tensor of privatized counts.
+    """
+    assert theta.dim() == 2 and theta.size(1) == 49, "theta must be (N, 49)."
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    theta = theta.to(device).to(torch.double)
+
+    R = channel_7x7(p, p).to(device)
+
+    N = theta.size(0)
+    out = []
+    for start in range(0, N, batch_size):
+        end = min(start + batch_size, N)
+        th = theta[start:end]
+
+        q = (th @ R.T).clamp(min=0)
+        q = q / q.sum(dim=1, keepdim=True)
+
+        m = Multinomial(total_count=n, probs=q)
+        y = m.sample()
+        out.append(y.cpu())
+
+    return torch.cat(out, dim=0).to(torch.float32)
 
 
 def Simulators(task_name: str):
@@ -1207,9 +1271,9 @@ def Simulators(task_name: str):
         return cont_table_dp_generator
 
     elif task_name in ["table_dp_77"]:
-            def cont_table_dp_generator(theta):
-                return simulator_rr_cont_table_7x7(theta, p = 0.8, n = 4526, batch_size = 100_000)
-            return cont_table_dp_generator
+        def cont_table_dp_generator(theta):
+            return simulator_rr_cont_table_7x7(theta, p = 0.8, n = 4526, batch_size = 100_000)
+        return cont_table_dp_generator
     
 
     elif task_name in ["my_ten_twomoons"]:
