@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=4
+#SBATCH --cpus-per-task=8
 #SBATCH --partition=cpu
 #SBATCH --account=statdept
 #SBATCH --time=04:00:00
@@ -29,5 +29,5 @@ seeds=$((seed_START + SLURM_ARRAY_TASK_ID - 1))
 
 # Run the Python script with the specified N_EPOCHS value
 echo "Running with seed=$seeds"
-python DP/DP_gibbs.py --table_num 6 --i $seeds
+python DP/DP_gibbs.py --table_num 7 --i $seeds
 echo "## Run Completed for seed=$seeds ##"
