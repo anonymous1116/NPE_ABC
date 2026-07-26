@@ -91,6 +91,8 @@ def Priors(task_name: str):
         return Dirichlet(torch.tensor([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]))
     elif task_name in ["table_dp_66"]:
         return Dirichlet(torch.ones(36, dtype=torch.float32))
+    elif task_name in ["table_dp_77"]:
+            return Dirichlet(torch.ones(49, dtype=torch.float32))
     else:
         raise ValueError(f"Unknown task name for prior: {task_name}")
 
@@ -104,7 +106,7 @@ task_benchmark = ["two_moons",
                   "my_five_twomoons_err90",
                   "mog_2_nabc", "mog_5_nabc", "mog_10_nabc",
                   "my_fifty_twomoons", 
-                  "table_dp_22", "table_dp_33", "table_dp_44", "table_dp_55", "table_dp_66"]
+                  "table_dp_22", "table_dp_33", "table_dp_44", "table_dp_55", "table_dp_66", "table_dp_77"]
     
 class true_Posteriors:
     def __init__(self, task):
@@ -150,8 +152,10 @@ class true_Posteriors:
         elif self.task in ["table_dp_55"]:
             return self.table_dp_55(kwargs.get('j', 0))
         elif self.task in ["table_dp_66"]:
-            return self.table_dp_66(kwargs.get('j', 0))
-
+                    return self.table_dp_66(kwargs.get('j', 0))
+        elif self.task in ["table_dp_77"]:
+                    return self.table_dp_77(kwargs.get('j', 0))
+        
         elif self.task in ["my_twomoons"]:
             return self.my_twomoons(obs, n_samples, bounds)
         elif self.task in ["my_five_twomoons", "my_five_twomoons_err2", "my_five_twomoons_err5", "my_five_twomoons_err10"]:    
@@ -300,6 +304,11 @@ class true_Posteriors:
         post_sample = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/table_dp_66_post_{j}.pt")    
         return post_sample[:, :35]  # Return only the first twenty-four columns of the posterior samples
 
+    def table_dp_77(self, j):
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            post_sample = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/table_dp_77_post_{j}.pt")    
+            return post_sample[:, :35]  # Return only the first twenty-four columns of the posterior samples
+    
 
 
     def slcp(self, j):
@@ -402,7 +411,7 @@ def observation_lists(task_name:str):
                        "my_five_twomoons_err10", "my_five_twomoons_err30", "my_five_twomoons_err50",
                           "my_five_twomoons_err70", "my_five_twomoons_err90", 
                        "bernoulli_glm2_err10", "bernoulli_glm2_err30", "bernoulli_glm2_err50", "bernoulli_glm2_err70", "bernoulli_glm2_err90", "my_fifty_twomoons",
-                       "table_dp_22", "table_dp_33", "table_dp_44", "table_dp_55", "table_dp_66"]:
+                       "table_dp_22", "table_dp_33", "table_dp_44", "table_dp_55", "table_dp_66", "table_dp_77"]:
         current_dir = os.path.dirname(os.path.abspath(__file__))
         obs = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{task_name}_obs.pt")    
         return obs 
@@ -1197,6 +1206,11 @@ def Simulators(task_name: str):
             return simulator_rr_cont_table_6x6(theta, p = 0.8, n = 4526, batch_size = 100_000)
         return cont_table_dp_generator
 
+    elif task_name in ["table_dp_77"]:
+            def cont_table_dp_generator(theta):
+                return simulator_rr_cont_table_7x7(theta, p = 0.8, n = 4526, batch_size = 100_000)
+            return cont_table_dp_generator
+    
 
     elif task_name in ["my_ten_twomoons"]:
         return simulator_my_ten_twomoons

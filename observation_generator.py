@@ -168,7 +168,7 @@ def main(args):
         torch.save(x0_list, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{args.task}_obs.pt")    
         print(x0_list)
 
-    elif args.task in ["table_dp_22", "table_dp_33", "table_dp_44", "table_dp_55", "table_dp_66"]:
+    elif args.task in ["table_dp_22", "table_dp_33", "table_dp_44", "table_dp_55", "table_dp_66", "table_dp_77"]:
         import warnings
         current_dir = os.path.dirname(os.path.abspath(__file__))
         

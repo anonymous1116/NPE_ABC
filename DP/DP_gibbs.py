@@ -2,8 +2,7 @@ import torch
 import argparse
 import os, sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
-from simulator import channel_binary, channel_ternary, channel_quaternary
-from simulator import channel_2x2, channel_3x3, channel_4x4, channel_5x5, channel_6x6
+from simulator import channel_2x2, channel_3x3, channel_4x4, channel_5x5, channel_6x6, channel_7x7
 
 # ---------- Gibbs sampler ----------
 @torch.no_grad()
@@ -338,6 +337,70 @@ def gibbs_rr_6x6(
     }
     return p_samples, info
 
+
+@torch.no_grad()
+def gibbs_rr_7x7(
+    y_obs: torch.Tensor,              # shape (49,)
+    p1: float = 0.5,
+    p2: float = 0.5,
+    alpha: torch.Tensor = None,       # Dirichlet prior shape (49,)
+    n_iter: int = 5000,
+    burn: int = 1000,
+    thin: int = 1,
+    seed: int = 0,
+):
+    torch.manual_seed(seed)
+    y = y_obs.to(torch.int64).view(-1)
+    assert y.numel() == 49, "y_obs must have 49 cells."
+    if alpha is None:
+        alpha = torch.ones(49, dtype=torch.float32)
+    else:
+        alpha = alpha.to(torch.float32).view(-1)
+        assert alpha.numel() == 49
+
+    R = channel_7x7(p1, p2).to(torch.float32)
+    n = int(y.sum().item())
+    p = torch.full((49,), 1/49, dtype=torch.float32)
+
+    kept = []
+    z = torch.zeros(49, 49, dtype=torch.int64)
+    m = torch.distributions.Multinomial
+
+    for t in range(n_iter):
+        # Step 1: latent allocation
+        W = R * p.view(1, 49)
+        row_sums = W.sum(dim=1, keepdim=True).clamp_min(1e-12)
+        W = W / row_sums
+
+        for i in range(49):
+            yi = int(y[i].item())
+            if yi > 0:
+                z[i] = m(total_count=yi, probs=W[i]).sample().to(torch.int64)
+            else:
+                z[i] = torch.zeros(49, dtype=torch.int64)
+
+        # Step 2: update p
+        z_true = z.sum(dim=0).to(torch.float32)
+        p = torch.distributions.Dirichlet(alpha + z_true).sample()
+
+        if t >= burn and ((t - burn) % thin == 0):
+            kept.append(p.clone())
+
+        if (t + 1) % 1000 == 0:
+            print(f"Iteration {t+1}/{n_iter}", flush=True)
+
+    p_samples = torch.stack(kept, dim=0)  # (S, 49)
+
+    info = {
+        "R": R,
+        "n": n,
+        "n_iter": n_iter,
+        "burn": burn,
+        "thin": thin,
+        "kept": p_samples.size(0),
+    }
+    return p_samples, info
+
 def main(args):
     """
     Example: simulate privatized counts from known true p, then run Gibbs.
@@ -355,6 +418,8 @@ def main(args):
         task ="table_dp_55"
     elif args.table_num ==6:
         task ="table_dp_66"
+    elif args.table_num ==7:
+        task ="table_dp_77"
     else:
         raise ValueError("table_num must be 2, 3, 4, 5 or 6.")
 
@@ -374,7 +439,9 @@ def main(args):
     elif args.table_num ==5:
         samples, _ = gibbs_rr_5x5(y, p1=0.8, p2=0.8, n_iter=n_iter, burn=int(n_iter/10), thin=50, seed=1)
     elif args.table_num ==6:
-        samples, _ = gibbs_rr_6x6(y, p1=0.8, p2=0.8, n_iter=n_iter, burn=int(n_iter/10), thin=50, seed=1)
+            samples, _ = gibbs_rr_6x6(y, p1=0.8, p2=0.8, n_iter=n_iter, burn=int(n_iter/10), thin=50, seed=1)
+    elif args.table_num ==7:
+            samples, _ = gibbs_rr_7x7(y, p1=0.8, p2=0.8, n_iter=n_iter, burn=int(n_iter/10), thin=50, seed=1)
     else:
         raise ValueError("table_num must be 2, 3, 4, 5 or 6.")
     samples = samples.to(torch.float32)
