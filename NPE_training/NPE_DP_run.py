@@ -26,7 +26,7 @@ def main(args):
     elif args.task == "table_dp_66":
         alpha = torch.ones(36)               
     elif args.task == "table_dp_77":
-            alpha = torch.ones(48)                 
+        alpha = torch.ones(49)                 
     else:
         raise ValueError("Unknown task. Please choose either 'table_dp_22', '33', '44', '55' or '66'. ")
     simulators = Simulators(args.task)

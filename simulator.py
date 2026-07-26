@@ -305,10 +305,10 @@ class true_Posteriors:
         return post_sample[:, :35]  # Return only the first twenty-four columns of the posterior samples
 
     def table_dp_77(self, j):
-            current_dir = os.path.dirname(os.path.abspath(__file__))
-            post_sample = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/table_dp_77_post_{j}.pt")    
-            return post_sample[:, :35]  # Return only the first twenty-four columns of the posterior samples
-    
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        post_sample = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/table_dp_77_post_{j}.pt")    
+        return post_sample[:, :48]  # Return only the first twenty-four columns of the posterior samples
+
 
 
     def slcp(self, j):
