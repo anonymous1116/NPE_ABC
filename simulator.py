@@ -47,6 +47,8 @@ def Bounds(task_name: str):
         return [[0,1]] * 24
     elif task_name in ["table_dp_66"]:
         return [[0,1]] * 35
+    elif task_name in ["table_dp_77"]:
+            return [[0,1]] * 48
     else:
         raise ValueError(f"Unknown task name for bounds: {task_name}")
 
