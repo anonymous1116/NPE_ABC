@@ -172,7 +172,11 @@ def main(args):
         data_dim = 24
     elif args.task == "table_dp_66":
         data_dim = 35
-        
+    elif args.task == "table_dp_77":
+        data_dim = 48
+    else:
+        raise ValueError("put table_dp_rr, where r =2,3,4,5,6 or 7")
+            
         
 
     chunk_size = 10_000_000
