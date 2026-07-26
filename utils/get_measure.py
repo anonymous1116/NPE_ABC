@@ -23,6 +23,8 @@ def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, c
         x0 = x0[:24]
     elif args.task in ["table_dp_66"]:
         x0 = x0[:35]
+    elif args.task in ["table_dp_77"]:
+        x0 = x0[:48]
     print(x0)
     
 
