@@ -96,6 +96,14 @@ def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, c
 
     pairplot(sample_post[:sample_post_size], figsize=(6,6), limits = limits)
     plt.savefig(Path(output_dir) / f"x0{args.x0_ind}_seed{args.seed}_calibrated.png")
+
+    pairplot(true_sample, figsize=(6,6))
+    plt.savefig(Path(output_dir) / f"x0{args.x0_ind}_seed{args.seed}_reference_nolimits.png")
+    plt.close()
+
+    pairplot(sample_post[:sample_post_size], figsize=(6,6))
+    plt.savefig(Path(output_dir) / f"x0{args.x0_ind}_seed{args.seed}_calibrated_nolimits.png")
+    
     plt.close()
     
 def get_args():
