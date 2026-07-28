@@ -103,7 +103,6 @@ def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, c
 
     pairplot(sample_post[:sample_post_size], figsize=(6,6))
     plt.savefig(Path(output_dir) / f"x0{args.x0_ind}_seed{args.seed}_calibrated_nolimits.png")
-    
     plt.close()
     
 def get_args():
@@ -126,4 +125,4 @@ if __name__ == "__main__":
     run_similiarity(args.task, args.measure, args.x0_ind, args.seed, args.post_n_samples, args.num_training, args.cond_den, args.method)
 
 
-#python utils/get_measure.py --task "table_dp_77" --measure "c2st" --x0_ind 1 --seed 1 --post_n_samples 10000 --num_training 300000 --method "NPSE_vp"
+#python utils/get_measure.py --task "table_dp_77" --measure "c2st" --x0_ind 1 --seed 1 --post_n_samples 10000 --num_training 3000000 --method "NPE"
