@@ -7,7 +7,7 @@
 #SBATCH --mem=170G
 #SBATCH --qos=standby
 #SBATCH --partition=a10,a100-80gb
-#SBATCH --array=0-99
+#SBATCH --array=90-99
 #SBATCH --output=ABC_calibration/log/output_log_%A_%a.out
 #SBATCH --error=ABC_calibration/log/error_log_%A_%a.txt
 
@@ -30,7 +30,7 @@ seed=$((SLURM_ARRAY_TASK_ID / 10 + 1))
 
 L=1000000000
 task="table_dp_77"
-num_training=500000
+num_training=2000000
 tol=1e-5
 #cdim=10
 # Run the calibrate_amor.py
