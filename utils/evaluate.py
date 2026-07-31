@@ -33,7 +33,7 @@ conda activate /depot/wangxiao/apps/hyun18/NPE_NABC
         method_arg = f"--method {method}"
     job_script = f"""#!/bin/bash
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=1
+#SBATCH --cpus-per-task=4
 #SBATCH --time=00:59:00
 #SBATCH --account=statdept
 #SBATCH -q standby
