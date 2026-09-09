@@ -13,7 +13,7 @@ from sbi.utils import BoxUniform
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 #from utils.evaluate import create_c2st_job_script
 
-def simulators_circadian(theta, batch_size = 10_000, device = "cpu", max_ODEtime = 500, T_field = 66):
+def simulators_circadian(theta, device = "cpu", max_ODEtime = 500, T_field = 66):
     """
     Simulates the circadian model for a batch of parameter sets theta.
     Args:
@@ -24,6 +24,7 @@ def simulators_circadian(theta, batch_size = 10_000, device = "cpu", max_ODEtime
     M_obs_time = np.arange(max_ODEtime - T_field, max_ODEtime)  # (max_ODEtime-T_field+1):max_ODEtime
 
     # --- Initial conditions, replicated per batch item ---
+    batch_size = theta.size(0)
     y0 = torch.zeros((batch_size, 3), dtype=torch.float64, device=device)  # M, P, Pp all start at 0
 
     # --- Time points ---
@@ -31,6 +32,12 @@ def simulators_circadian(theta, batch_size = 10_000, device = "cpu", max_ODEtime
 
     # --- Solve all trajectories at once ---
     # odeint's func signature is func(t, y) -> dy/dt; wrap theta_batch via closure
+
+    theta = torch.column_stack([torch.ones(batch_size) * 24.44, 
+                                theta, 
+                                torch.ones(batch_size) * 8.0, 
+                                torch.ones(batch_size) * 4.0])  
+    
     sol = odeint(
         lambda t, y: ode_model(t, y, theta),
         y0,
