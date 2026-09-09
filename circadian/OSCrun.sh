@@ -12,7 +12,7 @@
 
 mkdir -p circadian/output_log
 
-SLURM_SUBMIT_DIR=/home/hhyun116/NPE_ABC
+SLURM_SUBMIT_DIR=/users/PES0984/hhyun116/NPE_ABC
 cd $SLURM_SUBMIT_DIR
 
 module load miniconda3/24.1.2-py310
