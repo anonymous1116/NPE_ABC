@@ -8,6 +8,7 @@ from sbi.analysis import pairplot
 import matplotlib.pyplot as plt
 from sbi.inference import NPSE
 import dill
+
 def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, cond, method):
     #device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     x0_list = observation_lists(task)

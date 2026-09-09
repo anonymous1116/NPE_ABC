@@ -68,7 +68,9 @@ def main(args):
     # Run the simulator
     X = simulators_circadian(theta, device = device)
     X = X.float()            # or X.to(torch.float32)
-        
+
+    print(torch.max(X, dim=0).values, torch.min(X, dim=0).values)
+    
     # Create inference object
     if args.method == "FMPE":
         inference = FMPE(prior=priors)

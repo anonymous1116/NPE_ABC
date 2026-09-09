@@ -3,7 +3,7 @@
 #SBATCH --job-name=NPE_ABC
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --cpus-per-task=2
+#SBATCH --cpus-per-task=8
 #SBATCH --gpus-per-node=1
 #SBATCH --partition=debug
 #SBATCH --time=00:30:00
