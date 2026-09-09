@@ -31,7 +31,11 @@ def main(args):
 
     # Run the simulator
     X = simulators_circadian(theta, device = device)
+    start_time = time.time()
     X = X.float()            # or X.to(torch.float32)
+    end_time = time.time()
+    simulation_time = end_time - start_time
+    print(f"Simulation completed in {simulation_time:.2f} seconds")
 
     print(torch.max(X, dim=0).values, torch.min(X, dim=0).values)
     
