@@ -16,7 +16,7 @@ SLURM_SUBMIT_DIR=/users/PES0984/hhyun116/NPE_ABC
 
 module load miniconda3/24.1.2-py310
 source activate BayesCalib
-#export LD_LIBRARY_PATH=$CONDA_PREFIX/lib:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=$CONDA_PREFIX/lib:$LD_LIBRARY_PATH
 
 cd $SLURM_SUBMIT_DIR                  # run from wherever you submitted the job
 python circadian/training.py --task "circadian" --method NPE --num_training 10000
