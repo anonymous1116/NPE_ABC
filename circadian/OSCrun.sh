@@ -1,15 +1,14 @@
 #!/bin/bash
 #SBATCH --account=PES0984            # replace with your actual project account
 #SBATCH --job-name=NPE_ABC
-#SBATCH --output=%x_%j.out            # %x = job name, %j = job ID
-#SBATCH --error=%x_%j.err
+#SBATCH --output=%j.out            # %x = job name, %j = job ID
+#SBATCH --error=%j.err
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=2
 #SBATCH --gpus-per-node=1
-#SBATCH --time=02:00:00               # adjust to how long the run actually needs
 #SBATCH --partition=debug
-
+#SBATCH --time=00:30:00
 
 module load miniconda3/24.1.2-py310
 source activate BayesCalib

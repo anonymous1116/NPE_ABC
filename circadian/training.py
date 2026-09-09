@@ -87,8 +87,7 @@ def main(args):
 
     elapsed_time = end_time - start_time  # Calculate elapsed time
     print(f"Training completed in {elapsed_time:.2f} seconds")
-    print(f"Training with {args.cond_den}")
-
+    
     # Define the output directory
     output_dir = f"nets_depot/{args.method}/{args.task}/J_{int(args.num_training/1000)}K"
     
