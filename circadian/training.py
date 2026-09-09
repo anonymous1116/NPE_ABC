@@ -33,10 +33,10 @@ def simulators_circadian(theta, device = "cpu", max_ODEtime = 500, T_field = 66)
     # --- Solve all trajectories at once ---
     # odeint's func signature is func(t, y) -> dy/dt; wrap theta_batch via closure
 
-    theta = torch.column_stack([torch.ones(batch_size) * 24.44, 
+    theta = torch.column_stack([torch.ones(batch_size, device = device) * 24.44, 
                                 theta, 
-                                torch.ones(batch_size) * 8.0, 
-                                torch.ones(batch_size) * 4.0])  
+                                torch.ones(batch_size, device = device) * 8.0, 
+                                torch.ones(batch_size, device = device) * 4.0])  
     
     sol = odeint(
         lambda t, y: ode_model(t, y, theta),
@@ -63,7 +63,8 @@ def main(args):
     # Sample theta from the prior
     theta = priors.sample((args.num_training,))
     theta = theta.float()   # or theta.to(torch.float32)
-    
+    theta = theta.to(device)
+
     # Run the simulator
     X = simulators_circadian(theta, device = device)
     X = X.float()            # or X.to(torch.float32)
