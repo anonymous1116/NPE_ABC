@@ -53,6 +53,9 @@ def main(args):
     x0s = y_to_lambda_batch(torch.tensor(y_mat))
     x0s = x0s.float()
     x0 = x0s[args.x0_ind]
+    if x0.ndim == 1:
+        x0= torch.reshape(x0, (1, x0.size(0)))
+    
 
     
     # Sample theta from the prior
@@ -69,7 +72,7 @@ def main(args):
     print(f"Simulation completed in {simulation_time:.2f} seconds")
 
 
-    index_ABC = ABC_rej2(x0, X, 1e-2, device)
+    index_ABC = ABC_rej2(x0, X, 1e-1, device)
     X, theta = X[index_ABC], theta[index_ABC]
         
 
