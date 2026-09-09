@@ -32,8 +32,8 @@ def main(args):
     theta = theta.to(device)
 
     # Run the simulator
-    X = simulators_circadian(theta, device = device)
     start_time = time.time()
+    X = simulators_circadian(theta, device = device)
     X = X.float()            # or X.to(torch.float32)
     end_time = time.time()
     simulation_time = end_time - start_time
