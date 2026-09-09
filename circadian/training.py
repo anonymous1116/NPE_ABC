@@ -10,7 +10,7 @@ from torchdiffeq import odeint
 from functions import  simulators_circadian
 from sbi.utils import BoxUniform
 from help_functions import ABC_rej2
-
+import matplotlib.pyplot as plt
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 #from utils.evaluate import create_c2st_job_script
@@ -40,7 +40,6 @@ def main(args):
     print(f"Simulation completed in {simulation_time:.2f} seconds")
 
 
-    import matplotlib.pyplot as plt
 
     X_np = X.cpu().numpy()  # move off GPU, convert to numpy for plotting
     n_freqs = X_np.shape[1]

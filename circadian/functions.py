@@ -16,10 +16,10 @@ def simulators_circadian(theta, device = "cpu", max_ODEtime = 500, T_field = 66)
 
     # --- Initial conditions, replicated per batch item ---
     batch_size = theta.size(0)
-    y0 = torch.zeros((batch_size, 3), dtype=torch.float64, device=device)  # M, P, Pp all start at 0
+    y0 = torch.zeros((batch_size, 3), dtype=torch.float32, device=device)  # M, P, Pp all start at 0
 
     # --- Time points ---
-    t_eval = torch.arange(1, max_ODEtime + 1, dtype=torch.float64, device=device)
+    t_eval = torch.arange(1, max_ODEtime + 1, dtype=torch.float32, device=device)
 
     # --- Solve all trajectories at once ---
     # odeint's func signature is func(t, y) -> dy/dt; wrap theta_batch via closure
@@ -54,7 +54,7 @@ def ode_model(t, y, theta):
 
     return torch.stack([dM, dP, dPp], dim=1)
 
-def make_fourier_design(T_y, deg=15, period=None, device="cpu", dtype=torch.float64):
+def make_fourier_design(T_y, deg=15, period=None, device="cpu", dtype=torch.float32):
     """Builds the same design matrix as fda::create.fourier.basis + eval.basis,
     with the constant column already dropped (matches basisMat[,-1])."""
     if period is None:
