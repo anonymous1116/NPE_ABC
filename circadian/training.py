@@ -9,7 +9,7 @@ import time
 from torchdiffeq import odeint
 from functions import  ode_model, make_fourier_design, y_to_lambda_batch
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
-from simulator import Simulators, Priors, observation_lists, Bounds
+from simulator import Priors, observation_lists, Bounds
 from utils.evaluate import create_c2st_job_script
 
 def simulators_circadian(theta, batch_size = 10_000, device = "cpu", max_ODEtime = 500, T_field = 66):
