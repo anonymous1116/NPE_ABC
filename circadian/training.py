@@ -7,15 +7,15 @@ import os
 import argparse
 import time
 from torchdiffeq import odeint
-from functions import  simulators_circadian
+from functions import  simulators_circadian, y_to_lambda_batch
 from sbi.utils import BoxUniform
-#from help_functions import ABC_rej2
 import matplotlib.pyplot as plt
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
+from help_functions import ABC_rej2
+
 #from utils.evaluate import create_c2st_job_script
 
-import torch
 
 def filter_bottom_99(theta, X):
     """
@@ -47,6 +47,13 @@ def main(args):
         low=torch.tensor([1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-2, 1e-2]),  # k1..k7 stay tiny-safe, Ka/Kb raised
         high=torch.tensor([0.5, 3.5, 0.6, 0.5, 0.9, 0.8, 1.0, 9.0, 20.0]),
     )
+
+    # observation
+    y_mat = np.loadtxt("./circadian/y_mat.txt")
+    x0s = y_to_lambda_batch(torch.tensor(y_mat))
+    x0s = x0s.float()
+    x0 = x0s[args.x0_ind]
+
     
     # Sample theta from the prior
     theta = priors.sample((args.num_training,))
@@ -62,8 +69,12 @@ def main(args):
     print(f"Simulation completed in {simulation_time:.2f} seconds")
 
 
-    theta, X = filter_bottom_99(theta, X)
-    print(f"After filtering, theta shape: {theta.shape}, X shape: {X.shape}")
+    index_ABC = ABC_rej2(x0, X, 1e-2, device)
+    X, theta = X[index_ABC], theta[index_ABC]
+        
+
+    #theta, X = filter_bottom_99(theta, X)
+    #print(f"After filtering, theta shape: {theta.shape}, X shape: {X.shape}")
 
     X_np = X.cpu().numpy()  # move off GPU, convert to numpy for plotting
     n_freqs = X_np.shape[1]
@@ -139,6 +150,7 @@ def get_args():
     parser.add_argument('--seed', type=int, default=1, help='Random seed for reproducibility')
     parser.add_argument('--num_training', type=int, default=500_000, help='Number of simulations to run')
     parser.add_argument('--method', type=str, default='NPE', help='Method type: NPE, FMPE, NPSE')
+    parser.add_argument('--x0_ind', type=int, default=0, help='Index of the initial condition to use')
     return parser.parse_args()
 
 if __name__ == "__main__":
