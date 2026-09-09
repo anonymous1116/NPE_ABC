@@ -59,13 +59,16 @@ def main(args):
     # Run the simulator
     start_time = time.time()
     batch_size = 500_000
-    num_chunks = args.num_training * 100 // batch_size
+
+    tol = 0.01
+    iter_num = int(1/tol)
+    num_chunks = args.num_training * iter_num // batch_size
 
     X_abc, Y_abc = [], []
     
     for i in range(num_chunks + 1): 
         start = i * batch_size
-        end = (i + 1) * batch_size if (i + 1) * batch_size < args.num_training else args.num_training
+        end = (i + 1) * batch_size if (i + 1) * batch_size < args.num_training * iter_num else args.num_training * iter_num
         nums = end-start
 
         Y_chunk = priors.sample((nums,))
@@ -74,7 +77,7 @@ def main(args):
         
         X_chunk = simulators_circadian(Y_chunk, device =device)
         
-        index_ABC = ABC_rej2(x0, X_chunk, .01, device)
+        index_ABC = ABC_rej2(x0, X_chunk, tol, device)
         X_chunk, Y_chunk = X_chunk[index_ABC], Y_chunk[index_ABC]
         X_abc.append(X_chunk)
         Y_abc.append(Y_chunk)
