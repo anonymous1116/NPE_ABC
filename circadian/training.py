@@ -15,6 +15,28 @@ import matplotlib.pyplot as plt
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 #from utils.evaluate import create_c2st_job_script
 
+import torch
+
+def filter_bottom_99(theta, X):
+    """
+    Keeps only rows where every column of X is below its own 99th percentile.
+    Returns filtered theta and X, aligned by row.
+    """
+    # Compute the 99th percentile threshold per column
+    thresholds = torch.quantile(X, 0.99, dim=0)  # shape: (n_freqs,)
+
+    # A row is kept only if ALL its columns are below their respective threshold
+    mask = (X <= thresholds).all(dim=1)  # shape: (batch,)
+
+    theta_filtered = theta[mask]
+    X_filtered = X[mask]
+
+    print(f"Kept {mask.sum().item()} / {X.shape[0]} samples "
+          f"({100 * mask.float().mean().item():.1f}%)")
+
+    return theta_filtered, X_filtered
+
+
 def main(args):
     # Set the random seed
     torch.manual_seed(args.seed)
@@ -40,6 +62,8 @@ def main(args):
     print(f"Simulation completed in {simulation_time:.2f} seconds")
 
 
+    theta, X = filter_bottom_99(theta, X)
+    print(f"After filtering, theta shape: {theta.shape}, X shape: {X.shape}")
 
     X_np = X.cpu().numpy()  # move off GPU, convert to numpy for plotting
     n_freqs = X_np.shape[1]
