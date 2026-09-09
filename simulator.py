@@ -49,6 +49,9 @@ def Bounds(task_name: str):
         return [[0,1]] * 35
     elif task_name in ["table_dp_77"]:
             return [[0,1]] * 48
+    elif task_name in ["circadian"]:
+        eps = 1e-6
+        return torch.column_stack([eps*torch.ones(9), torch.tensor([0.5, 3.5, 0.6, 0.5, 0.9, 0.8, 1.0, 9.0, 20.0])]).tolist()
     else:
         raise ValueError(f"Unknown task name for bounds: {task_name}")
 
@@ -94,7 +97,9 @@ def Priors(task_name: str):
     elif task_name in ["table_dp_66"]:
         return Dirichlet(torch.ones(36, dtype=torch.float32))
     elif task_name in ["table_dp_77"]:
-            return Dirichlet(torch.ones(49, dtype=torch.float32))
+        return Dirichlet(torch.ones(49, dtype=torch.float32))
+    elif task_name in ["circadian"]:
+        return BoxUniform(low = torch.ones(9)*1e-6, high = torch.tensor([0.5, 3.5, 0.6, 0.5, 0.9, 0.8, 1.0, 9.0, 20.0]))
     else:
         raise ValueError(f"Unknown task name for prior: {task_name}")
 
