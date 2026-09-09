@@ -63,10 +63,11 @@ def main(args):
     # Sample theta from the prior
     theta = priors.sample((args.num_training,))
     theta = theta.float()   # or theta.to(torch.float32)
-    X = X.float()            # or X.to(torch.float32)
-
+    
     # Run the simulator
     X = simulators_circadian(theta, device = device)
+    X = X.float()            # or X.to(torch.float32)
+        
     # Create inference object
     if args.method == "FMPE":
         inference = FMPE(prior=priors)
