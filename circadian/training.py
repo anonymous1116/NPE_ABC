@@ -76,8 +76,8 @@ def main(args):
     X, theta = X[index_ABC], theta[index_ABC]
         
 
-    #theta, X = filter_bottom_99(theta, X)
-    #print(f"After filtering, theta shape: {theta.shape}, X shape: {X.shape}")
+    theta, X = filter_bottom_99(theta, X)
+    print(f"After filtering, theta shape: {theta.shape}, X shape: {X.shape}")
 
     X_np = X.cpu().numpy()  # move off GPU, convert to numpy for plotting
     n_freqs = X_np.shape[1]
