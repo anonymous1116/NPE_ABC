@@ -44,7 +44,7 @@ def main(args):
 
     # Initialize the Priors and Simulators classes
     priors = BoxUniform(
-        low=torch.tensor([1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-2, 1e-2]),  # k1..k7 stay tiny-safe, Ka/Kb raised
+        low=torch.tensor([1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-1, 1e-1]),  # k1..k7 stay tiny-safe, Ka/Kb raised
         high=torch.tensor([0.5, 3.5, 0.6, 0.5, 0.9, 0.8, 1.0, 9.0, 20.0]),
     )
 
@@ -72,12 +72,12 @@ def main(args):
     print(f"Simulation completed in {simulation_time:.2f} seconds")
 
 
-    index_ABC = ABC_rej2(x0, X, 1e-1, device)
+    index_ABC = ABC_rej2(x0, X, 1e-2, device)
     X, theta = X[index_ABC], theta[index_ABC]
         
 
-    theta, X = filter_bottom_99(theta, X)
-    print(f"After filtering, theta shape: {theta.shape}, X shape: {X.shape}")
+    #theta, X = filter_bottom_99(theta, X)
+    #print(f"After filtering, theta shape: {theta.shape}, X shape: {X.shape}")
 
     X_np = X.cpu().numpy()  # move off GPU, convert to numpy for plotting
     n_freqs = X_np.shape[1]

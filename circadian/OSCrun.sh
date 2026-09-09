@@ -19,4 +19,4 @@ source activate BayesCalib
 export LD_LIBRARY_PATH=$CONDA_PREFIX/lib:$LD_LIBRARY_PATH
 
 cd $SLURM_SUBMIT_DIR                  # run from wherever you submitted the job
-python circadian/training.py --task "circadian" --method NPE --num_training 100000
+python circadian/training.py --task "circadian" --method NPE --num_training 500000
