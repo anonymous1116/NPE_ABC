@@ -9,7 +9,7 @@ import time
 from torchdiffeq import odeint
 from functions import  simulators_circadian
 from sbi.utils import BoxUniform
-from help_functions import ABC_rej2
+#from help_functions import ABC_rej2
 import matplotlib.pyplot as plt
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
