@@ -55,26 +55,37 @@ def main(args):
     x0 = x0s[args.x0_ind]
     if x0.ndim == 1:
         x0= torch.reshape(x0, (1, x0.size(0)))
-    
-
-    
-    # Sample theta from the prior
-    theta = priors.sample((args.num_training,))
-    theta = theta.float()   # or theta.to(torch.float32)
-    theta = theta.to(device)
 
     # Run the simulator
     start_time = time.time()
-    X = simulators_circadian(theta, device = device)
-    X = X.float()            # or X.to(torch.float32)
+    batch_size = 500_000
+    num_chunks = args.num_training * 100 // batch_size
+
+    X_abc, Y_abc = [], []
+    
+    for i in range(num_chunks + 1): 
+        start = i * batch_size
+        end = (i + 1) * batch_size if (i + 1) * batch_size < args.num_training else args.num_training
+        nums = end-start
+
+        Y_chunk = priors.sample((nums,))
+        Y_chunk = Y_chunk.float()   # or Y_chunk.to(torch.float32)
+        Y_chunk = Y_chunk.to(device)
+        
+        X_chunk = simulators_circadian(Y_chunk, device =device)
+        
+        index_ABC = ABC_rej2(x0, X_chunk, .01, device)
+        X_chunk, Y_chunk = X_chunk[index_ABC], Y_chunk[index_ABC]
+        X_abc.append(X_chunk)
+        Y_abc.append(Y_chunk)
+        print(f"{i}th iteration out of {num_chunks}", flush = True)
+
+    X_abc = torch.cat(X_abc)
+    Y_abc = torch.cat(Y_abc)    
+
     end_time = time.time()
     simulation_time = end_time - start_time
-    print(f"Simulation completed in {simulation_time:.2f} seconds")
-
-
-    index_ABC = ABC_rej2(x0, X, 1e-2, device)
-    X, theta = X[index_ABC], theta[index_ABC]
-        
+    print(f"Simulation completed in {simulation_time:.2f} seconds")        
 
     #theta, X = filter_bottom_99(theta, X)
     #print(f"After filtering, theta shape: {theta.shape}, X shape: {X.shape}")
