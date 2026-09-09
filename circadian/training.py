@@ -62,11 +62,11 @@ def main(args):
     
     # Sample theta from the prior
     theta = priors.sample((args.num_training,))
-    print(theta.type())
+    theta = theta.float()   # or theta.to(torch.float32)
+    X = X.float()            # or X.to(torch.float32)
 
     # Run the simulator
     X = simulators_circadian(theta, device = device)
-    print(X.type())
     # Create inference object
     if args.method == "FMPE":
         inference = FMPE(prior=priors)
@@ -115,7 +115,6 @@ def main(args):
         
     print(f"Saved inference object and elapsed time to '{output_file_path}'.")
 
-
 def get_args():
     # Create an argument parser
     parser = argparse.ArgumentParser(description="Run simulations and inference.")
@@ -125,25 +124,6 @@ def get_args():
     parser.add_argument('--method', type=str, default='NPE', help='Method type: NPE, FMPE, NPSE')
     return parser.parse_args()
 
-
 if __name__ == "__main__":
     args = get_args()  # Parse command-line arguments
     main(args)  # Pass the entire args object to the main function
-
-    #task_params = get_task_parameters(args.task)
-    #limits = Bounds(args.task)
-    #x0_list = observation_lists(args.task)
-    #gpu_ind = True if torch.cuda.is_available() else False
-
-    #for i in range(len(x0_list.tolist())):
-    #    create_c2st_job_script(task = args.task, 
-    #                           num_training = args.num_training, 
-    #                           measure = "c2st", 
-    #                           x0_ind = i, 
-    #                           seed = args.seed, 
-    #                           post_n_samples =10_000, 
-    #                           cond_den = args.cond_den,
-    #                           method = args.method, 
-    #                           use_gpu = gpu_ind,
-    #                           embed = False)
-        
