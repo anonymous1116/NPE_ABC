@@ -19,7 +19,10 @@ def main(args):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     # Initialize the Priors and Simulators classes
-    priors = BoxUniform(low = torch.ones(9)*1e-6, high = torch.tensor([0.5, 3.5, 0.6, 0.5, 0.9, 0.8, 1.0, 9.0, 20.0]))
+    priors = BoxUniform(
+        low=torch.tensor([1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-2, 1e-2]),  # k1..k7 stay tiny-safe, Ka/Kb raised
+        high=torch.tensor([0.5, 3.5, 0.6, 0.5, 0.9, 0.8, 1.0, 9.0, 20.0]),
+    )
     
     # Sample theta from the prior
     theta = priors.sample((args.num_training,))

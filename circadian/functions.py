@@ -34,8 +34,8 @@ def simulators_circadian(theta, device = "cpu", max_ODEtime = 500, T_field = 66)
         y0,
         t_eval,
         method="dopri5",   # Dormand-Prince, same family as R's ode45
-        rtol=1e-10,
-        atol=1e-10,
+        rtol=1e-6,
+        atol=1e-6,
     )
     # sol shape: (time, batch, 3)  ->  matches deSolve output per-batch-item if you index sol[:, i, :]
 
