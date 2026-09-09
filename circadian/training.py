@@ -8,8 +8,9 @@ import argparse
 import time
 from torchdiffeq import odeint
 from functions import  ode_model, make_fourier_design, y_to_lambda_batch
+from sbi.utils import BoxUniform
+
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
-from simulator import Priors, observation_lists, Bounds
 from utils.evaluate import create_c2st_job_script
 
 def simulators_circadian(theta, batch_size = 10_000, device = "cpu", max_ODEtime = 500, T_field = 66):
@@ -49,8 +50,8 @@ def main(args):
     torch.manual_seed(args.seed)
 
     # Initialize the Priors and Simulators classes
-    priors = Priors("circadian")
-
+    priors = BoxUniform(low = torch.ones(9)*1e-6, high = torch.tensor([0.5, 3.5, 0.6, 0.5, 0.9, 0.8, 1.0, 9.0, 20.0]))
+    
     # Sample theta from the prior
     theta = priors.sample((args.num_training,))
 
