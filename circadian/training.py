@@ -65,7 +65,7 @@ def main(args):
     elif args.method == "NPSE_vp":
         inference = NPSE(prior = priors, sde_type="vp")
     else:
-        inference = NPE(prior=priors, density_estimator=args.cond_den)
+        inference = NPE(prior=priors, density_estimator="nsf")
     inference = inference.append_simulations(theta, X)
 
     # Train the density estimator and build the posterior
@@ -79,11 +79,8 @@ def main(args):
     print(f"Training with {args.cond_den}")
 
     # Define the output directory
-    if args.method in ["FMPE", "NPSE", "NPSE_vp"]:
-        output_dir = f"../depot_hyun/hyun/NPE_ABC/{args.method}_nets/{args.task}/J_{int(args.num_training/1000)}K"
-    else:    
-        output_dir = f"../depot_hyun/hyun/NPE_ABC/nets/{args.task}/J_{int(args.num_training/1000)}K"
-
+    output_dir = f"nets_depot/{args.method}/{args.task}/J_{int(args.num_training/1000)}K"
+    
     # Create the directory if it doesn't exist
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -93,10 +90,7 @@ def main(args):
 
     # Save the inference object using pickle in the specified directory
     # Save the inference object and elapsed time using pickle in the specified directory
-    if args.method in ["FMPE", "NPSE", "NPSE_vp"]:
-        output_file_path = os.path.join(output_dir, f"{args.task}_{args.seed}.pkl")
-    else:
-        output_file_path = os.path.join(output_dir, f"{args.task}_{args.seed}_{args.cond_den}.pkl")
+    output_file_path = os.path.join(output_dir, f"{args.task}_{args.seed}.pkl")
     
     if args.method in ["NPSE", "NPSE_vp"]:
         torch.save({
@@ -129,19 +123,19 @@ if __name__ == "__main__":
     main(args)  # Pass the entire args object to the main function
 
     #task_params = get_task_parameters(args.task)
-    limits = Bounds(args.task)
-    x0_list = observation_lists(args.task)
-    gpu_ind = True if torch.cuda.is_available() else False
+    #limits = Bounds(args.task)
+    #x0_list = observation_lists(args.task)
+    #gpu_ind = True if torch.cuda.is_available() else False
 
-    for i in range(len(x0_list.tolist())):
-        create_c2st_job_script(task = args.task, 
-                               num_training = args.num_training, 
-                               measure = "c2st", 
-                               x0_ind = i, 
-                               seed = args.seed, 
-                               post_n_samples =10_000, 
-                               cond_den = args.cond_den,
-                               method = args.method, 
-                               use_gpu = gpu_ind,
-                               embed = False)
+    #for i in range(len(x0_list.tolist())):
+    #    create_c2st_job_script(task = args.task, 
+    #                           num_training = args.num_training, 
+    #                           measure = "c2st", 
+    #                           x0_ind = i, 
+    #                           seed = args.seed, 
+    #                           post_n_samples =10_000, 
+    #                           cond_den = args.cond_den,
+    #                           method = args.method, 
+    #                           use_gpu = gpu_ind,
+    #                           embed = False)
         
