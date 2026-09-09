@@ -90,7 +90,7 @@ def main(args):
     print(f"Training completed in {elapsed_time:.2f} seconds")
     
     # Define the output directory
-    output_dir = f"nets_depot/{args.method}/{args.task}/J_{int(args.num_training/1000)}K"
+    output_dir = f"circadian/nets_depot/{args.method}/{args.task}/J_{int(args.num_training/1000)}K"
     
     # Create the directory if it doesn't exist
     if not os.path.exists(output_dir):
