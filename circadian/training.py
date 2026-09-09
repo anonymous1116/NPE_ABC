@@ -7,50 +7,11 @@ import os
 import argparse
 import time
 from torchdiffeq import odeint
-from functions import  ode_model, make_fourier_design, y_to_lambda_batch
+from functions import  simulators_circadian
 from sbi.utils import BoxUniform
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 #from utils.evaluate import create_c2st_job_script
-
-def simulators_circadian(theta, device = "cpu", max_ODEtime = 500, T_field = 66):
-    """
-    Simulates the circadian model for a batch of parameter sets theta.
-    Args:
-        theta: (batch, 12) tensor of parameters
-    """
-
-    # --- Settings ---
-    M_obs_time = np.arange(max_ODEtime - T_field, max_ODEtime)  # (max_ODEtime-T_field+1):max_ODEtime
-
-    # --- Initial conditions, replicated per batch item ---
-    batch_size = theta.size(0)
-    y0 = torch.zeros((batch_size, 3), dtype=torch.float64, device=device)  # M, P, Pp all start at 0
-
-    # --- Time points ---
-    t_eval = torch.arange(1, max_ODEtime + 1, dtype=torch.float64, device=device)
-
-    # --- Solve all trajectories at once ---
-    # odeint's func signature is func(t, y) -> dy/dt; wrap theta_batch via closure
-
-    theta = torch.column_stack([torch.ones(batch_size, device = device) * 24.44, 
-                                theta, 
-                                torch.ones(batch_size, device = device) * 8.0, 
-                                torch.ones(batch_size, device = device) * 4.0])  
-    
-    sol = odeint(
-        lambda t, y: ode_model(t, y, theta),
-        y0,
-        t_eval,
-        method="dopri5",   # Dormand-Prince, same family as R's ode45
-        rtol=1e-10,
-        atol=1e-10,
-    )
-    # sol shape: (time, batch, 3)  ->  matches deSolve output per-batch-item if you index sol[:, i, :]
-
-    ModelRun = sol.permute(1, 0, 2)  # (batch, time, 3) if you prefer batch-first
-    M_batch = ModelRun[:, M_obs_time, 0]          # (batch, T_y), the M trajectories only
-    return y_to_lambda_batch(M_batch, deg=15).cpu()  # (batch, n_freqs), the S_sq per frequency
 
 def main(args):
     # Set the random seed
