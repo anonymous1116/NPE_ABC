@@ -11,7 +11,7 @@ from functions import  ode_model, make_fourier_design, y_to_lambda_batch
 from sbi.utils import BoxUniform
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
-from utils.evaluate import create_c2st_job_script
+#from utils.evaluate import create_c2st_job_script
 
 def simulators_circadian(theta, batch_size = 10_000, device = "cpu", max_ODEtime = 500, T_field = 66):
     """
