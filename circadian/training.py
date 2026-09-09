@@ -50,11 +50,12 @@ def simulators_circadian(theta, device = "cpu", max_ODEtime = 500, T_field = 66)
 
     ModelRun = sol.permute(1, 0, 2)  # (batch, time, 3) if you prefer batch-first
     M_batch = ModelRun[:, M_obs_time, 0]          # (batch, T_y), the M trajectories only
-    return y_to_lambda_batch(M_batch, deg=15)  # (batch, n_freqs), the S_sq per frequency
+    return y_to_lambda_batch(M_batch, deg=15).cpu()  # (batch, n_freqs), the S_sq per frequency
 
 def main(args):
     # Set the random seed
     torch.manual_seed(args.seed)
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     # Initialize the Priors and Simulators classes
     priors = BoxUniform(low = torch.ones(9)*1e-6, high = torch.tensor([0.5, 3.5, 0.6, 0.5, 0.9, 0.8, 1.0, 9.0, 20.0]))
@@ -63,7 +64,7 @@ def main(args):
     theta = priors.sample((args.num_training,))
 
     # Run the simulator
-    X = simulators_circadian(theta)
+    X = simulators_circadian(theta, device = device)
     # Create inference object
     if args.method == "FMPE":
         inference = FMPE(prior=priors)
