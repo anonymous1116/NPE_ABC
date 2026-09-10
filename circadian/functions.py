@@ -4,45 +4,48 @@ import numpy as np
 from torchdiffeq import odeint
 
 
-def simulators_circadian(theta, device = "cpu", max_ODEtime = 500, T_field = 66):
+def simulators_circadian(theta, device="cpu", max_ODEtime=500, T_field=66, _depth=0):
     """
     Simulates the circadian model for a batch of parameter sets theta.
-    Args:
-        theta: (batch, 12) tensor of parameters
+    On underflow (stiff/extreme parameter draw), recursively bisects the
+    batch and retries each half, so only the truly problematic rows are lost.
     """
-
-    # --- Settings ---
-    M_obs_time = np.arange(max_ODEtime - T_field, max_ODEtime)  # (max_ODEtime-T_field+1):max_ODEtime
-
-    # --- Initial conditions, replicated per batch item ---
+    M_obs_time = np.arange(max_ODEtime - T_field, max_ODEtime)
     batch_size = theta.size(0)
-    y0 = torch.zeros((batch_size, 3), dtype=torch.float32, device=device)  # M, P, Pp all start at 0
 
-    # --- Time points ---
-    t_eval = torch.arange(1, max_ODEtime + 1, dtype=torch.float32, device=device)
+    if batch_size == 0:
+        return torch.empty((0, 7), device=device)  # adjust 7 to your n_freqs
 
-    # --- Solve all trajectories at once ---
-    # odeint's func signature is func(t, y) -> dy/dt; wrap theta_batch via closure
+    y0 = torch.zeros((batch_size, 3), dtype=torch.float64, device=device)
+    t_eval = torch.arange(1, max_ODEtime + 1, dtype=torch.float64, device=device)
 
-    theta = torch.column_stack([torch.ones(batch_size, device = device) * 24.44, 
-                                theta, 
-                                torch.ones(batch_size, device = device) * 8.0, 
-                                torch.ones(batch_size, device = device) * 4.0])  
-    
-    sol = odeint(
-        lambda t, y: ode_model(t, y, theta),
-        y0,
-        t_eval,
-        method="dopri5",   # Dormand-Prince, same family as R's ode45
-        rtol=1e-6,
-        atol=1e-6,
-    )
-    # sol shape: (time, batch, 3)  ->  matches deSolve output per-batch-item if you index sol[:, i, :]
+    theta_full = torch.column_stack([
+        torch.ones(batch_size, device=device) * 24.44,
+        theta,
+        torch.ones(batch_size, device=device) * 8.0,
+        torch.ones(batch_size, device=device) * 4.0,
+    ])
 
-    ModelRun = sol.permute(1, 0, 2)  # (batch, time, 3) if you prefer batch-first
-    M_batch = ModelRun[:, M_obs_time, 0]          # (batch, T_y), the M trajectories only
-    return y_to_lambda_batch(M_batch, deg=15).cpu()  # (batch, n_freqs), the S_sq per frequency
+    try:
+        sol = odeint(
+            lambda t, y: ode_model(t, y, theta_full),
+            y0, t_eval, method="dopri5", rtol=1e-6, atol=1e-6,
+        )
+    except AssertionError:
+        if batch_size == 1:
+            # A single row is the culprit — give up on it, return NaNs so caller can filter it out
+            print(f"[depth={_depth}] Dropping 1 unsolvable sample.", flush=True)
+            return torch.full((1, 7), float("nan"), device=device)  # adjust 7 to n_freqs
 
+        # Bisect the batch and retry each half independently
+        mid = batch_size // 2
+        left = simulators_circadian(theta[:mid], device, max_ODEtime, T_field, _depth + 1)
+        right = simulators_circadian(theta[mid:], device, max_ODEtime, T_field, _depth + 1)
+        return torch.cat([left, right], dim=0)
+
+    ModelRun = sol.permute(1, 0, 2)
+    M_batch = ModelRun[:, M_obs_time, 0]
+    return y_to_lambda_batch(M_batch, deg=15).cpu()
 
 def ode_model(t, y, theta):
     M, P, Pp = y[:, 0], y[:, 1], y[:, 2]
