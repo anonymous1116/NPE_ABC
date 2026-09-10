@@ -8,6 +8,8 @@
 #SBATCH --time=09:30:00
 #SBATCH --output=circadian/output_log/%j.out            # %x = job name, %j = job ID
 #SBATCH --error=circadian/output_log/%j.err
+#SBATCH --array=1-2               # Create a job array with indices from 1 to 10
+
 
 mkdir -p circadian/output_log
 
@@ -17,5 +19,8 @@ module load miniconda3/24.1.2-py310
 source activate BayesCalib
 export LD_LIBRARY_PATH=$CONDA_PREFIX/lib:$LD_LIBRARY_PATH
 
+seeds=$((SLURM_ARRAY_TASK_ID / 10 + 1))
+
+
 cd $SLURM_SUBMIT_DIR                  # run from wherever you submitted the job
-python circadian/training.py --task "circadian" --method NPE --num_training 100000 --seed 2
+python circadian/training.py --task "circadian" --method NPE --num_training 100000 --seed $seeds
