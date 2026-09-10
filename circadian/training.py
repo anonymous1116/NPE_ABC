@@ -71,6 +71,9 @@ def main(args):
         end = (i + 1) * batch_size if (i + 1) * batch_size < args.num_training * iter_num else args.num_training * iter_num
         nums = end-start
 
+        if nums ==0:
+            break
+
         Y_chunk = priors.sample((nums,))
         Y_chunk = Y_chunk.float()   # or Y_chunk.to(torch.float32)
         Y_chunk = Y_chunk.to(device)
