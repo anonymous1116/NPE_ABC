@@ -89,6 +89,9 @@ def main(args):
     X_abc = torch.cat(X_abc)
     Y_abc = torch.cat(Y_abc)    
 
+    X_abc = X_abc.to(torch.float32)
+    Y_abc = Y_abc.to(torch.float32)
+
     end_time = time.time()
     simulation_time = end_time - start_time
     print(f"Simulation completed in {simulation_time:.2f} seconds")        

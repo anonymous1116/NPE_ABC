@@ -16,8 +16,8 @@ def simulators_circadian(theta, device="cpu", max_ODEtime=500, T_field=66, _dept
     if batch_size == 0:
         return torch.empty((0, 7), device=device)  # adjust 7 to your n_freqs
 
-    y0 = torch.zeros((batch_size, 3), dtype=torch.float64, device=device)
-    t_eval = torch.arange(1, max_ODEtime + 1, dtype=torch.float64, device=device)
+    y0 = torch.zeros((batch_size, 3), dtype=torch.float32, device=device)
+    t_eval = torch.arange(1, max_ODEtime + 1, dtype=torch.float32, device=device)
 
     theta_full = torch.column_stack([
         torch.ones(batch_size, device=device) * 24.44,
