@@ -122,10 +122,8 @@ task_benchmark = ["two_moons",
                   "my_five_twomoons_err90",
                   "mog_2_nabc", "mog_5_nabc", "mog_10_nabc",
                   "my_fifty_twomoons", 
-                  "table_dp_22", "table_dp_33", "table_dp_44", "table_dp_55", "table_dp_66", "table_dp_77"]
-
-for j in range(10):
-    task_benchmark.append(f"fold{(j+1)}")
+                  "table_dp_22", "table_dp_33", "table_dp_44", "table_dp_55", "table_dp_66", "table_dp_77",
+                  "fold2", "fold3", "fold4", "fold5", "fold6", "fold7", "fold8", "fold9", "fold10"]
 
     
 class true_Posteriors:
