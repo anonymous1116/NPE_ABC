@@ -49,6 +49,10 @@ def Bounds(task_name: str):
         return [[0,1]] * 35
     elif task_name in ["table_dp_77"]:
             return [[0,1]] * 48
+    elif task_name.startswith("fold"):
+        fold_num = int(task_name.replace("fold", ""))
+        # use fold_num however you need, e.g.:
+        return [[-3, 3]] * fold_num
     elif task_name in ["circadian"]:
         eps = 1e-6
         return torch.column_stack([eps*torch.ones(9), torch.tensor([0.5, 3.5, 0.6, 0.5, 0.9, 0.8, 1.0, 9.0, 20.0])]).tolist()
@@ -98,8 +102,13 @@ def Priors(task_name: str):
         return Dirichlet(torch.ones(36, dtype=torch.float32))
     elif task_name in ["table_dp_77"]:
         return Dirichlet(torch.ones(49, dtype=torch.float32))
+    elif task_name.startswith("fold"):
+        fold_num = int(task_name.replace("fold", ""))
+        # use fold_num however you need, e.g.:
+        return BoxUniform(low = -3*torch.ones(fold_num ), high = 3*torch.ones(fold_num))
     elif task_name in ["circadian"]:
         return BoxUniform(low = torch.ones(9)*1e-6, high = torch.tensor([0.5, 3.5, 0.6, 0.5, 0.9, 0.8, 1.0, 9.0, 20.0]))
+    
     else:
         raise ValueError(f"Unknown task name for prior: {task_name}")
 
@@ -114,6 +123,10 @@ task_benchmark = ["two_moons",
                   "mog_2_nabc", "mog_5_nabc", "mog_10_nabc",
                   "my_fifty_twomoons", 
                   "table_dp_22", "table_dp_33", "table_dp_44", "table_dp_55", "table_dp_66", "table_dp_77"]
+
+for j in range(10):
+    task_benchmark.append(f"fold{(j+1)}")
+
     
 class true_Posteriors:
     def __init__(self, task):
@@ -159,10 +172,13 @@ class true_Posteriors:
         elif self.task in ["table_dp_55"]:
             return self.table_dp_55(kwargs.get('j', 0))
         elif self.task in ["table_dp_66"]:
-                    return self.table_dp_66(kwargs.get('j', 0))
+            return self.table_dp_66(kwargs.get('j', 0))
         elif self.task in ["table_dp_77"]:
-                    return self.table_dp_77(kwargs.get('j', 0))
-        
+            return self.table_dp_77(kwargs.get('j', 0))
+        elif self.task.startswith("fold"):
+            fold_num = int(self.task.replace("fold", ""))
+            return self.fold(fold_num, kwargs.get('j', 0))
+
         elif self.task in ["my_twomoons"]:
             return self.my_twomoons(obs, n_samples, bounds)
         elif self.task in ["my_five_twomoons", "my_five_twomoons_err2", "my_five_twomoons_err5", "my_five_twomoons_err10"]:    
@@ -316,6 +332,10 @@ class true_Posteriors:
         post_sample = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/table_dp_77_post_{j}.pt")    
         return post_sample[:, :48]  # Return only the first twenty-four columns of the posterior samples
 
+    def fold(self, fold_num, j):
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        post_sample = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/fold{fold_num}_post_{j}.pt")    
+        return post_sample[:, :fold_num]  # Return only the first 'fold_num' columns of the posterior samples
 
 
     def slcp(self, j):
@@ -423,6 +443,11 @@ def observation_lists(task_name:str):
         obs = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{task_name}_obs.pt")    
         return obs 
     
+    elif task_name.startswith("fold"):
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        obs = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{task_name}_obs.pt")    
+        return obs
+
     elif task_name in ["my_ten_twomoons", "mog_10"]:
         current_dir = os.path.dirname(os.path.abspath(__file__))
         obs = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{task_name}_obs.pt")    
@@ -1233,6 +1258,8 @@ def simulator_rr_cont_table_7x7(
     return torch.cat(out, dim=0).to(torch.float32)
 
 
+
+
 def Simulators(task_name: str):
     task_name = task_name.lower()
     if task_name in ["bernoulli_glm2"]:
@@ -1352,3 +1379,30 @@ def my_twomoons_posterior(obs = torch.tensor([0.0,0.0]), n_samples = 100):
         theta[i, 0] = c * (q[0] - q[1])
         theta[i, 1] = c * (q[0] + q[1])
     return theta
+
+
+
+FOLD_LO, FOLD_HI = -3.0, 3.0
+FOLD_SIGMA = 0.2
+
+def g_fold(theta):
+    return theta**3 - 3.0 * theta
+
+def fold_prior_sample(n, device="cpu", generator=None):
+    u = torch.rand(n, device=device, generator=generator)
+    return FOLD_LO + (FOLD_HI - FOLD_LO) * u
+
+def fold_simulate(theta, generator=None):
+    return g_fold(theta) + FOLD_SIGMA * torch.randn(
+        theta.shape, device=theta.device, generator=generator)
+
+def fold_log_likelihood(s, theta):
+    return torch.distributions.Normal(g_fold(theta), FOLD_SIGMA).log_prob(s)
+
+
+def fold_true_posterior(s_obs, n_grid=16000, device="cpu"):
+    grid = torch.linspace(FOLD_LO, FOLD_HI, n_grid, device=device)
+    logp = fold_log_likelihood(torch.as_tensor(s_obs, device=device), grid)
+    p = torch.softmax(logp, dim=0)
+    return grid, p / (grid[1] - grid[0])
+
