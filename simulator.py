@@ -1308,7 +1308,9 @@ def Simulators(task_name: str):
         def cont_table_dp_generator(theta):
             return simulator_rr_cont_table_7x7(theta, p = 0.8, n = 4526, batch_size = 100_000)
         return cont_table_dp_generator
-    
+
+    elif task_name.startswith("fold"):
+        return fold_simulate
 
     elif task_name in ["my_ten_twomoons"]:
         return simulator_my_ten_twomoons
