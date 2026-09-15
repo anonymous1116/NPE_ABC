@@ -204,6 +204,7 @@ def main(args):
         torch.manual_seed(2826)
         x0_list = [[5.0]]*fold_num
         x0_list = torch.tensor(x0_list, dtype = torch.float32)
+        print(x0_list)
         torch.save(x0_list, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{args.task}_obs.pt")           
         from simulator import fold_posterior_sample_rejection
         post = []
