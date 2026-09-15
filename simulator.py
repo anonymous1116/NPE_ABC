@@ -1382,8 +1382,6 @@ def my_twomoons_posterior(obs = torch.tensor([0.0,0.0]), n_samples = 100):
         theta[i, 1] = c * (q[0] + q[1])
     return theta
 
-
-
 FOLD_LO, FOLD_HI = -3.0, 3.0
 FOLD_SIGMA = 0.2
 
