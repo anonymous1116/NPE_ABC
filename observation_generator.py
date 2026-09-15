@@ -205,10 +205,10 @@ def main(args):
         x0_list = [[5.0]]*fold_num
         x0_list = torch.tensor(x0_list, dtype = torch.float32)
         torch.save(x0_list, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{args.task}_obs.pt")           
-        from simulator import fold_true_posterior
+        from simulator import fold_posterior_sample_rejection
         post = []
         for j in range(fold_num):
-            post_onedim = fold_true_posterior([[5.0]], n =10_000)
+            post_onedim = fold_posterior_sample_rejection(5.0, n =10_000)
             post.append(post_onedim)
         post_sample = torch.cat(post, dim = 1)
         print(post_sample.size())

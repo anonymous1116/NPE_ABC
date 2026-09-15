@@ -1406,3 +1406,17 @@ def fold_true_posterior(s_obs, n_grid=16000, device="cpu"):
     p = torch.softmax(logp, dim=0)
     return grid, p / (grid[1] - grid[0])
 
+
+def fold_posterior_sample_rejection(s_obs, n, device="cpu", generator=None):
+    s_obs = torch.as_tensor(s_obs, device=device)
+    # mode is at theta^2 = s_obs (if s_obs > 0), else at theta = 0
+    theta_mode = torch.sqrt(s_obs.clamp_min(0.0))
+    log_M = fold_log_likelihood(s_obs, theta_mode)
+    out = []
+    while sum(x.numel() for x in out) < n:
+        prop = fold_prior_sample(4 * n, device=device, generator=generator)
+        logr = fold_log_likelihood(s_obs, prop) - log_M
+        keep = torch.rand(prop.shape, device=device, generator=generator).log() < logr
+        out.append(prop[keep])
+    return torch.cat(out)[:n]
+
