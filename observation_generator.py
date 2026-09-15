@@ -211,6 +211,7 @@ def main(args):
             post_onedim = fold_true_posterior([[5.0]], n =10_000)
             post.append(post_onedim)
         post_sample = torch.cat(post, dim = 1)
+        print(post_sample.size())
         torch.save(post_sample, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{args.task}_post_1.pt")    
     else:
         print("Task not recognized.")
