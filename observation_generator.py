@@ -194,7 +194,24 @@ def main(args):
             idx = torch.randperm(n_filtered)[:n_select]
 
         X_selected = X_filtered[idx]
-        torch.save(X_selected, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{args.task}_obs.pt")  
+        torch.save(X_selected, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{args.task}_obs.pt") 
+
+
+    elif args.task.startswith("fold"):
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        fold_num = int(args.task.replace("fold", ""))
+        random.seed(2826)
+        torch.manual_seed(2826)
+        x0_list = [[5.0]]*fold_num
+        x0_list = torch.tensor(x0_list, dtype = torch.float32)
+        torch.save(x0_list, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{args.task}_obs.pt")           
+        from simulator import fold_true_posterior
+        post = []
+        for j in range(fold_num):
+            post_onedim = fold_true_posterior([[5.0]], n =10_000)
+            post.append(post_onedim)
+        post_sample = torch.cat(post, dim = 1)
+        torch.save(post_sample, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{args.task}_post_1.pt")    
     else:
         print("Task not recognized.")
 
