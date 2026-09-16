@@ -23,4 +23,4 @@ seeds=$((SLURM_ARRAY_TASK_ID / 10 + 1))
 
 
 cd $SLURM_SUBMIT_DIR                  # run from wherever you submitted the job
-python circadian/training.py --task "circadian" --method NPE --num_training 100000 --seed $seeds
+python circadian/training.py --task "circadian" --method NPE --num_training 500000 --seed $seeds
