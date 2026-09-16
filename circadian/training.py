@@ -94,7 +94,7 @@ def main(args):
 
     end_time = time.time()
     simulation_time = end_time - start_time
-    print(f"Simulation completed in {simulation_time:.2f} seconds")        
+    print(f"Simulation completed in {simulation_time/60/60:.2f} hours")        
 
     #theta, X = filter_bottom_99(theta, X)
     #print(f"After filtering, theta shape: {theta.shape}, X shape: {X.shape}")
@@ -136,7 +136,7 @@ def main(args):
     end_time = time.time()  # End timer
 
     elapsed_time = end_time - start_time  # Calculate elapsed time
-    print(f"Training completed in {elapsed_time:.2f} seconds")
+    print(f"Training completed in {elapsed_time/60/60:.2f} hours")
     
     # Define the output directory
     output_dir = f"circadian/nets_depot/{args.method}/{args.task}/J_{int(args.num_training/1000)}K"

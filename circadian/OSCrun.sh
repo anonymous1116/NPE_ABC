@@ -5,10 +5,10 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=8
 #SBATCH --gpus-per-node=1
-#SBATCH --time=09:30:00
+#SBATCH --time=15:30:00
 #SBATCH --output=circadian/output_log/%j.out            # %x = job name, %j = job ID
 #SBATCH --error=circadian/output_log/%j.err
-#SBATCH --array=1-2               # Create a job array with indices from 1 to 10
+#SBATCH --array=2               # Create a job array with indices from 1 to 10
 
 
 mkdir -p circadian/output_log
