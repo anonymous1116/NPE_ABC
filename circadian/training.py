@@ -100,11 +100,17 @@ def main(args):
     #print(f"After filtering, theta shape: {theta.shape}, X shape: {X.shape}")
 
     X_np = X_abc.cpu().numpy()  # move off GPU, convert to numpy for plotting
+    Y_np = Y_abc.cpu().numpy()  # move off GPU, convert to numpy for plotting
     n_freqs = X_np.shape[1]
+    n_freqs_Y = Y_np.shape[1]
 
     fig, axes = plt.subplots(1, n_freqs, figsize=(4 * n_freqs, 4))
+    fig2, axes2 = plt.subplots(1, n_freqs_Y, figsize=(4 * n_freqs_Y, 4))
+            
     if n_freqs == 1:
         axes = [axes]  # keep iterable if there's only one column
+    if n_freqs_Y == 1:
+        axes2 = [axes2]  # keep iterable if there's only one column
 
     for i, ax in enumerate(axes):
         ax.hist(X_np[:, i], bins=50)
@@ -115,6 +121,18 @@ def main(args):
     plt.tight_layout()
     plt.savefig("circadian/X_distributions.png", dpi=150)
     plt.show()
+
+    for i, ax in enumerate(axes2):
+        ax.hist(Y_np[:, i], bins=50)
+        ax.set_title(f"Y[{i}] (parameter {i+1})")
+        ax.set_xlabel("value")
+        ax.set_ylabel("count")
+
+    plt.tight_layout()
+    plt.savefig("circadian/Y_distributions.png", dpi=150)
+    plt.show()
+
+
 
     print(torch.max(X_abc, dim=0).values, torch.min(X_abc, dim=0).values)
     
