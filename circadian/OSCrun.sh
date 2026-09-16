@@ -8,7 +8,7 @@
 #SBATCH --time=15:30:00
 #SBATCH --output=circadian/output_log/%j.out            # %x = job name, %j = job ID
 #SBATCH --error=circadian/output_log/%j.err
-#SBATCH --array=1               # Create a job array with indices from 1 to 10
+#SBATCH --array=1-2               # Create a job array with indices from 1 to 10
 
 
 mkdir -p circadian/output_log
@@ -22,4 +22,4 @@ export LD_LIBRARY_PATH=$CONDA_PREFIX/lib:$LD_LIBRARY_PATH
 seeds=$SLURM_ARRAY_TASK_ID
 
 cd $SLURM_SUBMIT_DIR                  # run from wherever you submitted the job
-python circadian/training.py --task "circadian" --method NPE --num_training 500000 --seed $seeds
+python circadian/training.py --task "circadian" --method NPE --num_training 500000 --seed $seeds --x0_ind 1
