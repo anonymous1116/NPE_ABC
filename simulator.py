@@ -1383,7 +1383,7 @@ def my_twomoons_posterior(obs = torch.tensor([0.0,0.0]), n_samples = 100):
 
 
 FOLD_LO, FOLD_HI = -3.0, 3.0
-FOLD_SIGMA = 0.2
+FOLD_SIGMA = 2.0
 
 def g_fold(theta):
     return theta**3 - 3.0 * theta
