@@ -222,6 +222,7 @@ def main(args):
                     x0 = torch.tensor([[3.0]])
                     ind = ABC_rej2(x0,X_cal, tol = 1e-4,device="cpu")
                     X_cal, theta_cal = X_cal[ind], theta_cal[ind]
+                    theta_cal = theta_cal[:10000]
                     post.append(theta_cal)
                 post = torch.column_stack(post)
                 print(post.size())
