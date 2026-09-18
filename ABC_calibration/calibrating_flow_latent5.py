@@ -197,6 +197,8 @@ def main(args):
         new_theta_ABC, _ = transform.inverse(tmp, context = embed(x0.expand((tmp.size(0),x0.size(1))).to(device)))   
     new_theta_WABC = new_theta_WABC.cpu()
     new_theta_ABC = new_theta_ABC.cpu()
+    torch.set_default_device("cpu")
+    
     if bounds is not None:
         new_theta_WABC = torch.clamp(new_theta_WABC, min = torch.tensor(bounds)[:,0], max = torch.tensor(bounds)[:,1])
         tol_bound = 10000/new_theta_WABC.size(0)
