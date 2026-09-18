@@ -42,7 +42,6 @@ def WABC_rejection(x0, X_cal, tol, density_estimator, theta_dim, device, num_sam
     torch.cuda.empty_cache()
     return wt1.cpu()
 
-    
 
 def main(args):
     seed = args.seed
