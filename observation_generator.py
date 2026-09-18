@@ -202,17 +202,43 @@ def main(args):
         fold_num = int(args.task.replace("fold", ""))
         random.seed(2826)
         torch.manual_seed(2826)
-        x0_list = [[5.0]*fold_num]
-        x0_list = torch.tensor(x0_list, dtype = torch.float32)
-        torch.save(x0_list, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{args.task}_obs.pt")           
-        from simulator import fold_posterior_sample_rejection
-        post = []
-        for j in range(fold_num):
-            post_onedim = fold_posterior_sample_rejection(5.0, n =10_000)
-            post.append(post_onedim)
-        post = torch.column_stack(post)
-        print(post.size())
-        torch.save(post, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{args.task}_post_1.pt")    
+        
+        if fold_num == None:
+            for j in range(2, 11):
+                x0_list = [[3.0]*j]
+                x0_list = torch.tensor(x0_list, dtype = torch.float32)
+                torch.save(x0_list, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/fold{j}_obs.pt")           
+                from help_functions import ABC_rej2
+                from simulator import fold_prior_sample, fold_simulate
+                post = []
+                for k in range(j):
+                    theta_cal = fold_prior_sample(100_000_000)
+                    X_cal = fold_simulate(theta_cal)
+                    X_cal = X_cal.reshape((X_cal.size(0),1))
+                    theta_cal = theta_cal.reshape((theta_cal.size(0),1))
+                    x0 = torch.tensor([[3.0]])
+                    ind = ABC_rej2(x0,X_cal, tol = 1e-4,device="cpu")
+                    X_cal, theta_cal = X_cal[ind], theta_cal[ind]
+                    post.append(theta_cal)
+                post = torch.column_stack(post)
+                print(post.size())
+                torch.save(post, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/fold{j}_post_1.pt")
+        else:
+            x0_list = [[3.0]*fold_num]
+            x0_list = torch.tensor(x0_list, dtype = torch.float32)
+            torch.save(x0_list, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{args.task}_obs.pt")           
+            post = []
+            for j in range(fold_num):
+                theta_cal = fold_prior_sample(100_000_000)
+                X_cal = fold_simulate(theta_cal)
+                X_cal = X_cal.reshape((X_cal.size(0),1))
+                theta_cal = theta_cal.reshape((theta_cal.size(0),1))
+                x0 = torch.tensor([[3.0]])
+                ind = ABC_rej2(x0,X_cal, tol = 1e-4,device="cpu")
+                X_cal, theta_cal = X_cal[ind], theta_cal[ind]
+                post.append(theta_cal)
+            post = torch.column_stack(post)
+            torch.save(post, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/fold{fold_num}_post_1.pt")    
     else:
         print("Task not recognized.")
 
