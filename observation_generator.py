@@ -239,7 +239,8 @@ def main(args):
                 theta_cal = theta_cal[:10000]
                 post.append(theta_cal)
             post = torch.column_stack(post)
-            torch.save(post, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/fold{fold_num}_post_1.pt")    
+            torch.save(post, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/fold{fold_num}_post_1.pt")
+            print(f"fold{fold_num} posteriors saved with shape: {post.size()}")
     else:
         print("Task not recognized.")
 
