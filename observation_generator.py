@@ -228,7 +228,7 @@ def main(args):
             x0_list = torch.tensor(x0_list, dtype = torch.float32)
             torch.save(x0_list, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{args.task}_obs.pt")           
             post = []
-            for j in range(fold_num):
+            for _ in range(fold_num):
                 theta_cal = fold_prior_sample(100_000_000)
                 X_cal = fold_simulate(theta_cal)
                 X_cal = X_cal.reshape((X_cal.size(0),1))
@@ -236,6 +236,7 @@ def main(args):
                 x0 = torch.tensor([[3.0]])
                 ind = ABC_rej2(x0,X_cal, tol = 1e-4,device="cpu")
                 X_cal, theta_cal = X_cal[ind], theta_cal[ind]
+                theta_cal = theta_cal[:10000]
                 post.append(theta_cal)
             post = torch.column_stack(post)
             torch.save(post, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/fold{fold_num}_post_1.pt")    
