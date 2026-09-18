@@ -205,13 +205,14 @@ def main(args):
         from help_functions import ABC_rej2
         from simulator import fold_prior_sample, fold_simulate
                         
-        if fold_num == None:
+        if fold_num == "_":
             for j in range(2, 11):
                 x0_list = [[3.0]*j]
                 x0_list = torch.tensor(x0_list, dtype = torch.float32)
                 torch.save(x0_list, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/fold{j}_obs.pt")           
                 post = []
                 for k in range(j):
+                    torch.manual_seed(2826+k)
                     theta_cal = fold_prior_sample(100_000_000)
                     X_cal = fold_simulate(theta_cal)
                     X_cal = X_cal.reshape((X_cal.size(0),1))
@@ -229,7 +230,8 @@ def main(args):
             x0_list = torch.tensor(x0_list, dtype = torch.float32)
             torch.save(x0_list, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{args.task}_obs.pt")           
             post = []
-            for _ in range(fold_num):
+            for k in range(fold_num):
+                torch.manual_seed(2826+k)
                 theta_cal = fold_prior_sample(100_000_000)
                 X_cal = fold_simulate(theta_cal)
                 X_cal = X_cal.reshape((X_cal.size(0),1))
