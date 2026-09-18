@@ -223,6 +223,7 @@ def main(args):
                 post = torch.column_stack(post)
                 print(post.size())
                 torch.save(post, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/fold{j}_post_1.pt")
+                print(f"fold{j} posteriors saved with shape: {post.size()}")
         else:
             x0_list = [[3.0]*fold_num]
             x0_list = torch.tensor(x0_list, dtype = torch.float32)
