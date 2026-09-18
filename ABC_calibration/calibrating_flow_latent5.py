@@ -207,7 +207,8 @@ def main(args):
         X_abc_WABC, Y_abc_WABC = X_abc[accepted_idx], Y_abc[accepted_idx]
         with torch.no_grad():
             tmp, _ =  transform.forward(Y_abc_WABC.to(device), context = embed(X_abc_WABC.to(device)) )
-            new_theta_WABC, _ = transform.inverse(tmp, context = embed(x0.expand((tmp.size(0),x0.size(1))).to(device)))    
+            new_theta_WABC, _ = transform.inverse(tmp, context = embed(x0.expand((tmp.size(0),x0.size(1))).to(device)))
+        new_theta_WABC = new_theta_WABC.cpu()    
         new_theta_WABC = torch.clamp(new_theta_WABC, min = torch.tensor(bounds)[:,0], max = torch.tensor(bounds)[:,1])
     
         new_theta_ABC = torch.clamp(new_theta_ABC, min = torch.tensor(bounds)[:,0], max = torch.tensor(bounds)[:,1])
@@ -217,7 +218,8 @@ def main(args):
         X_abc_ABC, Y_abc_ABC = X_abc[accepted_idx], Y_abc[accepted_idx]
         with torch.no_grad():
             tmp, _ =  transform.forward(Y_abc_ABC.to(device), context = embed(X_abc_ABC.to(device)) )
-            new_theta_ABC, _ = transform.inverse(tmp, context = embed(x0.expand((tmp.size(0),x0.size(1))).to(device)))    
+            new_theta_ABC, _ = transform.inverse(tmp, context = embed(x0.expand((tmp.size(0),x0.size(1))).to(device)))
+        new_theta_ABC = new_theta_ABC.cpu()   
         new_theta_ABC = torch.clamp(new_theta_ABC, min = torch.tensor(bounds)[:,0], max = torch.tensor(bounds)[:,1])
 
     new_theta_WABC = new_theta_WABC.cpu()
