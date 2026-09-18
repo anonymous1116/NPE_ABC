@@ -199,7 +199,9 @@ def main(args):
 
     elif args.task.startswith("fold"):
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        fold_num = int(args.task.replace("fold", ""))
+        tmp = args.task.replace("fold", "")
+        
+        fold_num = "_" if tmp == "" else int(tmp)
         random.seed(2826)
         torch.manual_seed(2826)
         from help_functions import ABC_rej2
