@@ -36,7 +36,6 @@ def filter_bottom_99(theta, X):
 
     return theta_filtered, X_filtered
 
-
 def main(args):
     # Set the random seed
     torch.manual_seed(args.seed)
@@ -66,7 +65,7 @@ def main(args):
 
     X_abc, Y_abc = [], []
     
-    for i in range(num_chunks + 1): 
+    for i in range(num_chunks + 1):
         start = i * batch_size
         end = (i + 1) * batch_size if (i + 1) * batch_size < args.num_training * iter_num else args.num_training * iter_num
         nums = end-start
@@ -94,45 +93,43 @@ def main(args):
 
     end_time = time.time()
     simulation_time = end_time - start_time
-    print(f"Simulation completed in {simulation_time/60/60:.2f} hours")        
 
-    #theta, X = filter_bottom_99(theta, X)
-    #print(f"After filtering, theta shape: {theta.shape}, X shape: {X.shape}")
+    print(f"Simulation completed in {simulation_time/60/60:.2f} hours", flush=True)
 
-    X_np = X_abc.cpu().numpy()  # move off GPU, convert to numpy for plotting
-    Y_np = Y_abc.cpu().numpy()  # move off GPU, convert to numpy for plotting
-    n_freqs = X_np.shape[1]
-    n_freqs_Y = Y_np.shape[1]
+    X_np = X_abc.cpu().numpy()
+    Y_np = Y_abc.cpu().numpy()
 
-    fig, axes = plt.subplots(1, n_freqs, figsize=(4 * n_freqs, 4))
-    fig2, axes2 = plt.subplots(1, n_freqs_Y, figsize=(4 * n_freqs_Y, 4))
-            
-    if n_freqs == 1:
-        axes = [axes]  # keep iterable if there's only one column
-    if n_freqs_Y == 1:
-        axes2 = [axes2]  # keep iterable if there's only one column
+    param_names = ["k1", "k2", "k3", "k4", "k5", "k6", "k7", "Ka", "Kb"]
 
-    for i, ax in enumerate(axes):
-        ax.hist(X_np[:, i], bins=50)
-        ax.set_title(f"S_sq[{i}] (frequency {i+1})")
-        ax.set_xlabel("value")
-        ax.set_ylabel("count")
+    def plot_distributions(data, labels, title_prefix, save_path):
+        n_cols = data.shape[1]
+        fig, axes = plt.subplots(1, n_cols, figsize=(4 * n_cols, 4))
+        if n_cols == 1:
+            axes = [axes]
 
-    plt.tight_layout()
-    plt.savefig("circadian/X_distributions.png", dpi=150)
-    plt.show()
+        for i, ax in enumerate(axes):
+            ax.hist(data[:, i], bins=50)
+            ax.set_title(f"{title_prefix}[{labels[i]}]")
+            ax.set_xlabel("value")
+            ax.set_ylabel("count")
 
-    for i, ax in enumerate(axes2):
-        ax.hist(Y_np[:, i], bins=50)
-        ax.set_title(f"Y[{i}] (parameter {i+1})")
-        ax.set_xlabel("value")
-        ax.set_ylabel("count")
+        plt.tight_layout()
+        plt.savefig(save_path, dpi=150)
+        plt.close(fig)  # free the figure instead of leaving it open in memory
 
-    plt.tight_layout()
-    plt.savefig("circadian/Y_distributions.png", dpi=150)
-    plt.show()
+    # Define the output directory
+    output_dir = f"circadian/nets_depot/{args.method}/{args.task}/J_{int(args.num_training/1000)}K"
+        
+    plot_distributions(
+        X_np, [f"freq {i+1}" for i in range(X_np.shape[1])],
+        "S_sq", f"{output_dir}/X_distributions_{args.seed}_{args.x0_ind}.png",
+    )
+    plot_distributions(
+        Y_np, param_names,
+        "theta", f"{output_dir}/Y_distributions_{args.seed}_{args.x0_ind}.png",
+    )
 
-
+    print(f"Final accepted sample count: {X_abc.shape[0]:,}", flush=True)
 
     print(torch.max(X_abc, dim=0).values, torch.min(X_abc, dim=0).values)
     
@@ -156,8 +153,6 @@ def main(args):
     elapsed_time = end_time - start_time  # Calculate elapsed time
     print(f"Training completed in {elapsed_time/60/60:.2f} hours")
     
-    # Define the output directory
-    output_dir = f"circadian/nets_depot/{args.method}/{args.task}/J_{int(args.num_training/1000)}K"
     
     # Create the directory if it doesn't exist
     if not os.path.exists(output_dir):
