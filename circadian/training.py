@@ -122,11 +122,11 @@ def main(args):
         
     plot_distributions(
         X_np, [f"freq {i+1}" for i in range(X_np.shape[1])],
-        "S_sq", f"{output_dir}/X_distributions_{args.seed}_{args.x0_ind}.png",
+        "S_sq", f"{output_dir}/ABC_X_distributions_{args.seed}_{args.x0_ind}.png",
     )
     plot_distributions(
         Y_np, param_names,
-        "theta", f"{output_dir}/Y_distributions_{args.seed}_{args.x0_ind}.png",
+        "theta", f"{output_dir}/ABC_theta_distributions_{args.seed}_{args.x0_ind}.png",
     )
 
     print(f"Final accepted sample count: {X_abc.shape[0]:,}", flush=True)
