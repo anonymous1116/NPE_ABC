@@ -10,7 +10,6 @@
 #SBATCH --error=circadian/output_log/%j.err
 #SBATCH --array=1-2               # Create a job array with indices from 1 to 10
 
-
 mkdir -p circadian/output_log
 
 SLURM_SUBMIT_DIR=/users/PES0984/hhyun116/NPE_ABC
