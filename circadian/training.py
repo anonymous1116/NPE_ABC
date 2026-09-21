@@ -153,7 +153,6 @@ def main(args):
     elapsed_time = end_time - start_time  # Calculate elapsed time
     print(f"Training completed in {elapsed_time/60/60:.2f} hours")
     
-    
     # Create the directory if it doesn't exist
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
