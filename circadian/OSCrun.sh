@@ -22,4 +22,4 @@ export LD_LIBRARY_PATH=$CONDA_PREFIX/lib:$LD_LIBRARY_PATH
 seeds=$SLURM_ARRAY_TASK_ID
 
 cd $SLURM_SUBMIT_DIR                  # run from wherever you submitted the job
-python circadian/training.py --task "circadian" --method NPE --num_training 500000 --seed $seeds --x0_ind 1
+python circadian/training.py --task "circadian" --method NPE --num_training 500000 --seed $seeds --x0_ind 2
