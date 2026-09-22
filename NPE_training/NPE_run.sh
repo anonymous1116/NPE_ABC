@@ -2,8 +2,8 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
 #SBATCH --partition=cpu
-#SBATCH --account=statdept
-#SBATCH --time=04:00:00
+#SBATCH --account=normal
+#SBATCH --time=2-04:00:00
 #SBATCH --qos=standby
 #SBATCH --array=1-10               # Create a job array with indices from 1 to 10
 #SBATCH --output=NPE/NPE_nsf/output_log/output_log_%A_%a.log
@@ -32,23 +32,8 @@ echo "Running with seed=$seeds"
 #python NPE_training/NPE_run_embed.py --task "slcp_distractors" --seed $seeds --cond_den "nsf" --num_training 1000000 --cdim 5
 #python NPE_training/NPSE_run.py --task "bernoulli_glm2" --seed $seeds --num_training 1500000
 #python NPE_training/NPE_DP_run.py --task "table_dp_66" --seed $seeds --num_training 500000 --method "FMPE"
-python NPE_training/NPE_run.py --task "fold2" --seed $seeds --num_training 300000 --method "FMPE"
+python NPE_training/NPE_run.py --task "fold2" --seed $seeds --num_training 500000 --method "FMPE"
 #python NPE_training/SNPE_run.py --task "double_slcp_summary_transform2" --seed 1 --num_training 1000 --cond_den "nsf" --x0_ind 0
 #python NPE_training/NPE_DP_run.py --task "table_dp_77" --seed 1 --num_training 1000 --method "NPE"
 
 echo "## Run Completed for seed=$seeds ##"
-
-#python NPE_training/NPSE_run.py --task "mog_10" --seed 1 --num_training 1000
-# python utils/get_measure_embed.py --task "my_five_twomoons_err2" --measure "c2st" --x0_ind 1 --seed 1 --post_n_samples 10000 --num_training 10000
-#python ABC_calibration/calibrating.py --x0_ind 1 --seed 1 --task "bernoulli_glm2" --L 10000000 --num_training 1000 --tol 1e-3 
-#python NPE_training/NPE_run.py --task "my_five_twomoons_err2" --seed 1 --num_training 10000 --cond_den "nsf"
-#python NPE_training/NPE_run_embed.py --task "my_five_twomoons_err2" --seed 1 --num_training 1000 --cond_den "nsf"
-#python utils/get_measure_embed.py --task "my_five_twomoons_err2" --measure "c2st" --x0_ind 1 --seed 1 --post_n_samples 10000 --num_training 10000
-#python utils/evaluate.py --task "table_dp_77" --measure "c2st" --method "NPE" --num_training 5000000
-#python utils/get_measure.py --task "table_dp_77" --measure "c2st" --x0_ind 1 --seed 1 --post_n_samples 10000 --num_training 1000
-
-
-#python NPE_training/NPE_run_embed.py --task "slcp_distractors" --seed 1 --cond_den "nsf" --num_training 1000 --cdim 10
-
-#python NPE_training/NPE_run.py --task "bernoulli_glm2" --seed 1 --num_training 10000 --method "NPSE_vp"
-#python NPE_training/NPE_run.py --task "fold2" --seed 1 --num_training 10000 --method "NPE"
