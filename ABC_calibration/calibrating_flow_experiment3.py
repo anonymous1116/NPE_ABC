@@ -73,18 +73,6 @@ def main(args):
     X_abc = []
     Y_abc = []
     
-    #if bounds is not None:
-    #    adj = torch.clamp(adj, min = torch.tensor(bounds)[:,0], max = torch.tensor(bounds)[:,1])
-
-    #with torch.no_grad():
-    #    max_vals = torch.max(adj,0).values
-    #    min_vals = torch.min(adj,0).values
-    
-    #priors_mean = torch.zeros(10)
-    #priors_std = torch.ones(10) * np.sqrt(2)
-
-    #print("max_vals:", max_vals)   
-    #print("min_vals:", min_vals)
 
     for i in range(num_chunks + 1): 
         start = i * chunk_size
