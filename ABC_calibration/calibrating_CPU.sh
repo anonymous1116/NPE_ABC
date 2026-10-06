@@ -3,7 +3,7 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --partition=cpu
 #SBATCH --account=statdept
-#SBATCH --time=04:00:00
+#SBATCH --time=03:00:00
 #SBATCH --qos=standby
 #SBATCH --array=0-99
 #SBATCH --output=ABC_calibration/log_CPU/output_log_%A_%a.out
@@ -28,7 +28,7 @@ seed=$((SLURM_ARRAY_TASK_ID / 10 + 1))
 
 L=1000000000 
 task="bernoulli_glm2"
-num_training=300000
+num_training=1000000
 tol=1e-5
 # Run the calibrate_amor.py
 x0_ind=$((SLURM_ARRAY_TASK_ID % 10)) 
@@ -38,7 +38,8 @@ echo "[$(date)] Starting job: x0_ind=$x0_ind, seed=$seed, L=$L"
 #python ABC_calibration/calibrating_flow.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol
 #python ABC_calibration/calibrating_flow_latent4.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol 
 #python ABC_calibration/calibrating_flow_latent5.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol
-python ABC_calibration/calibrating_flow_experiment3.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol
+#python ABC_calibration/calibrating_flow_experiment3.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol
+python ABC_calibration/calibrating_flow_SA.py  --etaprime 1e-2 --x0_ind $x0_ind --seed $seed --task "bernoulli_glm2" --num_training $num_training --tol $tol --L $L
 #python ABC_calibration/calibrating_flow_experiment2.py --x0_ind $x0_ind --seed $seed --task $task --num_training $num_training 
 echo "[$(date)] Job complete: x0_ind=$x0_ind, seed=$seed"
 
