@@ -53,6 +53,7 @@ python ABC_calibration/calibrating_flow_latent5.py --x0_ind $x0_ind --seed $seed
 #python ABC_calibration/calibrating_flow_experiment2.py --x0_ind $x0_ind --seed $seed --task $task --num_training 3000000 
 #python ABC_calibration/calibrating_flow_experiment2.py --x0_ind 1 --seed 1 --task "my_five_twomoons" --num_training 3000000 
 #python ABC_calibration/calibrating_flow.py --x0_ind 1 --seed 1 --L 10000000 --task "my_five_twomoons_err2" --num_training 100000 --tol 1e-3
+python ABC_calibration/calibrating_flow_experiment3.py --x0_ind 1 --seed 1 --task "bernoulli_glm2" --num_training 3000000 
 
 #python ABC_calibration/calibrating_flow_reduce_dim.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol --cdim $cdim
 
