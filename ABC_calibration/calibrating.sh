@@ -30,7 +30,7 @@ seed=$((SLURM_ARRAY_TASK_ID / 10 + 1))
 
 L=1000000000
 task="mog_10"
-num_training=300000
+num_training=1000000
 tol=1e-5
 #cdim=10
 # Run the calibrate_amor.py
@@ -40,7 +40,9 @@ echo "[$(date)] Starting job: x0_ind=$x0_ind, seed=$seed, L=$L"
 
 #python ABC_calibration/calibrating_flow.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol
 #python ABC_calibration/calibrating_flow.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol
-python ABC_calibration/calibrating_flow_experiment3.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol 
+#python ABC_calibration/calibrating_flow_experiment3.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol 
+python ABC_calibration/calibrating_flow_SA.py  --etaprime 1e-4 --x0_ind $x0_ind --seed $seed --task $task --num_training $num_training --tol $tol --L $L
+
 #python DP/calibrating_DP.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol 
 
 #python DP/calibrating_DP.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol 
