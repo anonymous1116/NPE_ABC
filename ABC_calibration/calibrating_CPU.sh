@@ -27,7 +27,7 @@ seed=$((SLURM_ARRAY_TASK_ID / 10 + 1))
 #L=100000000
 
 L=1000000000 
-task="double_slcp_summary_transform2"
+task="bernoulli_glm2"
 num_training=1000000
 tol=1e-5
 # Run the calibrate_amor.py
@@ -39,7 +39,7 @@ echo "[$(date)] Starting job: x0_ind=$x0_ind, seed=$seed, L=$L"
 #python ABC_calibration/calibrating_flow_latent4.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol 
 #python ABC_calibration/calibrating_flow_latent5.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol
 #python ABC_calibration/calibrating_flow_experiment3.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol
-python ABC_calibration/calibrating_flow_SA.py  --etaprime 1e-1 --x0_ind $x0_ind --seed $seed --task $task --num_training $num_training --tol $tol --L $L
+python ABC_calibration/calibrating_flow_SA.py  --etaprime 5e-1 --x0_ind $x0_ind --seed $seed --task $task --num_training $num_training --tol $tol --L $L
 #python ABC_calibration/calibrating_flow_experiment2.py --x0_ind $x0_ind --seed $seed --task $task --num_training $num_training 
 echo "[$(date)] Job complete: x0_ind=$x0_ind, seed=$seed"
 
