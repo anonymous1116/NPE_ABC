@@ -3,7 +3,7 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --partition=cpu
 #SBATCH --account=statdept
-#SBATCH --time=00:59:00
+#SBATCH --time=01:59:00
 #SBATCH --qos=standby
 #SBATCH --array=0-99
 #SBATCH --output=ABC_calibration/log_CPU/output_log_%A_%a.out
@@ -27,7 +27,7 @@ seed=$((SLURM_ARRAY_TASK_ID / 10 + 1))
 #L=100000000
 
 L=1000000000 
-task="mog_10" #my_five_twomoons, bernoulli_glm2, double_slcp_summary_transform2, mog_10
+task="double_slcp_summary_transform2" #my_five_twomoons, bernoulli_glm2, double_slcp_summary_transform2, mog_10
 num_training=1000000
 tol=1e-5
 # Run the calibrate_amor.py
