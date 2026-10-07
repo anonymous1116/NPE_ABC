@@ -28,7 +28,7 @@ seed=$((SLURM_ARRAY_TASK_ID / 10 + 1))
 
 L=1000000000 
 task="mog_10" #my_five_twomoons, bernoulli_glm2, double_slcp_summary_transform2, mog_10
-num_training=500000
+num_training=1000000
 tol=1e-5
 # Run the calibrate_amor.py
 x0_ind=$((SLURM_ARRAY_TASK_ID % 10)) 
