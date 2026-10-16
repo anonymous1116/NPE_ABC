@@ -101,7 +101,6 @@ def period_amp_estimate_robust(x_pt_s, y0=(0.0, 0.0, 0.0), maxtime=10000, spinof
 
 
 def main(args):
-
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     out_dir = os.path.join(BASE_DIR, f"sensitivity_output_{args.method}")
     os.makedirs(out_dir, exist_ok=True)
