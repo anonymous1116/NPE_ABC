@@ -3,9 +3,7 @@ from scipy.integrate import solve_ivp
 from scipy.signal import periodogram, get_window
 from scipy.fft import next_fast_len
 import argparse
-import torch
 import os
-import copy
 
 # parameter order follows the R names(): nu, k1..k7, Ka, Kb, m, n
 def ode_model(t, y, p):
