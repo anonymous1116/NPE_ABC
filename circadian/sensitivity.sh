@@ -32,3 +32,5 @@ echo "task=$id start=$chunk theta_index=$theta_index sensi_amount=$amount"
 
 python circadian/sensitivity.py --method MCMC --start $chunk \
     --theta_index $theta_index --sensi_amount $amount
+
+#python circadian/sensitivity.py --method MCMC --start 0 --theta_index 4 --sensi_amount 0.6 --maxtime 520
