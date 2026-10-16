@@ -117,7 +117,7 @@ def main(args):
             for j in range(1000 * args.start, 1000 * (args.start + 1)):
                 input_theta = Techno_thin[j].copy()
                 input_theta[args.theta_index] *= args.sensi_amount
-                period, amp = period_amp_estimate_robust(input_theta, maxtime=520)
+                period, amp = period_amp_estimate_robust(input_theta, maxtime=10_000)
                 period_list.append(period)
                 amp_list.append(amp)
                 print(j, period, amp, flush=True)
