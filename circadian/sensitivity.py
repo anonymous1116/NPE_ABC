@@ -108,7 +108,7 @@ def main(args):
         Techno_thin = np.loadtxt(os.path.join(BASE_DIR, "Techno_thin.txt"))   # float64
         print(Techno_thin.shape, flush=True)                                  # expect (rows, 12)
 
-        out_dir = os.path.join(BASE_DIR, "output")
+        out_dir = os.path.join(BASE_DIR, "sensitivity_output")
         os.makedirs(out_dir, exist_ok=True)
         tag = f"idx{args.theta_index}_amt{args.sensi_amount}_start{args.start}_maxtime{args.maxtime}"
         
