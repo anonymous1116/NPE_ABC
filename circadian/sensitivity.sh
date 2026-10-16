@@ -7,7 +7,7 @@
 #SBATCH --time=00:10:00
 #SBATCH --output=circadian/output_log/%x_%A_%a.out
 #SBATCH --error=circadian/output_log/%x_%A_%a.err
-#SBATCH --array=0-899%50         # 45 * N_CHUNKS tasks, at most 50 running at once
+#SBATCH --array=0-499         # 45 * N_CHUNKS tasks, at most 50 running at once
 
 # N_CHUNKS = (rows in Techno_thin.txt) / 1000
 N_CHUNKS=20
