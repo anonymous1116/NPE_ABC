@@ -117,7 +117,7 @@ def main(args):
             for j in range(1000 * args.start, 1000 * (args.start + 1)):
                 input_theta = Techno_thin[j].copy()
                 input_theta[args.theta_index] *= args.sensi_amount
-                period, amp = period_amp_estimate_robust(input_theta, maxtime=10_000)
+                period, amp = period_amp_estimate_robust(input_theta, maxtime=args.maxtime)
                 period_list.append(period)
                 amp_list.append(amp)
                 print(j, period, amp, flush=True)
@@ -132,6 +132,8 @@ def get_args():
     parser.add_argument('--start', type=int, default=0, help='start_index')
     parser.add_argument('--theta_index', type=int, default=1, help='theta_index: 1-9')
     parser.add_argument('--sensi_amount', type=float, default=1.0, help='Sensitivity amount 0.6, 0.8, 1.0, 1.2, 1.4')
+    parser.add_argument('--maxtime', type=int, default=520, help='Maximum time for the analysis')
+        
     return parser.parse_args()
 
 if __name__ == "__main__":
