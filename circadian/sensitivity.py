@@ -110,8 +110,8 @@ def main(args):
 
         out_dir = os.path.join(BASE_DIR, "output")
         os.makedirs(out_dir, exist_ok=True)
-        tag = f"idx{args.theta_index}_amt{args.sensi_amount}_start{args.start}"
-
+        tag = f"idx{args.theta_index}_amt{args.sensi_amount}_start{args.start}_maxtime{args.maxtime}"
+        
         period_list, amp_list = [], []
         try:
             for j in range(1000 * args.start, 1000 * (args.start + 1)):
