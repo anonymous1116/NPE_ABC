@@ -101,27 +101,32 @@ def period_amp_estimate_robust(x_pt_s, y0=(0.0, 0.0, 0.0), maxtime=10000, spinof
 
 
 def main(args):
-    if args.method == "MCMC":
-        BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-        Techno_thin = np.loadtxt(os.path.join(BASE_DIR, "Techno_thin.txt"))   # float64
-        print(Techno_thin.shape, flush=True)                                  # expect (rows, 12)
 
-        out_dir = os.path.join(BASE_DIR, "sensitivity_output")
-        os.makedirs(out_dir, exist_ok=True)
-        tag = f"idx{args.theta_index}_amt{args.sensi_amount}_start{args.start}_maxtime{args.maxtime}"
-        
-        period_list, amp_list = [], []
-        try:
-            for j in range(1000 * args.start, 1000 * (args.start + 1)):
-                input_theta = Techno_thin[j].copy()
-                input_theta[args.theta_index] *= args.sensi_amount
-                period, amp = period_amp_estimate_robust(input_theta, maxtime=args.maxtime)
-                period_list.append(period)
-                amp_list.append(amp)
-                print(j, period, amp, flush=True)
-        finally:
-            np.savetxt(os.path.join(out_dir, f"period_{tag}.txt"), period_list)
-            np.savetxt(os.path.join(out_dir, f"amp_{tag}.txt"), amp_list)
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    out_dir = os.path.join(BASE_DIR, f"sensitivity_output_{args.method}")
+    os.makedirs(out_dir, exist_ok=True)
+    tag = f"idx{args.theta_index}_amt{args.sensi_amount}_start{args.start}_maxtime{args.maxtime}"
+
+    if args.method == "MCMC":
+        sample_post = np.loadtxt(os.path.join(BASE_DIR, "Techno_thin.txt"))   # float64
+    elif args.method == "NPE":
+        sample_post = np.loadtxt(os.path.join(BASE_DIR, "seed1_ind0_NPE.txt"))   # float64
+    else:
+        raise ValueError("Invalid method. Please choose either 'MCMC' or 'NPE'.")
+    print(sample_post.shape, flush=True)                                  # expect (rows, 12)
+            
+    period_list, amp_list = [], []
+    try:
+        for j in range(1000 * args.start, 1000 * (args.start + 1)):
+            input_theta = sample_post[j].copy()
+            input_theta[args.theta_index] *= args.sensi_amount
+            period, amp = period_amp_estimate_robust(input_theta, maxtime=args.maxtime)
+            period_list.append(period)
+            amp_list.append(amp)
+            print(j, period, amp, flush=True)
+    finally:
+        np.savetxt(os.path.join(out_dir, f"period_{tag}.txt"), period_list)
+        np.savetxt(os.path.join(out_dir, f"amp_{tag}.txt"), amp_list)
 
 def get_args():
     # Create an argument parser
