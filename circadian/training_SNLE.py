@@ -134,7 +134,7 @@ def main(args):
 
         # fresh simulations at proposal theta (valid NLE training data)
         t0 = time.time()
-        x = simulate(theta, sim_device, args.sim_batch_size)
+        x = simulate(theta, sim_device, args.num_training)
         timings["simulate"] = time.time() - t0
         n_sims_total += theta.shape[0]
         theta, x = drop_invalid(theta, x)
