@@ -77,9 +77,9 @@ def main(args):
     torch.manual_seed(args.seed)
     np.random.seed(args.seed)  # slice_np_vectorized uses NumPy's RNG
     torch.set_num_threads(int(os.environ.get("SLURM_CPUS_PER_TASK", os.cpu_count() or 1)))
-    print(f"[setup] torch threads={torch.get_num_threads()}, sim_device={sim_device}", flush=True)
     sim_device = torch.device(args.sim_device)
-
+    print(f"[setup] torch threads={torch.get_num_threads()}, sim_device={sim_device}", flush=True)
+    
     # prior (CPU)
     prior = BoxUniform(
         low=torch.tensor([1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-1, 1e-1]),
