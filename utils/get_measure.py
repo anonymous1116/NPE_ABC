@@ -26,11 +26,9 @@ def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, c
     elif args.task in ["table_dp_77"]:
         x0 = x0[:48]
     print(x0)
-    
 
     limits = Bounds(task)
     posterior = true_Posteriors(task)
-    #task_benchmark = ["two_moons", "bernoulli_glm2", "slcp_summary_transform2", "double_slcp_summary_transform2", "mog_10", "slcp_distractors"]
     if task in task_benchmark:
         true_sample = posterior(j = x0_ind+1)
     else:
@@ -40,7 +38,6 @@ def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, c
         output_file_path = f"../depot_hyun/hyun/NPE_ABC/{method}_nets/{task}/J_{int(num_training/1000)}K/{task}_{seed}.pkl"    
     else:    
         output_file_path = f"../depot_hyun/hyun/NPE_ABC/nets/{task}/J_{int(num_training/1000)}K/{task}_{seed}_{cond}.pkl"    
-    
     
     
     x0 = torch.tensor(x0, dtype = torch.float32)

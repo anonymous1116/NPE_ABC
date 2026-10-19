@@ -1,7 +1,7 @@
 import sys, os
 import torch
 import numpy as np
-from sbi.inference import NPE, FMPE, NPSE
+from sbi.inference import NLE
 import pickle
 import os
 import argparse
@@ -10,6 +10,7 @@ from torchdiffeq import odeint
 from functions import  simulators_circadian, y_to_lambda_batch
 from sbi.utils import BoxUniform
 import matplotlib.pyplot as plt
+from sbi.analysis import pairplot
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from help_functions import ABC_rej2
@@ -21,7 +22,7 @@ def main(args):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     # Initialize the Priors and Simulators classes
-    priors = BoxUniform(
+    prior = BoxUniform(
         low=torch.tensor([1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-1, 1e-1]),  # k1..k7 stay tiny-safe, Ka/Kb raised
         high=torch.tensor([0.5, 3.5, 0.6, 0.5, 0.9, 0.8, 1.0, 9.0, 20.0]),
     )
@@ -34,102 +35,73 @@ def main(args):
     if x0.ndim == 1:
         x0= torch.reshape(x0, (1, x0.size(0)))
 
-    # Run the simulator
-    start_time = time.time()
-    batch_size = 500_000
-
-    tol = 0.01
-    iter_num = int(1/tol)
-    num_chunks = args.num_training * iter_num // batch_size
-
-    X_abc, Y_abc = [], []
-    
-    for i in range(num_chunks + 1):
-        start = i * batch_size
-        end = (i + 1) * batch_size if (i + 1) * batch_size < args.num_training * iter_num else args.num_training * iter_num
-        nums = end-start
-
-        if nums ==0:
-            break
-
-        Y_chunk = priors.sample((nums,))
-        Y_chunk = Y_chunk.float()   # or Y_chunk.to(torch.float32)
-        Y_chunk = Y_chunk.to(device)
-        
-        X_chunk = simulators_circadian(Y_chunk, device =device)
-        
-        index_ABC = ABC_rej2(x0, X_chunk, tol, device)
-        X_chunk, Y_chunk = X_chunk[index_ABC], Y_chunk[index_ABC]
-        X_abc.append(X_chunk)
-        Y_abc.append(Y_chunk)
-        print(f"{i}th iteration out of {num_chunks}", flush = True)
-
-    X_abc = torch.cat(X_abc)
-    Y_abc = torch.cat(Y_abc)    
-
-    X_abc = X_abc.to(torch.float32)
-    Y_abc = Y_abc.to(torch.float32)
-
-    end_time = time.time()
-    simulation_time = end_time - start_time
-
-    print(f"Simulation completed in {simulation_time/60/60:.2f} hours", flush=True)
-
-    X_np = X_abc.cpu().numpy()
-    Y_np = Y_abc.cpu().numpy()
-
-    param_names = ["k1", "k2", "k3", "k4", "k5", "k6", "k7", "Ka", "Kb"]
-
-
     # Define the output directory
-    output_dir = f"circadian/nets_depot/{args.method}/{args.task}/J_{int(args.num_training/1000)}K"
-        
-    print(f"Final accepted sample count: {X_abc.shape[0]:,}", flush=True)
-
-    print(torch.max(X_abc, dim=0).values, torch.min(X_abc, dim=0).values)
-    
-    # Create inference object
-    if args.method == "FMPE":
-        inference = FMPE(prior=priors)
-    elif args.method == "NPSE":
-        inference = NPSE(prior = priors)
-    elif args.method == "NPSE_vp":
-        inference = NPSE(prior = priors, sde_type="vp")
-    else:
-        inference = NPE(prior=priors, density_estimator="nsf")
-    inference = inference.append_simulations(Y_abc, X_abc)
-
-    # Train the density estimator and build the posterior
-    print(f"training_start")
-    start_time = time.time()  # Start time
-    density_estimator = inference.train()
-    end_time = time.time()  # End timer
-
-    elapsed_time = end_time - start_time  # Calculate elapsed time
-    print(f"Training completed in {elapsed_time/60/60:.2f} hours")
-    
-    # Create the directory if it doesn't exist
+    output_dir = f"circadian/nets_depot/SNLE/{args.task}/J_{int(args.num_training/1000)}K"
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
         print(f"Directory '{output_dir}' created.")
     else:
         print(f"Directory '{output_dir}' already exists.")
-
-    # Save the inference object using pickle in the specified directory
-    # Save the inference object and elapsed time using pickle in the specified directory
-    output_file_path = os.path.join(output_dir, f"{args.task}_{args.seed}_{args.x0_ind}.pkl")
     
-    if args.method in ["NPSE", "NPSE_vp"]:
-        torch.save({
-            'net_state_dict': density_estimator.net.state_dict(),
-            'embedding_net_state_dict': density_estimator._embedding_net.state_dict(),
-            'full_state_dict': density_estimator.state_dict(),  # includes all buffers
-            'elapsed_time': elapsed_time
-        }, output_file_path.replace('.pkl', '.pt'))
-    else:
+    # Run the simulator
+    theta = prior.sample((args.num_training,))
+    X = simulators_circadian(theta)
+    inference = NLE(prior, density_estimator="nsf")
+
+    # train
+    posterior_time = []
+
+    start_time = time.time()
+    inference.append_simulations(theta,X).train()
+    end_time = time.time()
+    train_time = end_time - start_time
+
+    start_time = time.time()
+    posterior = inference.build_posterior(mcmc_method="slice_np_vectorized", mcmc_parameters={"num_chains": 20, "thin": 10, "warmup_steps": 200})
+    post_samples = posterior.sample((args.num_training,), x=x0)
+    end_time = time.time()
+    posterior_time = end_time - start_time
+    
+    output_file_path = os.path.join(output_dir, f"seed{args.seed}_x0{args.x0_ind}_round0.pkl")
+    with open(output_file_path, 'wb') as f:
+        pickle.dump({'inference': inference, 'train_time': train_time, 'posterior_time': posterior_time}, f)
+
+    pairplot(post_samples, figsize=(8,8))
+    plt.savefig(f"{output_dir}/plot_x0{args.x0_ind}_seed{args.seed}_round0.png")
+    plt.close()
+
+
+    param_names = ["k1", "k2", "k3", "k4", "k5", "k6", "k7", "Ka", "Kb"]
+    
+
+    # --- sequential (SNLE) ---
+    proposal = prior
+    num_rounds = 4
+    n_per_round = args.num_training
+    for r in range(num_rounds):
+        theta = proposal.sample((n_per_round,))
+        X = simulators_circadian(theta)
+        start_time = time.time()
+        inference.append_simulations(theta, X).train()   
+        end_time = time.time()
+        train_time = end_time - start_time
+
+        start_time = time.time()
+        posterior = inference.build_posterior(mcmc_method="slice_np_vectorized", mcmc_parameters={"num_chains": 20, "thin": 10, "warmup_steps": 200})
+        end_time = time.time()
+        posterior_time = end_time - start_time
+
+        output_file_path = os.path.join(output_dir, f"seed{args.seed}_x0{args.x0_ind}_round{r+1}.pkl")
         with open(output_file_path, 'wb') as f:
-            pickle.dump({'density_estimator': density_estimator, 'posterior': inference.build_posterior(density_estimator), 'elapsed_time': elapsed_time}, f)
-        
+            pickle.dump({'inference': inference, 'train_time': train_time, 'posterior_time': posterior_time}, f)
+
+        pairplot(post_samples, figsize=(8,8))
+        plt.savefig(f"{output_dir}/plot_x0{args.x0_ind}_seed{args.seed}_round{r+1}.png")
+        plt.close()
+        proposal = posterior.set_default_x(x0)
+
+
+
     print(f"Saved inference object and elapsed time to '{output_file_path}'.")
 
 def get_args():
@@ -138,7 +110,6 @@ def get_args():
     parser.add_argument('--task', type=str, default='circadian', help='Simulation type: twomoons, MoG, Lapl, GL_U or SLCP')
     parser.add_argument('--seed', type=int, default=1, help='Random seed for reproducibility')
     parser.add_argument('--num_training', type=int, default=500_000, help='Number of simulations to run')
-    parser.add_argument('--method', type=str, default='NPE', help='Method type: NPE, FMPE, NPSE')
     parser.add_argument('--x0_ind', type=int, default=0, help='Index of the initial condition to use')
     return parser.parse_args()
 
