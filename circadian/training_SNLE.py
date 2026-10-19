@@ -99,11 +99,11 @@ def main(args):
         plt.savefig(f"{output_dir}/plot_x0{args.x0_ind}_seed{args.seed}_round{r+1}.png")
         plt.close()
         proposal = posterior.set_default_x(x0)
+        print(f"Saved inference object and elapsed time to '{output_file_path}'.")
+        
 
-
-
-    print(f"Saved inference object and elapsed time to '{output_file_path}'.")
-
+    print("Training completed.")
+    
 def get_args():
     # Create an argument parser
     parser = argparse.ArgumentParser(description="Run simulations and inference.")
