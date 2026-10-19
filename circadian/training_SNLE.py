@@ -149,7 +149,7 @@ def main(args):
         t0 = time.time()
         posterior = inference.build_posterior(**mcmc_kwargs)
         print(f"[r{r}] sampling posterior...", flush=True)
-        samples = posterior.sample((args.num_training,), x=x0)
+        samples = posterior.sample((10_000,), x=x0)
         print(f"[r{r}] samples shape={tuple(samples.shape)}, mean={samples.mean(0)}", flush=True)
         timings["sample"] = time.time() - t0
 
