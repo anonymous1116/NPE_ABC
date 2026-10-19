@@ -93,7 +93,7 @@ def main(args):
 
     # output directory
     output_dir = (f"circadian/nets_depot/SNLE/{args.task}/"
-                  f"round0_{args.round0}/N_{int(args.num_training/1000)}K")
+                  f"round0_{args.round0}/J_{int(args.num_training/1000)}K")
     os.makedirs(output_dir, exist_ok=True)
 
     mcmc_kwargs = dict(
