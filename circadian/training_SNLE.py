@@ -1,158 +1,169 @@
-import sys, os
-import torch
-import numpy as np
-from sbi.inference import NLE
-import pickle
 import os
-import argparse
+import sys
 import time
-from torchdiffeq import odeint
-from functions import  simulators_circadian, y_to_lambda_batch
-from sbi.utils import BoxUniform
+import pickle
+import argparse
+
+import numpy as np
+import torch
 import matplotlib.pyplot as plt
+
+from sbi.inference import NLE
+from sbi.utils import BoxUniform
 from sbi.analysis import pairplot
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/../")
+from functions import simulators_circadian, y_to_lambda_batch
 from help_functions import ABC_rej2
 
 
-def main(args):
-    # Set the random seed
-    torch.manual_seed(args.seed)
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+# ---------------------------------------------------------------------------
+# helpers
+# ---------------------------------------------------------------------------
+def simulate(theta, sim_device, batch_size):
+    """Simulate in chunks on `sim_device`; return float32 CPU tensors."""
+    xs = []
+    for start in range(0, theta.shape[0], batch_size):
+        th = theta[start:start + batch_size].to(sim_device)
+        xs.append(simulators_circadian(th, device=sim_device).float().cpu())
+    return torch.cat(xs)
 
-    # Initialize the Priors and Simulators classes
+
+def drop_invalid(theta, x):
+    """Remove pairs with NaN/Inf simulator output (e.g. ODE solver failures)."""
+    mask = torch.isfinite(x).all(dim=1)
+    n_bad = int((~mask).sum())
+    if n_bad > 0:
+        print(f"  dropped {n_bad} invalid simulations", flush=True)
+    return theta[mask], x[mask]
+
+
+def abc_proposal(prior, x0, n_keep, tol, sim_device, batch_size):
+    """
+    ABC rejection used ONLY to obtain proposal draws of theta.
+    The selected (theta, x) pairs are discarded: selection on x truncates
+    p(x | theta), so training NLE on them would bias the likelihood.
+    """
+    total = n_keep * int(round(1 / tol))
+    thetas = []
+    for start in range(0, total, batch_size):
+        n = min(batch_size, total - start)
+        th = prior.sample((n,)).float().to(sim_device)
+        x = simulators_circadian(th, device=sim_device)
+        idx = ABC_rej2(x0.to(sim_device), x, tol, sim_device)
+        thetas.append(th[idx].cpu())
+        print(f"  ABC chunk {start // batch_size + 1}/{-(-total // batch_size)}", flush=True)
+    return torch.cat(thetas).float(), total
+
+
+def save_round(output_dir, args, r, inference, samples, timings, n_sims_total):
+    tag = f"seed{args.seed}_x0{args.x0_ind}_round{r}"
+    with open(os.path.join(output_dir, f"{tag}.pkl"), "wb") as f:
+        pickle.dump({"inference": inference, "timings": timings,
+                     "n_sims_total": n_sims_total}, f)
+    torch.save(samples, os.path.join(output_dir, f"{tag}_samples.pt"))
+
+    pairplot(samples, figsize=(8, 8))
+    plt.savefig(os.path.join(output_dir, f"plot_x0{args.x0_ind}_seed{args.seed}_round{r}.png"))
+    plt.close()
+    print(f"Round {r} saved | timings (s): {timings} | total sims so far: {n_sims_total}", flush=True)
+
+
+# ---------------------------------------------------------------------------
+# main
+# ---------------------------------------------------------------------------
+def main(args):
+    torch.manual_seed(args.seed)
+    np.random.seed(args.seed)  # slice_np_vectorized uses NumPy's RNG
+    torch.set_num_threads(int(os.environ.get("SLURM_CPUS_PER_TASK", os.cpu_count() or 1)))
+    sim_device = torch.device(args.sim_device)
+
+    # prior (CPU)
     prior = BoxUniform(
-        low=torch.tensor([1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-1, 1e-1]),  # k1..k7 stay tiny-safe, Ka/Kb raised
+        low=torch.tensor([1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-1, 1e-1]),
         high=torch.tensor([0.5, 3.5, 0.6, 0.5, 0.9, 0.8, 1.0, 9.0, 20.0]),
     )
 
     # observation
     y_mat = np.loadtxt("./circadian/y_mat.txt")
-    x0s = y_to_lambda_batch(torch.tensor(y_mat))
-    x0s = x0s.float()
-    x0 = x0s[args.x0_ind]
-    if x0.ndim == 1:
-        x0= torch.reshape(x0, (1, x0.size(0)))
+    x0s = y_to_lambda_batch(torch.tensor(y_mat)).float()
+    x0 = x0s[args.x0_ind].reshape(1, -1)
 
-    # Define the output directory
-    output_dir = f"circadian/nets_depot/SNLE/{args.task}/J_{int(args.num_training/1000)}K"
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-        print(f"Directory '{output_dir}' created.")
-    else:
-        print(f"Directory '{output_dir}' already exists.")
+    # output directory
+    output_dir = (f"circadian/nets_depot/SNLE/{args.task}/"
+                  f"round0_{args.round0}/N_{args.num_training}")
+    os.makedirs(output_dir, exist_ok=True)
 
-    # Run the simulator
-    start_time = time.time()
-    batch_size = 100_000
+    mcmc_kwargs = dict(
+        mcmc_method="slice_np_vectorized",
+        mcmc_parameters={"num_chains": args.num_chains, "thin": args.thin,
+                         "warmup_steps": args.warmup_steps, "init_strategy": "resample"},
+    )
 
-    tol = 0.01
-    iter_num = int(1/tol)
-    num_chunks = args.num_training * iter_num // batch_size
+    inference = NLE(prior, density_estimator="nsf", device="cpu")
+    n_sims_total = 0
 
-    X_abc, Y_abc = [], []
-    
-    for i in range(num_chunks + 1):
-        start = i * batch_size
-        end = (i + 1) * batch_size if (i + 1) * batch_size < args.num_training * iter_num else args.num_training * iter_num
-        nums = end-start
+    # ---------------- round 0: proposal draws ----------------
+    t0 = time.time()
+    if args.round0 == "abc":
+        theta, n_abc = abc_proposal(prior, x0, args.num_training, args.tol,
+                                    sim_device, args.sim_batch_size)
+        n_sims_total += n_abc
+    else:  # "prior"
+        theta = prior.sample((args.num_training,)).float()
+    t_proposal = time.time() - t0
 
-        if nums ==0:
-            break
+    # ---------------- rounds 0..R ----------------
+    for r in range(args.num_rounds + 1):
+        timings = {}
+        if r == 0:
+            timings["proposal"] = t_proposal
 
-        Y_chunk = prior.sample((nums,))
-        Y_chunk = Y_chunk.float()   # or Y_chunk.to(torch.float32)
-        Y_chunk = Y_chunk.to(device)
-        
-        X_chunk = simulators_circadian(Y_chunk, device =device)
-        
-        index_ABC = ABC_rej2(x0, X_chunk, tol, device)
-        X_chunk, Y_chunk = X_chunk[index_ABC], Y_chunk[index_ABC]
-        X_abc.append(X_chunk)
-        Y_abc.append(Y_chunk)
-        print(f"{i}th iteration out of {num_chunks}", flush = True)
+        # fresh simulations at proposal theta (valid NLE training data)
+        t0 = time.time()
+        x = simulate(theta, sim_device, args.sim_batch_size)
+        timings["simulate"] = time.time() - t0
+        n_sims_total += theta.shape[0]
+        theta, x = drop_invalid(theta, x)
 
-    X_abc = torch.cat(X_abc)
-    Y_abc = torch.cat(Y_abc)    
+        # train (pools data across rounds; no proposal correction needed for NLE)
+        t0 = time.time()
+        inference.append_simulations(theta, x).train()
+        timings["train"] = time.time() - t0
 
-    X_abc = X_abc.to(torch.float32)
-    Y_abc = Y_abc.to(torch.float32)
+        # posterior + MCMC sampling
+        t0 = time.time()
+        posterior = inference.build_posterior(**mcmc_kwargs)
+        samples = posterior.sample((args.num_training,), x=x0)
+        timings["sample"] = time.time() - t0
 
-    end_time = time.time()
-    simulation_time = end_time - start_time
+        save_round(output_dir, args, r, inference, samples, timings, n_sims_total)
 
-    print(f"Simulation completed in {simulation_time/60/60:.2f} hours", flush=True)
+        # this round's posterior samples are the next round's proposal draws
+        theta = samples.float()
 
-
-    # Run the simulator
-    inference = NLE(prior, density_estimator="nsf")
-
-    # train
-    posterior_time = []
-
-    start_time = time.time()
-    inference.append_simulations(Y_abc, X_abc).train()
-    end_time = time.time()
-    train_time = end_time - start_time
-
-    start_time = time.time()
-    posterior = inference.build_posterior(mcmc_method="slice_np_vectorized", mcmc_parameters={"num_chains": 20, "thin": 10, "warmup_steps": 200})
-    post_samples = posterior.sample((args.num_training,), x=x0)
-    end_time = time.time()
-    posterior_time = end_time - start_time
-    
-    output_file_path = os.path.join(output_dir, f"seed{args.seed}_x0{args.x0_ind}_round0.pkl")
-    with open(output_file_path, 'wb') as f:
-        pickle.dump({'inference': inference, 'train_time': train_time, 'posterior_time': posterior_time}, f)
-
-    pairplot(post_samples, figsize=(8,8))
-    plt.savefig(f"{output_dir}/plot_x0{args.x0_ind}_seed{args.seed}_round0.png")
-    plt.close()
+    print("Training completed.", flush=True)
 
 
-    param_names = ["k1", "k2", "k3", "k4", "k5", "k6", "k7", "Ka", "Kb"]
-    
-
-    # --- sequential (SNLE) ---
-    proposal = posterior.set_default_x(x0)
-    num_rounds = 4
-    n_per_round = args.num_training
-    for r in range(num_rounds):
-        theta = proposal.sample((n_per_round,))
-        X = simulators_circadian(theta)
-        start_time = time.time()
-        inference.append_simulations(theta, X).train()   
-        end_time = time.time()
-        train_time = end_time - start_time
-
-        start_time = time.time()
-        posterior = inference.build_posterior(mcmc_method="slice_np_vectorized", mcmc_parameters={"num_chains": 20, "thin": 10, "warmup_steps": 200})
-        end_time = time.time()
-        posterior_time = end_time - start_time
-
-        output_file_path = os.path.join(output_dir, f"seed{args.seed}_x0{args.x0_ind}_round{r+1}.pkl")
-        with open(output_file_path, 'wb') as f:
-            pickle.dump({'inference': inference, 'train_time': train_time, 'posterior_time': posterior_time}, f)
-
-        pairplot(post_samples, figsize=(8,8))
-        plt.savefig(f"{output_dir}/plot_x0{args.x0_ind}_seed{args.seed}_round{r+1}.png")
-        plt.close()
-        proposal = posterior.set_default_x(x0)
-        print(f"Saved inference object and elapsed time to '{output_file_path}'.")
-        
-
-    print("Training completed.")
-    
 def get_args():
-    # Create an argument parser
-    parser = argparse.ArgumentParser(description="Run simulations and inference.")
-    parser.add_argument('--task', type=str, default='circadian', help='Simulation type: twomoons, MoG, Lapl, GL_U or SLCP')
-    parser.add_argument('--seed', type=int, default=1, help='Random seed for reproducibility')
-    parser.add_argument('--num_training', type=int, default=500_000, help='Number of simulations to run')
-    parser.add_argument('--x0_ind', type=int, default=0, help='Index of the initial condition to use')
-    return parser.parse_args()
+    p = argparse.ArgumentParser(description="SNLE on the circadian model.")
+    p.add_argument("--task", type=str, default="circadian")
+    p.add_argument("--seed", type=int, default=1)
+    p.add_argument("--num_training", type=int, default=10_000,
+                   help="Simulations per round (and posterior samples per round)")
+    p.add_argument("--x0_ind", type=int, default=0)
+    p.add_argument("--num_rounds", type=int, default=4,
+                   help="Sequential rounds after round 0")
+    p.add_argument("--round0", type=str, default="abc", choices=["abc", "prior"],
+                   help="abc: ABC-accepted theta as proposal (x re-simulated); prior: plain prior")
+    p.add_argument("--tol", type=float, default=0.01, help="ABC acceptance fraction")
+    p.add_argument("--sim_device", type=str, default="cpu", help="cpu or cuda:0 (simulator only)")
+    p.add_argument("--sim_batch_size", type=int, default=100_000)
+    p.add_argument("--num_chains", type=int, default=50)
+    p.add_argument("--thin", type=int, default=2)
+    p.add_argument("--warmup_steps", type=int, default=200)
+    return p.parse_args()
+
 
 if __name__ == "__main__":
-    args = get_args()  # Parse command-line arguments
-    main(args)  # Pass the entire args object to the main function
+    main(get_args())
