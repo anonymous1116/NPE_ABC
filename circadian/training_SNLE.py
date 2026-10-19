@@ -42,17 +42,57 @@ def main(args):
         print(f"Directory '{output_dir}' created.")
     else:
         print(f"Directory '{output_dir}' already exists.")
-    
+
     # Run the simulator
-    theta = prior.sample((args.num_training,))
-    X = simulators_circadian(theta)
+    start_time = time.time()
+    batch_size = 100_000
+
+    tol = 0.01
+    iter_num = int(1/tol)
+    num_chunks = args.num_training * iter_num // batch_size
+
+    X_abc, Y_abc = [], []
+    
+    for i in range(num_chunks + 1):
+        start = i * batch_size
+        end = (i + 1) * batch_size if (i + 1) * batch_size < args.num_training * iter_num else args.num_training * iter_num
+        nums = end-start
+
+        if nums ==0:
+            break
+
+        Y_chunk = prior.sample((nums,))
+        Y_chunk = Y_chunk.float()   # or Y_chunk.to(torch.float32)
+        Y_chunk = Y_chunk.to(device)
+        
+        X_chunk = simulators_circadian(Y_chunk, device =device)
+        
+        index_ABC = ABC_rej2(x0, X_chunk, tol, device)
+        X_chunk, Y_chunk = X_chunk[index_ABC], Y_chunk[index_ABC]
+        X_abc.append(X_chunk)
+        Y_abc.append(Y_chunk)
+        print(f"{i}th iteration out of {num_chunks}", flush = True)
+
+    X_abc = torch.cat(X_abc)
+    Y_abc = torch.cat(Y_abc)    
+
+    X_abc = X_abc.to(torch.float32)
+    Y_abc = Y_abc.to(torch.float32)
+
+    end_time = time.time()
+    simulation_time = end_time - start_time
+
+    print(f"Simulation completed in {simulation_time/60/60:.2f} hours", flush=True)
+
+
+    # Run the simulator
     inference = NLE(prior, density_estimator="nsf")
 
     # train
     posterior_time = []
 
     start_time = time.time()
-    inference.append_simulations(theta,X).train()
+    inference.append_simulations(Y_abc, X_abc).train()
     end_time = time.time()
     train_time = end_time - start_time
 
@@ -75,7 +115,7 @@ def main(args):
     
 
     # --- sequential (SNLE) ---
-    proposal = prior
+    proposal = posterior.set_default_x(x0)
     num_rounds = 4
     n_per_round = args.num_training
     for r in range(num_rounds):
