@@ -111,6 +111,16 @@ def main(args):
         theta, n_abc = abc_proposal(prior, x0, args.num_training, args.tol,
                                     sim_device, args.sim_batch_size)
         n_sims_total += n_abc
+
+        # save + plot ABC-accepted theta (the round-0 proposal)
+        torch.save(theta, os.path.join(output_dir, f"seed{args.seed}_x0{args.x0_ind}_abc_theta.pt"))
+        pairplot(theta, figsize=(8, 8),
+                 limits=list(zip(prior.base_dist.low.tolist(), prior.base_dist.high.tolist())))
+        plt.savefig(os.path.join(output_dir, f"plot_x0{args.x0_ind}_seed{args.seed}_abc.png"))
+        plt.close()
+        print(f"ABC done: {theta.shape[0]} accepted theta from {n_abc} sims "
+              f"in {(time.time() - t0) / 60:.1f} min", flush=True)
+
     else:  # "prior"
         theta = prior.sample((args.num_training,)).float()
     print(f"[round0] theta shape={tuple(theta.shape)}, min={theta.min(0).values}, max={theta.max(0).values}", flush=True)
