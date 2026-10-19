@@ -26,6 +26,7 @@ def simulate(theta, sim_device, batch_size):
     for start in range(0, theta.shape[0], batch_size):
         th = theta[start:start + batch_size].to(sim_device)
         xs.append(simulators_circadian(th, device=sim_device).float().cpu())
+        print(f"  sim chunk {start}: theta {tuple(th.shape)} on {th.device}", flush=True)
     return torch.cat(xs)
 
 
@@ -76,6 +77,7 @@ def main(args):
     torch.manual_seed(args.seed)
     np.random.seed(args.seed)  # slice_np_vectorized uses NumPy's RNG
     torch.set_num_threads(int(os.environ.get("SLURM_CPUS_PER_TASK", os.cpu_count() or 1)))
+    print(f"[setup] torch threads={torch.get_num_threads()}, sim_device={sim_device}", flush=True)
     sim_device = torch.device(args.sim_device)
 
     # prior (CPU)
@@ -111,6 +113,7 @@ def main(args):
         n_sims_total += n_abc
     else:  # "prior"
         theta = prior.sample((args.num_training,)).float()
+    print(f"[round0] theta shape={tuple(theta.shape)}, min={theta.min(0).values}, max={theta.max(0).values}", flush=True)
     t_proposal = time.time() - t0
 
     # ---------------- rounds 0..R ----------------
@@ -127,6 +130,7 @@ def main(args):
         theta, x = drop_invalid(theta, x)
 
         # train (pools data across rounds; no proposal correction needed for NLE)
+        print(f"[r{r}] training on theta {tuple(theta.shape)} {theta.dtype}, x {tuple(x.shape)} {x.dtype}", flush=True)
         t0 = time.time()
         inference.append_simulations(theta, x).train()
         timings["train"] = time.time() - t0
@@ -134,7 +138,9 @@ def main(args):
         # posterior + MCMC sampling
         t0 = time.time()
         posterior = inference.build_posterior(**mcmc_kwargs)
+        print(f"[r{r}] sampling posterior...", flush=True)
         samples = posterior.sample((args.num_training,), x=x0)
+        print(f"[r{r}] samples shape={tuple(samples.shape)}, mean={samples.mean(0)}", flush=True)
         timings["sample"] = time.time() - t0
 
         save_round(output_dir, args, r, inference, samples, timings, n_sims_total)
