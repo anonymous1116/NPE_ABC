@@ -490,7 +490,7 @@ def observation_lists(task_name:str):
 
 def simulator_bernoulli(thetas, batch_size=100_000):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    design_matrix = torch.load("/home/hyun18/NPE_ABC/utils/files/design_matrix.pt", weights_only=True).to(device)
+    design_matrix = torch.load("./utils/files/design_matrix.pt", weights_only=True).to(device)
 
     N = thetas.size(0)
     output = []

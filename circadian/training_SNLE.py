@@ -176,8 +176,8 @@ def get_args():
     p.add_argument("--sim_device", type=str, default="cpu", help="cpu or cuda:0 (simulator only)")
     p.add_argument("--sim_batch_size", type=int, default=100_000)
     p.add_argument("--num_chains", type=int, default=50)
-    p.add_argument("--thin", type=int, default=2)
-    p.add_argument("--warmup_steps", type=int, default=200)
+    p.add_argument("--thin", type=int, default=10)
+    p.add_argument("--warmup_steps", type=int, default=500)
     return p.parse_args()
 
 
