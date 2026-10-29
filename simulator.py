@@ -523,6 +523,32 @@ def simulator_bernoulli(thetas, batch_size=100_000):
 
     return torch.cat(output, dim=0)
 
+
+
+def simulator_bernoulli_disperse(thetas, A, batch_size=100_000):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    design_matrix = torch.load("utils/files/design_matrix.pt", weights_only=True).to(device)
+    A = A.to(device)
+    N = thetas.size(0)
+    output = []
+
+    for start in range(0, N, batch_size):
+        end = min(start + batch_size, N)
+        theta_batch = thetas[start:end].to(device)
+
+        psi = torch.matmul(theta_batch, design_matrix.T)
+        z = torch.sigmoid(psi)
+        y = (torch.rand_like(z) < z).float()
+
+        output_batch = torch.matmul(y, design_matrix).to("cpu")
+        output_batch = torch.matmul(output_batch, A.T)
+        output.append(output_batch)
+        del theta_batch, psi, z, y, output_batch
+        torch.cuda.empty_cache()  # Optional: free memory aggressively
+
+    return torch.cat(output, dim=0)
+
+
 def simulator_slcp_distractors(thetas, batch_size=100_000):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     thetas = thetas.to(device)
