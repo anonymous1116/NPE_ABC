@@ -114,7 +114,8 @@ def Priors(task_name: str):
 
 task_benchmark = ["two_moons", 
                   "bernoulli_glm2", "bernoulli_glm2_err10", "bernoulli_glm2_err30", "bernoulli_glm2_err50", "bernoulli_glm2_err70", "bernoulli_glm2_err90",
-                  "bernoulli_glm2_disperse20",
+                  "bernoulli_glm2_disperse20","bernoulli_glm2_disperse40","bernoulli_glm2_disperse60","bernoulli_glm2_disperse80","bernoulli_glm2_disperse100",
+                                    
                   "slcp_summary_transform2", "double_slcp_summary_transform2", "mog_10", "slcp_distractors", "slcp", 
                   "my_five_twomoons_err10",
                   "my_five_twomoons_err30",
