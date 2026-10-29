@@ -8,7 +8,60 @@ import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from simulator import observation_lists
 
-def create_c2st_job_script(task, num_training, measure, x0_ind, seed, post_n_samples, cond_den, method = "NPE", use_gpu=False, embed=False,cdim=None):
+
+
+def create_c2st_job_script(task, num_training, measure, x0_ind, seed, post_n_samples, cond_den, method = "NPE", embed=False,cdim=None):
+    if embed:
+        implement_options = "get_measure_embed"
+        cdim_arg = f"--cdim {cdim}" if cdim is not None else ""
+        method_arg = f"" 
+    else:
+        implement_options = "get_measure"
+        cdim_arg = ""
+        method_arg = f"--method {method}"
+    job_script = f"""#!/bin/bash
+#SBATCH --account=PES0984            # replace with your actual project account
+#SBATCH --job-name=c2st
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=8
+#SBATCH --time=00:30:00
+#SBATCH --output=NPE_ABC/{measure}/{task}/output_log/output_log_%A.log
+#SBATCH --error=NPE_ABC/{measure}/{task}/error_log/error_log_%A.txt
+
+mkdir -p NPE_ABC/{measure}/{task}/output_log
+mkdir -p NPE_ABC/{measure}/{task}/error_log
+
+# Load the required Python environment
+SLURM_SUBMIT_DIR=/users/PES0984/hhyun116/NPE_ABC
+
+module load miniconda3/24.1.2-py310
+source activate BayesCalib
+export LD_LIBRARY_PATH=$CONDA_PREFIX/lib:$LD_LIBRARY_PATH
+
+# Change to the directory where the job was submitted from
+SLURM_SUBMIT_DIR=$(pwd)
+cd $SLURM_SUBMIT_DIR
+
+# Run the Python script for the current simulation
+echo "Running simulation for task '{task}', '{num_training}', x0_ind={x0_ind}, seed={seed}..."
+
+python ./utils/{implement_options}.py --task {task} --num_training {num_training} --measure {measure} --x0_ind {x0_ind} --seed {seed} --post_n_samples {post_n_samples} --cond_den {cond_den} {cdim_arg} {method_arg}
+echo "## Job completed for task '{task}', x0_ind={x0_ind}, seed={seed}" ##"
+"""
+    # Create the directory for SLURM files if it doesn't exist
+    output_dir = f"NPE_ABC/{measure}/{task}/slurm_files"
+    os.makedirs(output_dir, exist_ok=True)
+    job_file_path = os.path.join(output_dir, f"{task}_{method}_{int(num_training/1000)}K_c2st_x0_ind{x0_ind}_seed{seed}.sh")
+    with open(job_file_path, 'w') as f:
+        f.write(job_script)
+    print(f"Job script created: {job_file_path}")
+
+    # Submit the job immediately
+    subprocess.run(['sbatch', job_file_path])
+    print(f"Job {job_file_path} submitted.")
+
+def create_c2st_job_script_purdue(task, num_training, measure, x0_ind, seed, post_n_samples, cond_den, method = "NPE", use_gpu=False, embed=False,cdim=None):
     sbatch_gpu_options = """
 #SBATCH --gpus-per-node=1
 #SBATCH --nodes=1
