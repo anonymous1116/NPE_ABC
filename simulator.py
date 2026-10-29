@@ -114,6 +114,7 @@ def Priors(task_name: str):
 
 task_benchmark = ["two_moons", 
                   "bernoulli_glm2", "bernoulli_glm2_err10", "bernoulli_glm2_err30", "bernoulli_glm2_err50", "bernoulli_glm2_err70", "bernoulli_glm2_err90",
+                  "bernoulli_glm2_disperse20",
                   "slcp_summary_transform2", "double_slcp_summary_transform2", "mog_10", "slcp_distractors", "slcp", 
                   "my_five_twomoons_err10",
                   "my_five_twomoons_err30",
@@ -425,7 +426,19 @@ def observation_lists(task_name:str):
             observation = task.get_observation(num_observation=j)  # 10 per task
             obs_list.append(observation[0].tolist())
         return torch.tensor(obs_list)
-    
+
+    elif task_name.startswith("bernoulli_glm2_disperse"):
+        obs_list = []
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        A = torch.load(f"{current_dir}/utils/files/rotation_A_20x10_seed0.pt")
+                
+        for j in range(1, 11):
+            task = sbibm.get_task("bernoulli_glm")
+            observation = task.get_observation(num_observation=j)  # 10 per task
+            observation = observation @ A.T
+            obs_list.append(observation[0].tolist())
+        return torch.tensor(obs_list)
+
     elif task_name in ["my_twomoons"]:
         return torch.tensor([[0.0, 0.0], [0.0, 1.0], [0.0, 2.0], [0.1, 0.1], 
                              [-0.1, -0.1], [-3.0, 3.0], [-2.0, 3.0], 
