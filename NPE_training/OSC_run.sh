@@ -3,8 +3,8 @@
 #SBATCH --job-name=NPE_ABC
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --cpus-per-task=16
-#SBATCH --time=15:30:00
+#SBATCH --cpus-per-task=8
+#SBATCH --time=00:30:00
 #SBATCH --output=circadian/output_log/%j.out            # %x = job name, %j = job ID
 #SBATCH --error=circadian/output_log/%j.err
 
