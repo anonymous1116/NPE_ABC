@@ -529,6 +529,7 @@ def simulator_bernoulli(thetas, batch_size=100_000):
 def simulator_bernoulli_disperse(thetas, A, batch_size=100_000):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     design_matrix = torch.load("utils/files/design_matrix.pt", weights_only=True).to(device)
+    A = A.to(torch.float32)
     A = A.to(device)
     N = thetas.size(0)
     output = []
@@ -1307,7 +1308,7 @@ def Simulators(task_name: str):
             return simulator_bernoulli_glm2_err(theta, err_num = int(task_name.split("_")[-1][3:5]))
         return simulator_with_err
     elif task_name.startswith("bernoulli_glm2_disperse"):
-        disperse_num = task_name.split("_")[-1][8:]
+        disperse_num = int(task_name.split("_")[-1][8:])
         A = torch.load(f"{os.path.dirname(os.path.abspath(__file__))}/utils/files/rotation_A_{disperse_num}x10_seed0.pt")
         def simulator_with_disperse(theta):
             return simulator_bernoulli_disperse(theta, A)
