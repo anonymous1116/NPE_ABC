@@ -356,7 +356,7 @@ class true_Posteriors:
         try:
             # Get the directory of the current file (simulator.py)
             current_dir = os.path.dirname(os.path.abspath(__file__))
-            file_path = os.path.join(current_dir, f"../depot_hyun/hyun/NPE_ABC/seeds/bernoulli_glm2_post_{j}.pt")
+            file_path = os.path.join(current_dir, f"../depot_hyun/hyun/NPE_ABC/seeds/bernoulli_glm2_post{j}.pt")
             post_sample = torch.load(file_path)
         except FileNotFoundError:
             raise ValueError(f"File for posterior not found.")
