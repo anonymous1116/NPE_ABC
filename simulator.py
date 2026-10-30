@@ -431,8 +431,10 @@ def observation_lists(task_name:str):
     elif task_name.startswith("bernoulli_glm2_disperse"):
         obs_list = []
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        A = torch.load(f"{current_dir}/utils/files/rotation_A_20x10_seed0.pt")
-                
+        disperse_num = int(task_name.split("_")[-1][8:])
+        A = torch.load(f"{os.path.dirname(os.path.abspath(__file__))}/utils/files/rotation_A_{disperse_num}x10_seed0.pt")
+        A = A.to(torch.float32)
+            
         for j in range(1, 11):
             task = sbibm.get_task("bernoulli_glm")
             observation = task.get_observation(num_observation=j)  # 10 per task
