@@ -31,7 +31,7 @@ def main(args):
     L = args.L
     
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    print(f"Current CUDA device: {torch.cuda.current_device() if torch.cuda.is_available() else 'cpu'}", flush=True)
+    print(f"Current CUDA device: {torch.cuda.get_device_name() if torch.cuda.is_available() else 'cpu'}", flush=True)
     priors = Priors(original_task)
     simulators = Simulators(original_task)
     bounds = Bounds(original_task)
@@ -198,7 +198,7 @@ def main(args):
     plt.close()
     
     
-    device_name = torch.cuda.current_device() if torch.cuda.is_available() else "cpu"
+    device_name = torch.cuda.get_device_name() if torch.cuda.is_available() else "cpu"
     print(f"Device name: {device_name}, Elapsed time: {elapsed_time} seconds")
     torch.save({'c2st': dist0, 'mmd': dist1, 'SW1': dist3, 'SW2': dist2, 'device': device_name, 'elapsed_time': elapsed_time}, 
                os.path.join(output_dir, f"result_x0_{args.x0_ind}_seed_{args.seed}.pt"))  
