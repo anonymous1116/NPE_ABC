@@ -27,7 +27,8 @@ def main(args):
     NABC_results = []
     
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
+    print(f"Current CUDA device: {torch.cuda.get_device_name() if torch.cuda.is_available() else 'cpu'}", flush=True)
+        
     priors = Priors(args.task)
     true_posteriors = true_Posteriors(args.task)
     simulators = Simulators(args.task)
@@ -173,6 +174,13 @@ def main(args):
     pairplot(new_theta[:10000], figsize=(6,6))
     plt.savefig(Path(output_dir) / f"x0{args.x0_ind}_seed{args.seed}_calibrated.png")
     plt.close()
+
+    device_name = torch.cuda.get_device_name() if torch.cuda.is_available() else "cpu"
+    print(f"Device name: {device_name}, Elapsed time: {elapsed_time} seconds")
+    torch.save({'c2st': dist0, 'mmd': dist1, 'SW1': dist3, 'SW2': dist2, 'device': device_name, 'elapsed_time': elapsed_time}, 
+                os.path.join(output_dir, f"result_x0_{args.x0_ind}_seed_{args.seed}.pt"))  
+    
+
         
     
 def get_args():
