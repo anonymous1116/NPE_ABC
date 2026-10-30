@@ -1,16 +1,16 @@
 #!/bin/bash
 #SBATCH --account=PES0984
 #SBATCH --clusters=ascend
-#SBATCH --partition=debug #debug or preemptible
+#SBATCH --partition=nextgen #debug or preemptible
 #SBATCH --job-name=TABC
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=4
-#SBATCH --time=01:00:00            # the debug limit is 1 hour
+#SBATCH --time=02:00:00            # the debug limit is 1 hour
 #SBATCH --output=slurm/TABC_dist/output_log/%j.log
 #SBATCH --error=slurm/TABC_dist/output_log/%j.err
 #SBATCH --gpus-per-node=1
-##SBATCH --array=0-99               # Create a job array with indices from 0 to 99
+#SBATCH --array=0-99               # Create a job array with indices from 0 to 99
 
 mkdir -p slurm/TABC_dist/output_log
 
@@ -27,7 +27,7 @@ seed=$((SLURM_ARRAY_TASK_ID / 10 + 1))
 #L=100000000
 
 L=1000000000
-task="bernoulli_glm2_disperse100"
+task="bernoulli_glm2_disperse20"
 num_training=500000
 tol=1e-5
 #cdim=10
