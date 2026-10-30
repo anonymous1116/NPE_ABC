@@ -9,6 +9,8 @@ from pathlib import Path
 from sbi.analysis import pairplot
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from sbibm.metrics.c2st import c2st
+from sbibm.metrics.mmd import mmd
+from utils.get_measure import sliced_wasserstein
 from simulator import Priors, Simulators, Bounds, observation_lists, true_Posteriors, task_benchmark
 from help_functions import UnifSample, compute_mad, param_box, truncated_mvn_sample, ABC_rej2, forward_from_theta_test, eigen_chunked
 
@@ -84,7 +86,6 @@ def main(args):
     np.random.seed(seed)
 
     L = args.L
-    TABC_results = []
     
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print(f"Device: {device}", flush=True)
@@ -233,28 +234,26 @@ def main(args):
     results_size = min(10_000, new_theta_WABC.size(0))
     results_size2 = min(10_000, new_theta_ABC.size(0))
 
-    c2st_WABC = c2st(post_sample[:results_size].cpu(), new_theta_WABC[:results_size] )
-    c2st_ABC = c2st(post_sample[:results_size2].cpu(), new_theta_ABC[:results_size2] )
+    c2st_WABC = c2st(true_sample[:results_size].cpu(), new_theta_WABC[:results_size] )
+    c2st_ABC = c2st(true_sample[:results_size2].cpu(), new_theta_ABC[:results_size2] )
     
     print("c2st_WABC:", c2st_WABC, "c2st_ABC:", c2st_ABC)    
-    
-    TABC_results.append([c2st_WABC, c2st_ABC])
     
     sci_str = format(args.tol, ".0e")
     print(sci_str)  # Output: '1e-02'
 
 
-    dist0 = c2st(true_sample[:results_size], new_theta[:results_size])
-    dist1 = mmd(true_sample[:results_size], new_theta[:results_size])
-    dist2 = sliced_wasserstein(true_sample[:results_size], new_theta[:results_size])
-    dist3 = sliced_wasserstein(true_sample[:results_size], new_theta[:results_size], p=1)
+    dist0 = c2st(true_sample[:results_size], new_theta_WABC[:results_size])
+    dist1 = mmd(true_sample[:results_size], new_theta_WABC[:results_size])
+    dist2 = sliced_wasserstein(true_sample[:results_size], new_theta_WABC[:results_size])
+    dist3 = sliced_wasserstein(true_sample[:results_size], new_theta_WABC[:results_size], p=1)
     
     print(f"c2st: {dist0}, mmd: {dist1}, SW1: {dist3}, SW2: {dist2}")
     
     sci_str = format(args.tol, ".0e")
     print(sci_str)  # Output: '1e-02'
     
-    output_dir = f"../depot_hyun/hyun/NPE_ABC/Tdist/{args.task}/target/J_{int(args.num_training/1000)}K/{int(args.L/1_000_000)}M_eta{sci_str}"
+    output_dir = f"../depot_hyun/hyun/NPE_ABC/Tdist/{args.task}/Tdist/J_{int(args.num_training/1000)}K/{int(args.L/1_000_000)}M_eta{sci_str}"
     ## Create the directory if it doesn't exist
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
