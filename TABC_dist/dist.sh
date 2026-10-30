@@ -27,7 +27,7 @@ seed=$((SLURM_ARRAY_TASK_ID / 10 + 1))
 #L=100000000
 
 L=1000000000
-task="bernoulli_glm2_disperse40"
+task="bernoulli_glm2_disperse60"
 num_training=500000
 tol=1e-5
 #cdim=10
