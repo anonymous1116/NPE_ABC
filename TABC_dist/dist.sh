@@ -10,7 +10,7 @@
 #SBATCH --output=slurm/TABC_dist/output_log/%j.log
 #SBATCH --error=slurm/TABC_dist/output_log/%j.err
 #SBATCH --gpus-per-node=1
-##SBATCH --array=0-99               # Create a job array with indices from 0 to 99
+#SBATCH --array=0-99               # Create a job array with indices from 0 to 99
 
 mkdir -p slurm/TABC_dist/output_log
 
@@ -27,7 +27,7 @@ seed=$((SLURM_ARRAY_TASK_ID / 10 + 1))
 #L=100000000
 
 L=1000000000
-task="bernoulli_glm2_disperse60"
+task="bernoulli_glm2_disperse20"
 num_training=500000
 tol=1e-5
 #cdim=10
@@ -35,7 +35,7 @@ tol=1e-5
 x0_ind=$((SLURM_ARRAY_TASK_ID % 10)) 
 
 echo "[$(date)] Starting job: x0_ind=$x0_ind, seed=$seed, L=$L"
-#python TABC_dist/target.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol 
+python TABC_dist/l2.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol 
 echo "[$(date)] Job complete: x0_ind=$x0_ind, seed=$seed"
 
 #module load conda
@@ -45,4 +45,4 @@ echo "[$(date)] Job complete: x0_ind=$x0_ind, seed=$seed"
 #python DP/calibrating_DP.py --x0_ind 1 --seed 1 --L 10000000 --task "table_dp_77" --num_training 3000000 --tol 1e-3
 #python ABC_calibration/SE_calib.py --x0_ind 1 --seed 4 --L 10000000 --task "mog_10" --num_training 300000 --tol 1e-3 --SDE "vp"
 
-python TABC_dist/l2.py --x0_ind 0 --seed 1 --L 1000000000 --task "bernoulli_glm2_disperse20" --num_training 500000 --tol 1e-5
+#python TABC_dist/l2.py --x0_ind 0 --seed 1 --L 1000000000 --task "bernoulli_glm2_disperse20" --num_training 500000 --tol 1e-5
