@@ -44,7 +44,7 @@ def ABC_rejection(x0, X_cal, tol, device, sort = False):
 
 
 def WABC_rejection(x0, X_cal, tol, density_estimator, theta_dim, device,
-                   num_samples=1000, batch_size=500_000, sort=False):
+                   num_samples=250, batch_size=1_000_000, sort=False):
     de = density_estimator.to(device).eval()
     transform, embed = de.net._transform, de.net._embedding_net
     N = X_cal.size(0)
@@ -58,11 +58,11 @@ def WABC_rejection(x0, X_cal, tol, density_estimator, theta_dim, device,
         W = torch.empty(N, device=device)
         for s in range(0, N, batch_size):
             Xb = X_cal[s:s + batch_size]
-            Zb = forward_from_theta_test(de, Xb, theta_test, verbose=False)       # (num_samples, B, d)
+            Zb = forward_from_theta_test(de, Xb, theta_test, chunk_elems = 5_000_000,verbose=False)       # (num_samples, B, d)
             mean_sq = torch.sum(Zb.mean(0) ** 2, dim=1)            # (B,)
             W[s:s + Xb.size(0)] = torch.sqrt(mean_sq + eigen_chunked(Zb))
             del Zb
-            if (s // batch_size) % 50 == 0:
+            if (s // batch_size) % 2 == 0:
                 print(f"[WABC] {s + Xb.size(0)}/{N}", flush=True)
     nacc = max(1, int(N * tol))
     ds = torch.kthvalue(W, nacc).values          # nacc-th smallest distance
