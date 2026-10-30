@@ -1,6 +1,7 @@
 #!/bin/bash
 #SBATCH --account=PES0984            # replace with your actual project account
 #SBATCH --job-name=NPE_ABC
+#SBATCH --clusters=cardinal          # or: cardinal, pitzer, ascend
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=8
