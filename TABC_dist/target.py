@@ -9,32 +9,41 @@ from pathlib import Path
 from sbi.analysis import pairplot
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from sbibm.metrics.c2st import c2st
+from sbibm.metrics.mmd import mmd
 from simulator import Priors, Simulators, Bounds, observation_lists, true_Posteriors, task_benchmark
-from help_functions import UnifSample, param_box, truncated_mvn_sample, ABC_rej2, forward_from_theta_test, eigen_chunked
-
+from help_functions import UnifSample, param_box, truncated_mvn_sample, ABC_rej2
+from utils.get_measure import sliced_wasserstein
 
 def main(args):
     seed = args.seed
     #torch.set_default_device("cpu")
     
+    original_task = "bernoulli_glm2" if args.task.startswith("bernoulli_glm2") else args.task
+
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    disperse_num = int(args.task.split("_")[-1][8:])
+            
+    A = torch.load(f"{current_dir}/../utils/files/rotation_A_{disperse_num}x10_seed0.pt")
+            
     torch.manual_seed(seed)
     np.random.seed(seed)
 
     L = args.L
-    TABC_results = []
     
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print(f"Device: {device}", flush=True)
-    priors = Priors(args.task)
-    true_posteriors = true_Posteriors(args.task)
-    simulators = Simulators(args.task)
-    bounds = Bounds(args.task)
-    
+    priors = Priors(original_task)
+    simulators = Simulators(original_task)
+    bounds = Bounds(original_task)
+    true_posteriors = true_Posteriors(original_task)
+        
+
+
     chunk_size = 5_000_000
     num_chunks = L // chunk_size
     
     start_time = time.time()
-    x0 = observation_lists(args.task)[args.x0_ind]
+    x0 = observation_lists(original_task)[args.x0_ind]
 
     print(x0)
     if x0.ndim == 1:
@@ -47,11 +56,6 @@ def main(args):
     Y_cal = priors.sample((1_000_000,))
     X_cal = simulators(Y_cal)
 
-    permute = torch.load(f"{os.path.dirname(os.path.abspath(__file__))}/../../depot_hyun/hyun/NPE_ABC/seeds/{args.task}_permutation.pt", weights_only = False)
-    inv_perm = torch.empty_like(permute)
-    inv_perm[permute] = torch.arange(len(permute))
-    inv_perm = inv_perm[0:10]
-
     output_file_path = os.path.join(f'../depot_hyun/hyun/NPE_ABC/nets/{args.task}/J_{int(args.num_training/1000)}K/{args.task}_{seed}_{args.cond_den}.pkl')
     with open(output_file_path, 'rb') as f:
         saved_data = pickle.load(f)
@@ -62,24 +66,23 @@ def main(args):
     transform=flow._transform
     embed = flow._embedding_net
     
-    index_ABC = ABC_rej2(x0[:,inv_perm], X_cal[:,inv_perm], 1e-2, device)
+    index_ABC = ABC_rej2(x0, X_cal, 1e-2, device)
     X_cal, Y_cal = X_cal[index_ABC], Y_cal[index_ABC]    
+
+
+    x0_transform = torch.matmul(x0.to(device), A.T.to(device))
+    X_cal_transform = torch.matmul(X_cal.to(device), A.T.to(device))
     
     with torch.no_grad():
-        tmp, _ = transform.forward(Y_cal.to(device), context = embed(X_cal.to(device)) )
-        adj, _ = transform.inverse(tmp, context = embed(x0.expand((tmp.size(0),x0.size(1))).to(device)))    
+        tmp, _ = transform.forward(Y_cal.to(device), context = embed(X_cal_transform.to(device)) )
+        adj, _ = transform.inverse(tmp, context = embed(x0_transform.expand((tmp.size(0),x0_transform.size(1))).to(device)))    
     adj = adj.cpu()
 
     X_abc = []
     Y_abc = []
     
-    if args.task in task_benchmark:
-        post_sample = true_posteriors(j = args.x0_ind+1)
-    elif args.task in ["my_five_twomoons"]:    
-        post_sample = torch.load(f"../depot_hyun/hyun/NPE_ABC/seeds/my_five_twomoons_post_{args.x0_ind+1}.pt")
-    else:
-        post_sample = true_posteriors(torch.tensor(x0), n_samples=10_000, bounds=bounds)
-
+    true_sample = true_posteriors(j = args.x0_ind+1)
+    
     if bounds is not None:
         adj = torch.clamp(adj, min = torch.tensor(bounds)[:,0], max = torch.tensor(bounds)[:,1])
 
@@ -110,7 +113,7 @@ def main(args):
         
         X_chunk = simulators(Y_chunk)
 
-        index_ABC = ABC_rej2(x0[:,inv_perm], X_chunk[:,inv_perm], args.tol*(1/new_tol), device)
+        index_ABC = ABC_rej2(x0, X_chunk, args.tol*(1/new_tol), device)
     
         X_abc.append(X_chunk[index_ABC])
         Y_abc.append(Y_chunk[index_ABC])
@@ -120,23 +123,29 @@ def main(args):
     X_abc = torch.cat(X_abc)
     Y_abc = torch.cat(Y_abc)
     
-    index_ABC = ABC_rej2(x0[:, inv_perm], X_abc[:, inv_perm], new_tol, device)
+    index_ABC = ABC_rej2(x0, X_abc, new_tol, device)
     X_abc_tmp, Y_abc_tmp = X_abc[index_ABC], Y_abc[index_ABC]
+
+    X_abc_tmp_transform = torch.matmul(X_abc_tmp.to(device), A.T.to(device))
+            
+
 
     print("X_abc size", X_abc.size())
     with torch.no_grad():
-        tmp, _ =  transform.forward(Y_abc_tmp.to(device), context = embed(X_abc_tmp.to(device)) )
-        new_theta, _ = transform.inverse(tmp, context = embed(x0.expand((tmp.size(0),x0.size(1))).to(device)))    
+        tmp, _ =  transform.forward(Y_abc_tmp.to(device), context = embed(X_abc_tmp_transform.to(device)) )
+        new_theta, _ = transform.inverse(tmp, context = embed(x0_transform.expand((tmp.size(0),x0_transform.size(1))).to(device)))    
     
     if bounds is not None:
         new_theta = torch.clamp(new_theta, min = torch.tensor(bounds)[:,0], max = torch.tensor(bounds)[:,1])
         tol_bound = 10000/new_theta.size(0) * new_tol
         print("new_tol", new_tol, "tol_bound:", tol_bound)
-        index_ABC = ABC_rej2(x0[:, inv_perm], X_abc[:, inv_perm], tol_bound, device)
+        index_ABC = ABC_rej2(x0, X_abc, tol_bound, device)
         X_abc, Y_abc = X_abc[index_ABC], Y_abc[index_ABC]
+        X_abc_transform = torch.matmul(X_abc.to(device), A.T.to(device))
+            
         with torch.no_grad():
-            tmp, _ =  transform.forward(Y_abc.to(device), context = embed(X_abc.to(device)) )
-            new_theta, _ = transform.inverse(tmp, context = embed(x0.expand((tmp.size(0),x0.size(1))).to(device)))    
+            tmp, _ =  transform.forward(Y_abc.to(device), context = embed(X_abc_transform.to(device)) )
+            new_theta, _ = transform.inverse(tmp, context = embed(x0_transform.expand((tmp.size(0),x0_transform.size(1))).to(device)))    
         new_theta = torch.clamp(new_theta, min = torch.tensor(bounds)[:,0], max = torch.tensor(bounds)[:,1])
         
     new_theta = new_theta.cpu()
@@ -145,35 +154,38 @@ def main(args):
     print("new_theta_min:", torch.min(new_theta,0).values)
     # 4) Now call your fast function (or sbi’s sample_batched) on GPU
     end_time = time.time()
-    
-    
+
     elapsed_time = end_time - start_time  # Calculate elapsed time
     
     print("TABC sample size: ", new_theta.size())
     results_size = min(10_000, new_theta.size(0))
 
-    tmp = c2st(post_sample[:results_size].cpu(), new_theta[:results_size] )
-    print(tmp)    
+
+
+    dist0 = c2st(true_sample[:results_size], new_theta[:results_size])
+    dist1 = mmd(true_sample[:results_size], new_theta[:results_size])
+    dist2 = sliced_wasserstein(true_sample[:results_size], new_theta[:results_size])
+    dist3 = sliced_wasserstein(true_sample[:results_size], new_theta[:results_size], p=1)
     
-    TABC_results.append(tmp)
+    print(tmp)    
     
     sci_str = format(args.tol, ".0e")
     print(sci_str)  # Output: '1e-02'
     
-    output_dir = f"../depot_hyun/hyun/NPE_ABC/flow_c2st_latent_target/{args.task}_context/J_{int(args.num_training/1000)}K/{int(args.L/1_000_000)}M_eta{sci_str}"
+    output_dir = f"../depot_hyun/hyun/NPE_ABC/Tdist/{args.task}/target/J_{int(args.num_training/1000)}K/{int(args.L/1_000_000)}M_eta{sci_str}"
     ## Create the directory if it doesn't exist
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
         print(f"Directory '{output_dir}' created.")
     else:
-        print(f"Directory '{output_dir}' already exists.")
+        print(f"Directory '{output_dir}' already exists.")    
 
     # Save to output_dir
-    pairplot(post_sample, figsize=(6,6), limits = bounds)
+    pairplot(true_sample, figsize=(6,6), limits = bounds)
     plt.savefig(Path(output_dir) / f"x0{args.x0_ind}_seed{args.seed}_reference_bounds.png")
     plt.close()
 
-    pairplot(post_sample, figsize=(6,6))
+    pairplot(true_sample, figsize=(6,6))
     plt.savefig(Path(output_dir) / f"x0{args.x0_ind}_seed{args.seed}_reference.png")
     plt.close()
     
@@ -185,12 +197,11 @@ def main(args):
     plt.savefig(Path(output_dir) / f"x0{args.x0_ind}_seed{args.seed}_calibrated.png")
     plt.close()
     
-    torch.save(TABC_results, f"{output_dir}/x0{args.x0_ind}_seed{args.seed}.pt")
-    if device.type == 'cuda':
-        torch.save([torch.cuda.get_device_name(0), elapsed_time], f"{output_dir}/x0{args.x0_ind}_seed{args.seed}_info.pt")
-    else:
-        torch.save(["cpu", elapsed_time], f"{output_dir}/x0{args.x0_ind}_seed{args.seed}_info.pt")
-
+    
+    device_name = torch.cuda.current_device() if torch.cuda.is_available() else "cpu"
+    
+    torch.save({'c2st': dist0, 'mmd': dist1, 'SW1': dist3, 'SW2': dist2, 'device_name': device_name, 'elapsed_time': elapsed_time}, 
+               os.path.join(output_dir, f"result_x0_{args.x0_ind}_seed_{args.seed}.pt"))  
     
     #
 def get_args():
