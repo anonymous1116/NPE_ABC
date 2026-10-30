@@ -56,7 +56,7 @@ def main(args):
     Y_cal = priors.sample((1_000_000,))
     X_cal = simulators(Y_cal)
 
-    output_file_path = os.path.join(f'{current_dir}/../depot_hyun/hyun/NPE_ABC/nets/{args.task}/J_{int(args.num_training/1000)}K/{args.task}_{seed}_{args.cond_den}.pkl')
+    output_file_path = os.path.join(f'{current_dir}/../../depot_hyun/hyun/NPE_ABC/nets/{args.task}/J_{int(args.num_training/1000)}K/{args.task}_{seed}_{args.cond_den}.pkl')
     with open(output_file_path, 'rb') as f:
         saved_data = pickle.load(f)
     density_estimator_npe = saved_data["density_estimator"]
