@@ -1,29 +1,23 @@
 #!/bin/bash
-#SBATCH --account=PES0984            # replace with your actual project account
-#SBATCH --job-name=TABC_dist
-#SBATCH --clusters=ascend          # or: cardinal, pitzer, ascend
+#SBATCH --account=PES0984
+#SBATCH --clusters=ascend
+#SBATCH --partition=debug-nextgen
+#SBATCH --job-name=c2st_debug
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --cpus-per-task=8
-#SBATCH --time=3-10:00:00
-#SBATCH --output=NPE_ABC/output_log/%j.out            # %x = job name, %j = job ID
-#SBATCH --error=NPE_ABC/output_log/%j.err
-#SBATCH --array=1               # Create a job array with indices from 1 to 10
-###SBATCH --gpus-per-node=1
+#SBATCH --cpus-per-task=4
+#SBATCH --time=00:59:00            # the debug limit is 1 hour
+#SBATCH --output=NPE_ABC/TABC_dist/output_log/NPE_ABC_debug_%j.log
+
+mkdir -p NPE_ABC/TABC_dist/output_log
 
 
-# #SBATCH --partition=a10,a100-40gb,a100-80gb
+SLURM_SUBMIT_DIR=/users/PES0984/hhyun116/NPE_ABC
 
-# Create the output_log directory if it doesn't exist
-mkdir -p ABC_calibration/output_log
+module load miniconda3/24.1.2-py310
+source activate BayesCalib
+export LD_LIBRARY_PATH=$CONDA_PREFIX/lib:$LD_LIBRARY_PATH
 
-# Load the required Python environment
-module load conda
-conda activate /depot/wangxiao/apps/hyun18/NPE_NABC
-
-# Change to the directory where the job was submitted from
-SLURM_SUBMIT_DIR=/home/hyun18/NPE_ABC
-cd $SLURM_SUBMIT_DIR
 
 # Calculate seed and dim_out
 seed=$((SLURM_ARRAY_TASK_ID / 10 + 1))
