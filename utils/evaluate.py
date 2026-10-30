@@ -26,7 +26,7 @@ def create_c2st_job_script(task, num_training, measure, x0_ind, seed, post_n_sam
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=4
-#SBATCH --time=01:00:00
+#SBATCH --time=04:00:00
 #SBATCH --output=NPE_ABC/{measure}/{task}/output_log/output_log_%j.log
 #SBATCH --error=NPE_ABC/{measure}/{task}/error_log/error_log_%j.txt
 
@@ -164,4 +164,4 @@ if __name__ == "__main__":
     main(args)  # Pass the entire args object to the main function
 
 
-#python utils/evaluate.py --task "bernoulli_glm2_disperse60" --measure "c2st" --num_training 500000 --method "NPE" 
+#python utils/evaluate.py --task "bernoulli_glm2_disperse20" --measure "c2st" --num_training 500000 --method "NPE" 
