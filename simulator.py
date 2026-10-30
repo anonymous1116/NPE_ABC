@@ -543,8 +543,8 @@ def simulator_bernoulli_disperse(thetas, A, batch_size=100_000):
         z = torch.sigmoid(psi)
         y = (torch.rand_like(z) < z).float()
 
-        output_batch = torch.matmul(y, design_matrix).to("cpu")
-        output_batch = torch.matmul(output_batch, A.T)
+        output_batch = torch.matmul(y, design_matrix)
+        output_batch = torch.matmul(output_batch, A.T).to("cpu")
         output.append(output_batch)
         del theta_batch, psi, z, y, output_batch
         
