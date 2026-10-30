@@ -10,7 +10,7 @@
 #SBATCH --output=slurm/TABC_dist/output_log/%j.log
 #SBATCH --error=slurm/TABC_dist/output_log/%j.err
 #SBATCH --gpus-per-node=1
-#SBATCH --array=0-99               # Create a job array with indices from 0 to 99
+##SBATCH --array=0-99               # Create a job array with indices from 0 to 99
 
 mkdir -p slurm/TABC_dist/output_log
 
