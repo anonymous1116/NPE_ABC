@@ -140,7 +140,6 @@ def get_args():
 
 
 def main(args):
-    print("asdf")
     x0_list = observation_lists(args.task)
     seeds = np.arange(1, 11)  # Use np.arange instead of np.range
     # Create SLURM job scripts for each combination of x0_list and 10 runs
@@ -151,7 +150,7 @@ def main(args):
         #for j in seeds:
         for j in [1]:
                     
-            create_c2st_job_script(args.task, args.num_training, args.measure, x0_ind = i, seed = j, cond_den = args.cond_den, method = args.method, post_n_samples=10_000, use_gpu = gpu_ind, embed = args.embed, cdim=args.cdim)
+            create_c2st_job_script(args.task, args.num_training, args.measure, x0_ind = i, seed = j, cond_den = args.cond_den, method = args.method, post_n_samples=10_000, embed = args.embed, cdim=args.cdim)
     print("distribute end")
     
 
