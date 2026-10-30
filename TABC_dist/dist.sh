@@ -10,7 +10,7 @@
 #SBATCH --output=slurm/TABC_dist/output_log/%j.log
 #SBATCH --error=slurm/TABC_dist/output_log/%j.err
 #SBATCH --gpus-per-node=1
-#SBATCH --array=0-99               # Create a job array with indices from 0 to 99
+##SBATCH --array=0-99               # Create a job array with indices from 0 to 99
 
 mkdir -p slurm/TABC_dist/output_log
 
@@ -45,4 +45,4 @@ echo "[$(date)] Job complete: x0_ind=$x0_ind, seed=$seed"
 #python DP/calibrating_DP.py --x0_ind 1 --seed 1 --L 10000000 --task "table_dp_77" --num_training 3000000 --tol 1e-3
 #python ABC_calibration/SE_calib.py --x0_ind 1 --seed 4 --L 10000000 --task "mog_10" --num_training 300000 --tol 1e-3 --SDE "vp"
 
-#python TABC_dist/l2.py --x0_ind 0 --seed 1 --L 1000000000 --task "bernoulli_glm2_disperse20" --num_training 500000 --tol 1e-5
+python TABC_dist/Tdist.py --x0_ind 0 --seed 1 --L 100000000 --task "bernoulli_glm2_disperse20" --num_training 500000 --tol 1e-4
