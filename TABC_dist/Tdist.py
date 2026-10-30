@@ -43,40 +43,33 @@ def ABC_rejection(x0, X_cal, tol, device, sort = False):
 
 
 
-def WABC_rejection(x0, X_cal, tol, density_estimator, theta_dim, device, num_samples=1000, sort = False):
-    Z_init = torch.randn((num_samples,theta_dim))
-    density_estimator_npe_gpu = density_estimator.to(device).eval()
-    flow = density_estimator_npe_gpu.net
-    transform=flow._transform
-    embed = flow._embedding_net
+def WABC_rejection(x0, X_cal, tol, density_estimator, theta_dim, device,
+                   num_samples=1000, batch_size=500_000, sort=False):
+    de = density_estimator.to(device).eval()
+    transform, embed = de.net._transform, de.net._embedding_net
+    N = X_cal.size(0)
 
-    del flow, density_estimator_npe_gpu
     with torch.no_grad():
-        theta_test, _ = transform.inverse(Z_init.to(device), context = embed(x0.expand((Z_init.size(0),x0.size(1))).to(device)))
+        # theta draws from q(theta | x0): computed once, shared by all batches
+        Z_init = torch.randn(num_samples, theta_dim, device=device)
+        ctx0 = embed(x0.to(device)).expand(num_samples, -1)
+        theta_test, _ = transform.inverse(Z_init, context=ctx0)
 
-    Z_test = forward_from_theta_test(density_estimator, X_cal, theta_test)
-    
-    mean_test = torch.sum(torch.mean(Z_test,dim =0) ** 2, 1)
-    frob_sq = eigen_chunked(Z_test)
+        W = torch.empty(N, device=device)
+        for s in range(0, N, batch_size):
+            Xb = X_cal[s:s + batch_size]
+            Zb = forward_from_theta_test(de, Xb, theta_test)       # (num_samples, B, d)
+            mean_sq = torch.sum(Zb.mean(0) ** 2, dim=1)            # (B,)
+            W[s:s + Xb.size(0)] = torch.sqrt(mean_sq + eigen_chunked(Zb))
+            del Zb
 
-    W_distances = torch.sqrt((mean_test + frob_sq))
-    
-    # Determine threshold distance using top-k rather than sorting the entire tensor
-    num = X_cal.size(0)
-    nacc = int(num * tol)
-    ds = torch.topk(W_distances, nacc, largest=False).values[-1]
-    
-    # Create mask and filter based on the threshold distance
-    wt1 = (W_distances <= ds)
-    # Select points within tolerance and return to CPU if needed
-    del transform, embed, Z_test, mean_test, frob_sq
-    torch.cuda.empty_cache()
+    nacc = max(1, int(N * tol))
+    ds = torch.kthvalue(W, nacc).values          # nacc-th smallest distance
+    wt1 = (W <= ds)
+
     if sort:
-        sorted_indices = torch.argsort(W_distances)
-        return wt1.cpu(), sorted_indices.cpu()
-    else:
-        return wt1.cpu()
-
+        return wt1.cpu(), torch.argsort(W).cpu()
+    return wt1.cpu()
 
 def main(args):
     seed = args.seed
