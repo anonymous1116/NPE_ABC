@@ -302,7 +302,7 @@ def get_args():
     # Create an argument parser
     parser = argparse.ArgumentParser(description="Run simulations and inference.")
     parser.add_argument('--task', type=str, default='my_ten_twomoons', help='Simulation type: my_ten_twomoons')
-    parser.add_argument('--x0_ind', type=str, default='0', help='bernoulli_glm x0_ind: 0~9')
+    parser.add_argument('--x0_ind', type=int, default='0', help='bernoulli_glm x0_ind: 0~9')
             
     return parser.parse_args()
 
