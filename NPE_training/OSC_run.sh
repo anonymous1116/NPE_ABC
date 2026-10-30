@@ -6,12 +6,12 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=8
 #SBATCH --time=3-10:00:00
-#SBATCH --output=NPE_ABC/output_log/%j.out            # %x = job name, %j = job ID
-#SBATCH --error=NPE_ABC/output_log/%j.err
+#SBATCH --output=slurm/output_log/%j.out            # %x = job name, %j = job ID
+#SBATCH --error=slurm/output_log/%j.err
 #SBATCH --array=1-10               # Create a job array with indices from 1 to 10
 ###SBATCH --gpus-per-node=1
 
-mkdir -p circadian/output_log
+mkdir -p slurm/output_log
 
 SLURM_SUBMIT_DIR=/users/PES0984/hhyun116/NPE_ABC
 

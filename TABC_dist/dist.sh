@@ -7,9 +7,11 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=4
 #SBATCH --time=00:59:00            # the debug limit is 1 hour
-#SBATCH --output=NPE_ABC/TABC_dist/output_log/NPE_ABC_debug_%j.log
+#SBATCH --output=slurm/TABC_dist/output_log/NPE_ABC_debug_%j.log
+#SBATCH --error=slurm/TABC_dist/output_log/%j.err
+#SBATCH --gpus-per-node=1
 
-mkdir -p NPE_ABC/TABC_dist/output_log
+mkdir -p slurm/TABC_dist/output_log
 
 
 SLURM_SUBMIT_DIR=/users/PES0984/hhyun116/NPE_ABC
