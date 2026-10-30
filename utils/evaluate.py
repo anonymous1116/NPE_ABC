@@ -29,8 +29,8 @@ def create_c2st_job_script(task, num_training, measure, x0_ind, seed, post_n_sam
 #SBATCH --output=NPE_ABC/{measure}/{task}/output_log/output_log_%j.log
 #SBATCH --error=NPE_ABC/{measure}/{task}/error_log/error_log_%j.txt
 
-for d in ("output_log", "error_log", "slurm_files"):
-    os.makedirs(f"NPE_ABC/{measure}/{task}/{d}", exist_ok=True)
+mkdir -p NPE_ABC/{measure}/{task}/output_log
+mkdir -p NPE_ABC/{measure}/{task}/error_log
 
 module load miniconda3/24.1.2-py310
 source activate BayesCalib
