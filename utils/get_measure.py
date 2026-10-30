@@ -2,7 +2,7 @@
 import os, sys, torch, pickle, argparse 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from simulator import observation_lists, Bounds, true_Posteriors, task_benchmark, Priors, Simulators
-from sbibm.metrics.c2st import c2st, mmd
+from sbibm.metrics import c2st, mmd
 from pathlib import Path
 from sbi.analysis import pairplot
 import matplotlib.pyplot as plt
