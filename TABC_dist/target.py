@@ -32,6 +32,7 @@ def main(args):
     
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print(f"Device: {device}", flush=True)
+    print(f"Current CUDA device: {torch.cuda.current_device() if torch.cuda.is_available() else 'cpu'}", flush=True)
     priors = Priors(original_task)
     simulators = Simulators(original_task)
     bounds = Bounds(original_task)
