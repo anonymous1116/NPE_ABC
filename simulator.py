@@ -522,8 +522,7 @@ def simulator_bernoulli(thetas, batch_size=100_000):
         output_batch = torch.matmul(y, design_matrix).to("cpu")
         output.append(output_batch)
         del theta_batch, psi, z, y, output_batch
-        torch.cuda.empty_cache()  # Optional: free memory aggressively
-
+        
     return torch.cat(output, dim=0)
 
 
@@ -548,8 +547,7 @@ def simulator_bernoulli_disperse(thetas, A, batch_size=100_000):
         output_batch = torch.matmul(output_batch, A.T)
         output.append(output_batch)
         del theta_batch, psi, z, y, output_batch
-        torch.cuda.empty_cache()  # Optional: free memory aggressively
-
+        
     return torch.cat(output, dim=0)
 
 
