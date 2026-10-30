@@ -248,8 +248,8 @@ def main(args):
     dist3_ABC = sliced_wasserstein(true_sample[:results_size], new_theta_ABC[:results_size], p=1)
 
     
-    print(f"c2st: {dist0}, mmd: {dist1}, SW1: {dist3}, SW2: {dist2}")
-    print(f"c2st: {dist0_ABC}, mmd: {dist1_ABC}, SW1: {dist3_ABC}, SW2: {dist2_ABC}")
+    print(f"Tdist: c2st: {dist0}, mmd: {dist1}, SW1: {dist3}, SW2: {dist2}")
+    print(f"Euclidean: c2st: {dist0_ABC}, mmd: {dist1_ABC}, SW1: {dist3_ABC}, SW2: {dist2_ABC}")
     
     sci_str = format(args.tol, ".0e")
     print(sci_str)  # Output: '1e-02'
@@ -282,9 +282,9 @@ def main(args):
     device_name = torch.cuda.get_device_name() if torch.cuda.is_available() else "cpu"
     print(f"Device name: {device_name}, Elapsed time: {elapsed_time} seconds")
     torch.save({'c2st': dist0, 'mmd': dist1, 'SW1': dist3, 'SW2': dist2, 'device': device_name, 'elapsed_time': elapsed_time}, 
-               os.path.join(output_dir, f"TABC_x0_{args.x0_ind}_seed_{args.seed}.pt"))  
+               os.path.join(output_dir, f"Tdist_x0_{args.x0_ind}_seed_{args.seed}.pt"))  
     torch.save({'c2st': dist0_ABC, 'mmd': dist1_ABC, 'SW1': dist3_ABC, 'SW2': dist2_ABC, 'device': device_name, 'elapsed_time': elapsed_time}, 
-                   os.path.join(output_dir, f"ABC_x0_{args.x0_ind}_seed_{args.seed}_.pt"))  
+                   os.path.join(output_dir, f"Euclidean_x0_{args.x0_ind}_seed_{args.seed}_.pt"))  
     
     
 
