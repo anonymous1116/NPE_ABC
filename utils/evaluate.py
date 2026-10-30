@@ -37,6 +37,10 @@ module load miniconda3/24.1.2-py310
 source activate BayesCalib
 export LD_LIBRARY_PATH=$CONDA_PREFIX/lib:$LD_LIBRARY_PATH
 
+export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
+export MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK
+export OPENBLAS_NUM_THREADS=$SLURM_CPUS_PER_TASK
+
 # Change to the directory where the job was submitted from
 SLURM_SUBMIT_DIR=$(pwd)
 cd $SLURM_SUBMIT_DIR
@@ -160,4 +164,4 @@ if __name__ == "__main__":
     main(args)  # Pass the entire args object to the main function
 
 
-#python utils/evaluate.py --task "bernoulli_glm2_disperse20" --measure "c2st" --num_training 500000 --method "NPE" 
+#python utils/evaluate.py --task "bernoulli_glm2_disperse60" --measure "c2st" --num_training 500000 --method "NPE" 
