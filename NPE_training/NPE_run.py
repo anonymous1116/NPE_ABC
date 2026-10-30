@@ -108,6 +108,5 @@ if __name__ == "__main__":
                                post_n_samples =10_000, 
                                cond_den = args.cond_den,
                                method = args.method, 
-                               use_gpu = gpu_ind,
                                embed = False)
         
