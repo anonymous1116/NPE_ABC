@@ -3,7 +3,6 @@ import numpy as np
 import os, pickle
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from simulator import Priors, Simulators, observation_lists, MoG_posterior, Bounds, true_Posteriors
-
 def main(args):
     if args.task == "my_ten_twomoons":
         random.seed(2826)
@@ -18,6 +17,52 @@ def main(args):
         current_dir = os.path.dirname(os.path.abspath(__file__))
         torch.save(x0_list, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/my_ten_twomoons_obs.pt")    
         print(x0_list)
+
+
+    elif args.task == "bernoulli_glm2":
+        import sbibm
+        from pypolyagamma import PyPolyaGamma
+        from tqdm import tqdm
+
+
+        torch.manual_seed(args.x0_ind+1235)
+        np.random.seed(args.x0_ind+1235)   
+        x0_ind = args.x0_ind
+        Binv2 = torch.diag(torch.ones(10)* 0.5)
+        Binv2 = Binv2.numpy()
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+                
+        design_matrix = torch.load(f"{current_dir}/utils/files/design_matrix.pt")
+
+        mcmc_num_samples_warmup = 25000
+        mcmc_thinning = 25
+        num_samples = 10_000
+        mcmc_num_samples = mcmc_num_samples_warmup + mcmc_thinning * num_samples
+
+        pg = PyPolyaGamma()
+        X = design_matrix.numpy()
+
+        task = sbibm.get_task("bernoulli_glm")
+        obs = task.get_observation(num_observation=x0_ind+1)[0]   # shape (1, 10)
+        theta_true = task.get_true_parameters(num_observation=x0_ind+1)[0]   # shape (1, 10)
+        print(theta_true)
+                
+        sample = theta_true.numpy()  # Init at true parameters
+        samples = []
+        for j in tqdm(range(mcmc_num_samples)):
+            psi = np.dot(X, sample)
+            w = np.array([pg.pgdraw(1, b) for b in psi])
+            O = np.diag(w)
+            V = np.linalg.inv(np.dot(np.dot(X.T, O), X) + Binv2)
+            m = np.dot(V, np.dot(X.T, obs - 1 * 0.5))
+            sample = np.random.multivariate_normal(np.ravel(m), V)
+            samples.append(sample)
+
+        samples = np.asarray(samples).astype(np.float32)
+        samples_subset = samples[mcmc_num_samples_warmup::mcmc_thinning, :]
+        reference_posterior_samples = torch.from_numpy(samples_subset)
+        torch.save(reference_posterior_samples, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/bernoulli_glm2_post{x0_ind+1}.pt")
+                
     
     elif args.task == "my_fifty_twomoons":
         random.seed(2826)
@@ -257,6 +302,8 @@ def get_args():
     # Create an argument parser
     parser = argparse.ArgumentParser(description="Run simulations and inference.")
     parser.add_argument('--task', type=str, default='my_ten_twomoons', help='Simulation type: my_ten_twomoons')
+    parser.add_argument('--x0_ind', type=str, default='0', help='bernoulli_glm x0_ind: 0~9')
+            
     return parser.parse_args()
 
 
