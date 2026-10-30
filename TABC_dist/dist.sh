@@ -6,7 +6,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=4
-#SBATCH --time=00:29:00            # the debug limit is 1 hour
+#SBATCH --time=01:29:00            # the debug limit is 1 hour
 #SBATCH --output=slurm/TABC_dist/output_log/%j.log
 #SBATCH --error=slurm/TABC_dist/output_log/%j.err
 #SBATCH --gpus-per-node=1
