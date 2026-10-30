@@ -167,7 +167,7 @@ def main(args):
     dist2 = sliced_wasserstein(true_sample[:results_size], new_theta[:results_size])
     dist3 = sliced_wasserstein(true_sample[:results_size], new_theta[:results_size], p=1)
     
-    print(tmp)    
+    print(f"c2st: {dist0}, mmd: {dist1}, SW1: {dist3}, SW2: {dist2}")
     
     sci_str = format(args.tol, ".0e")
     print(sci_str)  # Output: '1e-02'
