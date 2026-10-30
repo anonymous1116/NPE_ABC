@@ -200,7 +200,7 @@ def main(args):
     
     device_name = torch.cuda.current_device() if torch.cuda.is_available() else "cpu"
     
-    torch.save({'c2st': dist0, 'mmd': dist1, 'SW1': dist3, 'SW2': dist2, 'device_name': device_name, 'elapsed_time': elapsed_time}, 
+    torch.save({'c2st': dist0, 'mmd': dist1, 'SW1': dist3, 'SW2': dist2, 'device': device_name, 'elapsed_time': elapsed_time}, 
                os.path.join(output_dir, f"result_x0_{args.x0_ind}_seed_{args.seed}.pt"))  
     
     #
