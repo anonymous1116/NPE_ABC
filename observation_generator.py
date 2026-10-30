@@ -42,9 +42,9 @@ def main(args):
         pg = PyPolyaGamma()
         X = design_matrix.numpy()
 
-        task = sbibm.get_task("bernoulli_glm")
-        obs = task.get_observation(num_observation=x0_ind+1)[0]   # shape (1, 10)
-        theta_true = task.get_true_parameters(num_observation=x0_ind+1)[0]   # shape (1, 10)
+        task_raw = sbibm.get_task("bernoulli_glm_raw")
+        obs = task_raw.get_observation(num_observation=x0_ind+1)[0]   # shape (1, 10)
+        theta_true = task_raw.get_true_parameters(num_observation=x0_ind+1)[0]   # shape (1, 10)
         print(theta_true)
                 
         sample = theta_true.numpy()  # Init at true parameters
