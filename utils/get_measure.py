@@ -2,11 +2,24 @@
 import os, sys, torch, pickle, argparse 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from simulator import observation_lists, Bounds, true_Posteriors, task_benchmark, Priors, Simulators
-from sbibm.metrics.c2st import c2st
+from sbibm.metrics.c2st import c2st, mmd
 from pathlib import Path
 from sbi.analysis import pairplot
 import matplotlib.pyplot as plt
 from sbi.inference import NPSE
+
+
+def sliced_wasserstein(X, Y, n_proj=10000, p=2, seed=0):
+    g = torch.Generator().manual_seed(seed)
+    n = min(len(X), len(Y))
+    X, Y = X[:n].double(), Y[:n].double()
+    mu, sd = Y.mean(0), Y.std(0)                    # standardize using the reference
+    X, Y = (X - mu) / sd, (Y - mu) / sd
+    theta = torch.randn(X.shape[1], n_proj, generator=g, dtype=X.dtype)
+    theta /= theta.norm(dim=0, keepdim=True)        # random directions on the sphere
+    xp, _ = torch.sort(X @ theta, dim=0)
+    yp, _ = torch.sort(Y @ theta, dim=0)
+    return (((xp - yp).abs() ** p).mean() ** (1 / p)).to(torch.float32)
 
 def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, cond, method):
     #device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -76,16 +89,27 @@ def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, c
         posterior = saved_data['posterior']
         sample_post = posterior.sample((post_n_samples,), x=torch.tensor(x0))
 
-    if measure == "c2st":
-        sample_post_size = sample_post.size(0)
-        dist = c2st(true_sample[:sample_post_size], sample_post[:sample_post_size])
-    print("c2st: ", dist)  
+
+    # Performance measure
+    sample_post_size = sample_post.size(0)
+    dist0 = c2st(true_sample[:sample_post_size], sample_post[:sample_post_size])
+    dist1 = mmd(true_sample[:sample_post_size], sample_post[:sample_post_size])
+    dist2 = sliced_wasserstein(true_sample[:sample_post_size], sample_post[:sample_post_size])
+    dist3 = sliced_wasserstein(true_sample[:sample_post_size], sample_post[:sample_post_size], p=1)
+            
+            
+    print(f"c2st: ", dist0)
+    print(f"mmd: ", dist1)
+    print(f"SW1: ", dist3)
+    print(f"SW2: ", dist2)
+                      
+    
     # Save
     
     output_dir = f"../depot_hyun/hyun/NPE_ABC/{method}_{measure}_results/{task}/J_{int(num_training/1000)}K"   
     os.makedirs(output_dir, exist_ok=True)
-    torch.save(dist, os.path.join(output_dir, f"result_x0_{x0_ind}_seed_{seed}.pt"))  # Customize filename as needed
-
+    
+    torch.save({'c2st': dist0, 'mmd': dist1, 'SW1': dist3, 'SW2': dist2}, os.path.join(output_dir, f"result_x0_{x0_ind}_seed_{seed}.pt"))  # Customize filename as needed
     # Save to output_dir
     pairplot(true_sample, figsize=(6,6), limits = limits)
     plt.savefig(Path(output_dir) / f"x0{args.x0_ind}_seed{args.seed}_reference.png")
