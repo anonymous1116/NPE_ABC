@@ -361,7 +361,7 @@ def forward_from_theta_test(
         if logger is not None:
             logger.info(msg)
         else:
-            print(msg)
+            print(msg, flush=True)
 
     density_estimator.eval()
     flow = density_estimator.net
