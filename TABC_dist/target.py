@@ -24,7 +24,7 @@ def main(args):
     disperse_num = int(args.task.split("_")[-1][8:])
             
     A = torch.load(f"{current_dir}/../utils/files/rotation_A_{disperse_num}x10_seed0.pt")
-            
+    A = A.to(torch.float32)
     torch.manual_seed(seed)
     np.random.seed(seed)
 
