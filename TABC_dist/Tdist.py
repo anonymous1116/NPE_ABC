@@ -247,8 +247,15 @@ def main(args):
     dist1 = mmd(true_sample[:results_size], new_theta_WABC[:results_size])
     dist2 = sliced_wasserstein(true_sample[:results_size], new_theta_WABC[:results_size])
     dist3 = sliced_wasserstein(true_sample[:results_size], new_theta_WABC[:results_size], p=1)
+
+    dist0_ABC = c2st(true_sample[:results_size], new_theta_ABC[:results_size])
+    dist1_ABC = mmd(true_sample[:results_size], new_theta_ABC[:results_size])
+    dist2_ABC = sliced_wasserstein(true_sample[:results_size], new_theta_ABC[:results_size])
+    dist3_ABC = sliced_wasserstein(true_sample[:results_size], new_theta_ABC[:results_size], p=1)
+
     
     print(f"c2st: {dist0}, mmd: {dist1}, SW1: {dist3}, SW2: {dist2}")
+    print(f"c2st: {dist0_ABC}, mmd: {dist1_ABC}, SW1: {dist3_ABC}, SW2: {dist2_ABC}")
     
     sci_str = format(args.tol, ".0e")
     print(sci_str)  # Output: '1e-02'
@@ -270,20 +277,21 @@ def main(args):
     plt.savefig(Path(output_dir) / f"x0{args.x0_ind}_seed{args.seed}_reference.png")
     plt.close()
     
-    pairplot(new_theta[:10000], figsize=(6,6), limits = bounds)
+    pairplot(new_theta_WABC[:10000], figsize=(6,6), limits = bounds)
     plt.savefig(Path(output_dir) / f"x0{args.x0_ind}_seed{args.seed}_calibrated_bounds.png")
     plt.close()
     
-    pairplot(new_theta[:10000], figsize=(6,6))
+    pairplot(new_theta_WABC[:10000], figsize=(6,6))
     plt.savefig(Path(output_dir) / f"x0{args.x0_ind}_seed{args.seed}_calibrated.png")
     plt.close()
-    
     
     device_name = torch.cuda.get_device_name() if torch.cuda.is_available() else "cpu"
     print(f"Device name: {device_name}, Elapsed time: {elapsed_time} seconds")
     torch.save({'c2st': dist0, 'mmd': dist1, 'SW1': dist3, 'SW2': dist2, 'device': device_name, 'elapsed_time': elapsed_time}, 
-               os.path.join(output_dir, f"result_x0_{args.x0_ind}_seed_{args.seed}.pt"))  
-
+               os.path.join(output_dir, f"TABC_x0_{args.x0_ind}_seed_{args.seed}.pt"))  
+    torch.save({'c2st': dist0_ABC, 'mmd': dist1_ABC, 'SW1': dist3_ABC, 'SW2': dist2_ABC, 'device': device_name, 'elapsed_time': elapsed_time}, 
+                   os.path.join(output_dir, f"ABC_x0_{args.x0_ind}_seed_{args.seed}_.pt"))  
+    
     
 
     #
