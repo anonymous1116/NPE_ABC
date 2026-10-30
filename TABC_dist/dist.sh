@@ -10,6 +10,7 @@
 #SBATCH --output=slurm/TABC_dist/output_log/%j.log
 #SBATCH --error=slurm/TABC_dist/output_log/%j.err
 #SBATCH --gpus-per-node=1
+#SBATCH --array=0-99               # Create a job array with indices from 0 to 99
 
 mkdir -p slurm/TABC_dist/output_log
 
@@ -27,7 +28,7 @@ seed=$((SLURM_ARRAY_TASK_ID / 10 + 1))
 
 L=1000000000
 task="bernoulli_glm2_disperse20"
-num_training=1000000
+num_training=500000
 tol=1e-5
 #cdim=10
 # Run the calibrate_amor.py
