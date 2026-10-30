@@ -149,7 +149,7 @@ def main(args):
     print("distribute")
     for i in range(len(x0_list.tolist())):
         #for j in seeds:
-        for j in 1:
+        for j in [1]:
                     
             create_c2st_job_script(args.task, args.num_training, args.measure, x0_ind = i, seed = j, cond_den = args.cond_den, method = args.method, post_n_samples=10_000, use_gpu = gpu_ind, embed = args.embed, cdim=args.cdim)
     print("distribute end")
@@ -160,4 +160,4 @@ if __name__ == "__main__":
     main(args)  # Pass the entire args object to the main function
 
 
-#python utils/evaluate.py --task "fold2" --measure "c2st" --num_training 10000 --method "NPE" 
+#python utils/evaluate.py --task "bernoulli_glm2" --measure "c2st" --num_training 10000 --method "NPE" 
