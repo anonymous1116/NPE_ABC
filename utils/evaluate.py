@@ -21,10 +21,11 @@ def create_c2st_job_script(task, num_training, measure, x0_ind, seed, post_n_sam
         method_arg = f"--method {method}"
     job_script = f"""#!/bin/bash
 #SBATCH --account=PES0984            # replace with your actual project account
+#SBATCH --clusters=pitzer          # or: pitzer, cardinal
 #SBATCH --job-name=c2st
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --cpus-per-task=2
+#SBATCH --cpus-per-task=4
 #SBATCH --time=00:30:00
 #SBATCH --output=NPE_ABC/{measure}/{task}/output_log/output_log_%j.log
 #SBATCH --error=NPE_ABC/{measure}/{task}/error_log/error_log_%j.txt
