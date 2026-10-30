@@ -5,7 +5,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=8
-#SBATCH --time=00:30:00
+#SBATCH --time=10:00:00
 #SBATCH --output=NPE_ABC/output_log/%j.out            # %x = job name, %j = job ID
 #SBATCH --error=NPE_ABC/output_log/%j.err
 
@@ -24,4 +24,4 @@ seeds=$SLURM_ARRAY_TASK_ID
 
 cd $SLURM_SUBMIT_DIR                  # run from wherever you submitted the job
 #python circadian/training.py --task "circadian" --method NPE --num_training 500000 --seed $seeds --x0_ind 2
-python NPE_training/NPE_run.py --task "bernoulli_glm2_disperse60" --num_training 10000 --seed 1 
+python NPE_training/NPE_run.py --task "bernoulli_glm2_disperse20" --num_training 100000 --seed $seeds
