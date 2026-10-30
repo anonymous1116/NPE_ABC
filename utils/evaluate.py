@@ -24,16 +24,13 @@ def create_c2st_job_script(task, num_training, measure, x0_ind, seed, post_n_sam
 #SBATCH --job-name=c2st
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --cpus-per-task=8
+#SBATCH --cpus-per-task=2
 #SBATCH --time=00:30:00
-#SBATCH --output=NPE_ABC/{measure}/{task}/output_log/output_log_%A.log
-#SBATCH --error=NPE_ABC/{measure}/{task}/error_log/error_log_%A.txt
+#SBATCH --output=NPE_ABC/{measure}/{task}/output_log/output_log_%j.log
+#SBATCH --error=NPE_ABC/{measure}/{task}/error_log/error_log_%j.txt
 
-mkdir -p NPE_ABC/{measure}/{task}/output_log
-mkdir -p NPE_ABC/{measure}/{task}/error_log
-
-# Load the required Python environment
-SLURM_SUBMIT_DIR=/users/PES0984/hhyun116/NPE_ABC
+for d in ("output_log", "error_log", "slurm_files"):
+    os.makedirs(f"NPE_ABC/{measure}/{task}/{d}", exist_ok=True)
 
 module load miniconda3/24.1.2-py310
 source activate BayesCalib
