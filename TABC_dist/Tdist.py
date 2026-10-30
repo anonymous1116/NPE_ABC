@@ -183,11 +183,9 @@ def main(args):
     print("X_abc size", X_abc.size())
 
     if args.task in task_benchmark:
-        post_sample = true_posteriors(j = args.x0_ind+1)
-    elif args.task in ["my_five_twomoons"]:    
-        post_sample = torch.load(f"../depot_hyun/hyun/NPE_ABC/seeds/my_five_twomoons_post_{args.x0_ind+1}.pt")
+        true_sample = true_posteriors(j = args.x0_ind+1)
     else:
-        post_sample = true_posteriors(torch.tensor(x0), n_samples=10_000, bounds=bounds)
+        true_sample = true_posteriors(torch.tensor(x0), n_samples=10_000, bounds=bounds)
     
     with torch.no_grad():
         tmp, _ =  transform.forward(Y_abc_WABC.to(device), context = embed(X_abc_WABC.to(device)) )
@@ -244,37 +242,50 @@ def main(args):
     
     sci_str = format(args.tol, ".0e")
     print(sci_str)  # Output: '1e-02'
+
+
+    dist0 = c2st(true_sample[:results_size], new_theta[:results_size])
+    dist1 = mmd(true_sample[:results_size], new_theta[:results_size])
+    dist2 = sliced_wasserstein(true_sample[:results_size], new_theta[:results_size])
+    dist3 = sliced_wasserstein(true_sample[:results_size], new_theta[:results_size], p=1)
     
-    output_dir = f"../depot_hyun/hyun/NPE_ABC/flow_c2st_latent5/{args.task}_context/J_{int(args.num_training/1000)}K/{int(args.L/1_000_000)}M_eta{sci_str}"
+    print(f"c2st: {dist0}, mmd: {dist1}, SW1: {dist3}, SW2: {dist2}")
+    
+    sci_str = format(args.tol, ".0e")
+    print(sci_str)  # Output: '1e-02'
+    
+    output_dir = f"../depot_hyun/hyun/NPE_ABC/Tdist/{args.task}/target/J_{int(args.num_training/1000)}K/{int(args.L/1_000_000)}M_eta{sci_str}"
     ## Create the directory if it doesn't exist
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
         print(f"Directory '{output_dir}' created.")
     else:
-        print(f"Directory '{output_dir}' already exists.")
+        print(f"Directory '{output_dir}' already exists.")    
 
     # Save to output_dir
-    pairplot(post_sample, figsize=(6,6), limits = bounds)
+    pairplot(true_sample, figsize=(6,6), limits = bounds)
     plt.savefig(Path(output_dir) / f"x0{args.x0_ind}_seed{args.seed}_reference_bounds.png")
     plt.close()
 
-    pairplot(post_sample, figsize=(6,6))
+    pairplot(true_sample, figsize=(6,6))
     plt.savefig(Path(output_dir) / f"x0{args.x0_ind}_seed{args.seed}_reference.png")
     plt.close()
     
-    pairplot(new_theta_WABC[:10000], figsize=(6,6), limits = bounds)
+    pairplot(new_theta[:10000], figsize=(6,6), limits = bounds)
     plt.savefig(Path(output_dir) / f"x0{args.x0_ind}_seed{args.seed}_calibrated_bounds.png")
     plt.close()
     
-    pairplot(new_theta_WABC[:10000], figsize=(6,6))
+    pairplot(new_theta[:10000], figsize=(6,6))
     plt.savefig(Path(output_dir) / f"x0{args.x0_ind}_seed{args.seed}_calibrated.png")
     plt.close()
     
-    torch.save(TABC_results, f"{output_dir}/x0{args.x0_ind}_seed{args.seed}.pt")
-    if device.type == 'cuda':
-        torch.save([torch.cuda.get_device_name(0), elapsed_time], f"{output_dir}/x0{args.x0_ind}_seed{args.seed}_info.pt")
-    else:
-        torch.save(["cpu", elapsed_time], f"{output_dir}/x0{args.x0_ind}_seed{args.seed}_info.pt")
+    
+    device_name = torch.cuda.get_device_name() if torch.cuda.is_available() else "cpu"
+    print(f"Device name: {device_name}, Elapsed time: {elapsed_time} seconds")
+    torch.save({'c2st': dist0, 'mmd': dist1, 'SW1': dist3, 'SW2': dist2, 'device': device_name, 'elapsed_time': elapsed_time}, 
+               os.path.join(output_dir, f"result_x0_{args.x0_ind}_seed_{args.seed}.pt"))  
+
+    
 
     #
 def get_args():
