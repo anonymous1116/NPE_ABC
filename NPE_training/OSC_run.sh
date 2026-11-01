@@ -23,5 +23,5 @@ seeds=$SLURM_ARRAY_TASK_ID
 
 cd $SLURM_SUBMIT_DIR                  # run from wherever you submitted the job
 #python circadian/training.py --task "circadian" --method NPE --num_training 500000 --seed $seeds --x0_ind 2
-python NPE_training/NPE_run.py --task "my_five_twomoons_disperse60" --num_training 3000000 --seed $seeds
+python NPE_training/NPE_run.py --task "my_five_twomoons_disperse80" --num_training 3000000 --seed $seeds
 #python observation_generator.py --task "my_five_twomoons"
