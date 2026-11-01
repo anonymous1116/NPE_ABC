@@ -100,7 +100,7 @@ def main(args):
     path = f"utils/files/disperser_{args.task}_D20_{args.mode}.pt"
 
 
-    tmp = build_disperser(s_pilot, d_out=20, mode=args.mode, alpha=1.0, sigma=1.0, seed=0, path=path)
+    disp = build_disperser(s_pilot, d_out=20, mode=args.mode, alpha=1.0, sigma=1.0, seed=0, path=path)
     obs_list = []
     for j in range(10):
         x0 = observation_lists(args.task)[j]
