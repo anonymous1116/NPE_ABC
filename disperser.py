@@ -96,8 +96,10 @@ def main(args):
     torch.manual_seed(123456)
     simulator = Simulators(args.task)
     prior = Priors(args.task)
+
+    current_dir = os.path.dirname(os.path.abspath(__file__))
     s_pilot = simulator(prior.sample((100_000,)))
-    path = f"utils/files/disperser_{args.task}_D20_{args.mode}.pt"
+    path = f"{current_dir}/utils/files/disperser_{args.task}_D20_{args.mode}.pt"
 
 
     tmp = build_disperser(s_pilot, d_out=20, mode=args.mode, alpha=1.0, sigma=1.0, seed=0, path=path)
