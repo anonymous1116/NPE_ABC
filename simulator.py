@@ -523,8 +523,8 @@ def simulator_bernoulli(thetas, batch_size=100_000):
 def simulator_bernoulli_disperse(thetas, disp, batch_size=100_000):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     design_matrix = torch.load("utils/files/design_matrix.pt", weights_only=True).to(device)
-    from disperser import Disperse
-    disp = Disperse(disp)
+    from disperser import Disperser
+    disp = Disperser(disp)
     disp = disp.to(device)
     N = thetas.size(0)
     output = []
