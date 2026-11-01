@@ -1349,7 +1349,7 @@ def Simulators(task_name: str):
         disperse_num = int(task_name.split("_")[-1][8:])
         disp = torch.load(f"{os.path.dirname(os.path.abspath(__file__))}/utils/files/disperser_my_five_twomoons_D{disperse_num}_embed.pt")
         def simulator_with_disperse(theta):
-            return simulator_bernoulli_disperse(theta, disp = disp)
+            return simulator_my_five_twomoons_disperse(theta, disp = disp)
         return simulator_with_disperse
         
     
