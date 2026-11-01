@@ -57,7 +57,11 @@ class Disperser:
         p = self.p
         z = (s.to(self.device, torch.float32) - p["mu"]) / p["sd"]
         if p["mode"] == "pad":
-            eta = torch.randn(z.shape[0], p["D"] - p["d"], generator=generator)  # drawn on CPU, so a seeded CPU generator works on any device
+            # in Disperser.__call__, replace the eta line:
+            if generator is None:
+                eta = torch.randn(z.shape[0], p["D"] - p["d"], device=self.device)
+            else:
+                eta = torch.randn(z.shape[0], p["D"] - p["d"], generator=generator).to(self.device)
             u = torch.cat([z, eta.to(self.device) * p["sigma"]], 1)
             h = u @ p["M1"].T
         else:
