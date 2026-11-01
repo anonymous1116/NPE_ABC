@@ -76,6 +76,12 @@ class Disperser:
         z = (h @ p["M1"])[:, :p["d"]]                # pad: Q1^T then keep the first d; embed: A^T
         return z * p["sd"] + p["mu"]
 
+    # add to class Disperser
+    def to(self, device):
+        self.device = torch.device(device)
+        self.p = {k: (v.to(self.device) if torch.is_tensor(v) else v) for k, v in self.p.items()}
+        return self
+
 
 def make_dispersed_simulator(simulator, disperser, device="cpu"):
     disp = disperser if isinstance(disperser, Disperser) else Disperser(disperser, device)
