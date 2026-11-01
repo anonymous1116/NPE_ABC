@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --account=PES0984
 #SBATCH --clusters=ascend
-#SBATCH --partition=nextgen #debug or preemptible
+#SBATCH --partition=debug-nextgen #debug or preemptible
 #SBATCH --job-name=TABC
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
@@ -27,7 +27,7 @@ seed=$((SLURM_ARRAY_TASK_ID / 10 + 1))
 #L=100000000
 
 L=1000000000
-task="bernoulli_glm2_disperse100"
+task="bernoulli_glm2_disperse20"
 num_training=500000
 tol=1e-5
 #cdim=10
@@ -35,7 +35,7 @@ tol=1e-5
 x0_ind=$((SLURM_ARRAY_TASK_ID % 10)) 
 
 echo "[$(date)] Starting job: x0_ind=$x0_ind, seed=$seed, L=$L"
-python TABC_dist/Tdist.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol 
+python TABC_dist/target.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol 
 echo "[$(date)] Job complete: x0_ind=$x0_ind, seed=$seed"
 
 #module load conda
