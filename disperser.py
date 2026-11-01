@@ -90,7 +90,7 @@ def save_observation(x_obs, disperser, seed, path):
 
 from simulator import Simulators, Priors, Bounds, observation_lists
 
-def main():
+def main(args):
     # Example usage of the Simulators class
     #simulators = simulator.Simulators(task="slcp")
     torch.set_manual_seed(12345)
@@ -111,6 +111,7 @@ def main():
     obs_list = torch.stack(obs_list)
     current_dir = os.path.dirname(os.path.abspath(__file__))
     torch.save(obs_list, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{args.task}_disperse{args.disperse_num}_obs.pt")
+    print(f"Disperser saved to {path} and dispersed observations saved to {current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{args.task}_disperse{args.disperse_num}_obs.pt")
 
     # check (once):
     disp = Disperser(path)
