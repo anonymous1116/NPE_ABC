@@ -93,7 +93,7 @@ from simulator import Simulators, Priors, Bounds, observation_lists
 def main(args):
     # Example usage of the Simulators class
     #simulators = simulator.Simulators(task="slcp")
-    torch.set_manual_seed(12345)
+    torch.manual_seed(123456)
     simulator = Simulators(args.task)
     prior = Priors(args.task)
     s_pilot = simulator(prior.sample((100_000,)))
