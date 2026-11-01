@@ -456,3 +456,66 @@ def eigen_chunked(MAT, chunk=1000):
         frob_sq = ((L_sqrt - 1) ** 2).sum(dim=-1) # [B]
         dist_list.append(frob_sq)
     return torch.cat(dist_list)       # (M, 2, 2)
+
+
+
+# Disperser
+class Disperser:
+    def __init__(self, params, device="cpu"):
+        if isinstance(params, str):
+            params = torch.load(params, weights_only=False)
+        self.p = {k: (v.to(device) if torch.is_tensor(v) else v) for k, v in params.items()}
+
+    def _phi(self, h):
+        a = self.p["alpha"]
+        return torch.asinh(a * h) / a if a > 0 else h
+
+    def _phi_inv(self, h):
+        a = self.p["alpha"]
+        return torch.sinh(a * h) / a if a > 0 else h
+
+    def __call__(self, s, generator=None):           # s: (n, d) -> (n, D)
+        p = self.p
+        z = (s.to(p["mu"]) - p["mu"]) / p["sd"]
+        eta = torch.randn(s.shape[0], p["D"] - p["d"], generator=generator,
+                          device=z.device) * p["sigma"]
+        u = torch.cat([z, eta], 1)
+        return self._phi(u @ p["Q1"].T) @ p["Q2"].T
+
+    def recover(self, s_prime):                       # s' -> s, for checking only
+        p = self.p
+        u = self._phi_inv(s_prime.to(p["Q2"]) @ p["Q2"]) @ p["Q1"]
+        return u[:, :p["d"]] * p["sd"] + p["mu"]
+
+def make_dispersed_simulator(simulator, disperser_path, device="cpu"):
+    disp = Disperser(disperser_path, device)
+    def simulator_D(theta):
+        return disp(simulator(theta))
+    return simulator_D
+
+def haar_orthogonal(D, g):
+    Q, R = torch.linalg.qr(torch.randn(D, D, generator=g, dtype=torch.float64))
+    return (Q * torch.sign(torch.diagonal(R))).float()
+
+def build_disperser(simulator, prior, d_out, alpha=1.0, sigma=1.0,
+                    seed=0, n_pilot=100_000, path="disperser.pt"):
+    g = torch.Generator().manual_seed(seed)
+    with torch.no_grad():
+        s = simulator(prior.sample((n_pilot,)))
+    d = s.shape[1]
+    assert d_out >= d
+    params = {
+        "mu": s.mean(0), "sd": s.std(0),
+        "Q1": haar_orthogonal(d_out, g), "Q2": haar_orthogonal(d_out, g),
+        "alpha": float(alpha), "sigma": float(sigma),
+        "d": d, "D": d_out,
+    }
+    torch.save(params, path)
+    return params
+
+def save_observation(x_obs, params, seed, path):
+    """Disperse one observation with a fixed noise draw and save it."""
+    g = torch.Generator().manual_seed(seed)
+    x_obs_D = Disperser(params)(x_obs, generator=g)
+    torch.save(x_obs_D, path)
+    return x_obs_D
