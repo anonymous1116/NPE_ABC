@@ -434,7 +434,6 @@ def observation_lists(task_name:str):
         disperse_num = int(task_name.split("_")[-1][8:])
         obs = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/bernoulli_glm2_disperse{disperse_num}_obs.pt")    
         return obs 
-    
 
     elif task_name in ["my_twomoons"]:
         return torch.tensor([[0.0, 0.0], [0.0, 1.0], [0.0, 2.0], [0.1, 0.1], 
@@ -522,6 +521,7 @@ def simulator_bernoulli(thetas, batch_size=100_000):
 
 
 def simulator_bernoulli_disperse(thetas, A, batch_size=100_000):
+    from disperser import Disperser
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     design_matrix = torch.load("utils/files/design_matrix.pt", weights_only=True).to(device)
     A = A.to(torch.float32)
