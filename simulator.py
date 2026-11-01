@@ -792,7 +792,7 @@ def simulator_my_five_twomoons_disperse(theta,disp,batch_size = 1_000_000):
         x = simulator_my_twomoons(th.reshape(n * 5, 2))           # 5 independent two-moons at once
         out.append(disp(x.reshape(n, 10)).cpu())                         # (n, D)
     out = torch.cat(out, dim=0)
-    return torch.stack(out)
+    return out
 
 
 
