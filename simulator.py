@@ -432,15 +432,9 @@ def observation_lists(task_name:str):
         obs_list = []
         current_dir = os.path.dirname(os.path.abspath(__file__))
         disperse_num = int(task_name.split("_")[-1][8:])
-        A = torch.load(f"{os.path.dirname(os.path.abspath(__file__))}/utils/files/rotation_A_{disperse_num}x10_seed0.pt")
-        A = A.to(torch.float32)
-            
-        for j in range(1, 11):
-            task = sbibm.get_task("bernoulli_glm")
-            observation = task.get_observation(num_observation=j)  # 10 per task
-            observation = observation @ A.T
-            obs_list.append(observation[0].tolist())
-        return torch.tensor(obs_list)
+        obs = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/bernoulli_glm2_disperse{disperse_num}_obs.pt")    
+        return obs 
+    
 
     elif task_name in ["my_twomoons"]:
         return torch.tensor([[0.0, 0.0], [0.0, 1.0], [0.0, 2.0], [0.1, 0.1], 
