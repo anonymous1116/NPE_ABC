@@ -1301,7 +1301,7 @@ def Simulators(task_name: str):
         return simulator_with_err
     elif task_name.startswith("bernoulli_glm2_disperse"):
         disperse_num = int(task_name.split("_")[-1][8:])
-        A = torch.load(f"{os.path.dirname(os.path.abspath(__file__))}/utils/files/rotation_A_{disperse_num}x10_seed0.pt")
+        disp = torch.load(f"{os.path.dirname(os.path.abspath(__file__))}/utils/files/disperser_{task_name.split('_')[-1]}.pt")
         def simulator_with_disperse(theta):
             return simulator_bernoulli_disperse(theta, A)
         return simulator_with_disperse
