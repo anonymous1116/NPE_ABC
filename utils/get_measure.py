@@ -96,20 +96,15 @@ def run_similiarity(task, measure, x0_ind, seed, post_n_samples, num_training, c
     dist1 = mmd(true_sample[:sample_post_size], sample_post[:sample_post_size])
     dist2 = sliced_wasserstein(true_sample[:sample_post_size], sample_post[:sample_post_size])
     dist3 = sliced_wasserstein(true_sample[:sample_post_size], sample_post[:sample_post_size], p=1)
-            
-            
-    print(f"c2st: ", dist0)
-    print(f"mmd: ", dist1)
-    print(f"SW1: ", dist3)
-    print(f"SW2: ", dist2)
+    print(f"c2st: {dist0}, mmd: {dist1}, SW1: {dist3}, SW2: {dist2}")
                       
-    
-    # Save
     
     output_dir = f"../depot_hyun/hyun/NPE_ABC/{method}_{measure}_results/{task}/J_{int(num_training/1000)}K"   
     os.makedirs(output_dir, exist_ok=True)
     
     torch.save({'c2st': dist0, 'mmd': dist1, 'SW1': dist3, 'SW2': dist2}, os.path.join(output_dir, f"result_x0_{x0_ind}_seed_{seed}.pt"))  # Customize filename as needed
+    print(f"Results saved to {os.path.join(output_dir, f'result_x0_{x0_ind}_seed_{seed}.pt')}")
+    
     # Save to output_dir
     pairplot(true_sample, figsize=(6,6), limits = limits)
     plt.savefig(Path(output_dir) / f"x0{args.x0_ind}_seed{args.seed}_reference.png")
@@ -146,4 +141,4 @@ if __name__ == "__main__":
     run_similiarity(args.task, args.measure, args.x0_ind, args.seed, args.post_n_samples, args.num_training, args.cond_den, args.method)
 
 
-#python utils/get_measure.py --task "bernoulli_glm2" --measure "c2st" --x0_ind 0 --seed 1 --post_n_samples 10000 --num_training 10000 --method "NPE"
+#python utils/get_measure.py --task "my_five_twomoons_disperse80" --measure "c2st" --x0_ind 0 --seed 1 --post_n_samples 10000 --num_training 5000 --method "NPE"
