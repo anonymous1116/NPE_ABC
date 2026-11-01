@@ -115,7 +115,7 @@ def Priors(task_name: str):
 task_benchmark = ["two_moons", 
                   "bernoulli_glm2", "bernoulli_glm2_err10", "bernoulli_glm2_err30", "bernoulli_glm2_err50", "bernoulli_glm2_err70", "bernoulli_glm2_err90",
                   "bernoulli_glm2_disperse20","bernoulli_glm2_disperse40","bernoulli_glm2_disperse60","bernoulli_glm2_disperse80","bernoulli_glm2_disperse100",
-                                    
+                  "my_five_twomoons_disperse20","my_five_twomoons_disperse40","my_five_twomoons_disperse60","my_five_twomoons_disperse80","my_five_twomoons_disperse100",                                                       
                   "slcp_summary_transform2", "double_slcp_summary_transform2", "mog_10", "slcp_distractors", "slcp", 
                   "my_five_twomoons_err10",
                   "my_five_twomoons_err30",
@@ -435,6 +435,13 @@ def observation_lists(task_name:str):
         obs = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/bernoulli_glm2_disperse{disperse_num}_obs.pt")    
         return obs 
 
+    elif task_name.startswith("my_five_twomoons_disperse"):
+            obs_list = []
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            disperse_num = int(task_name.split("_")[-1][8:])
+            obs = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/my_five_twomoons_disperse{disperse_num}_obs.pt")    
+            return obs 
+    
     elif task_name in ["my_twomoons"]:
         return torch.tensor([[0.0, 0.0], [0.0, 1.0], [0.0, 2.0], [0.1, 0.1], 
                              [-0.1, -0.1], [-3.0, 3.0], [-2.0, 3.0], 
@@ -758,6 +765,26 @@ def simulator_my_five_twomoons(theta):
         tmp2 = simulator_my_twomoons(tmp)
         X.append(tmp2)
     return torch.cat(X, dim = 1)
+
+
+def simulator_my_five_twomoons_disperse(theta,disp,batch_size = 1_000_000):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    from disperser import Disperser
+    disp = Disperser(disp)
+    disp = disp.to(device)
+        
+    # theta: N * 10 dimensions
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    out = []
+    for start in range(0, theta.size(0), batch_size):
+        th = theta[start:start + batch_size].to(device)           # (n, 10)
+        n = th.size(0)
+        x = simulator_my_twomoons(th.reshape(n * 5, 2))           # 5 independent two-moons at once
+        out.append(disp(x.reshape(n, 10)).cpu())                         # (n, D)
+    out = torch.cat(out, dim=0)
+    return torch.stack(out)
+
+
 
 def simulator_my_ten_twomoons(theta):
     # theta: N * 20 dimensions
