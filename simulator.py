@@ -138,6 +138,9 @@ class true_Posteriors:
             return self.two_moons(kwargs.get('j', 0))
         elif self.task.startswith("bernoulli_glm2"):
             return self.bernoulli_glm2(kwargs.get('j', 0))
+        elif self.task.startswith("my_five_twomoons_disperse"):
+            return self.my_five_twomoons_fixed(kwargs.get('j', 0))
+                
         elif self.task in ["slcp_summary_transform2", "slcp_distractors", "slcp"]:
             return self.slcp(kwargs.get('j', 0))
         elif self.task in ["double_slcp_summary_transform2"]:
@@ -297,6 +300,13 @@ class true_Posteriors:
         post_sample = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/my_five_twomoons_err90_post_{j}.pt")    
         return post_sample
     
+    def my_five_twomoons_fixed(self, j):
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        post_sample = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/my_five_twomoons_post_{j}.pt")    
+        return post_sample
+    
+
+
     def my_fifty_twomoons(self, j):
         current_dir = os.path.dirname(os.path.abspath(__file__))
         post_sample = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/my_fifty_twomoons_post_{j}.pt")    
