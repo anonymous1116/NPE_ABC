@@ -8,7 +8,7 @@
 #SBATCH --time=2-1:00:00
 #SBATCH --output=slurm/output_log/%j.out            # %x = job name, %j = job ID
 #SBATCH --error=slurm/output_log/%j.err
-##SBATCH --array=1-10               # Create a job array with indices from 1 to 10
+#SBATCH --array=1-10               # Create a job array with indices from 1 to 10
 ###SBATCH --gpus-per-node=1
 
 mkdir -p slurm/output_log
