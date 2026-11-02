@@ -120,10 +120,11 @@ def main(args):
     obs_list = torch.stack(obs_list)
     current_dir = os.path.dirname(os.path.abspath(__file__))
     if args.mode == "pad":
-        torch.save(obs_list, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{args.task}_pad_disperse{args.disperse_num}_obs.pt")
+        output_path = f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{args.task}_pad_disperse{args.disperse_num}_obs.pt"
     else:
-        torch.save(obs_list, f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{args.task}_disperse{args.disperse_num}_obs.pt")
-    print(f"Disperser saved to {path} and dispersed observations saved to {current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{args.task}_disperse{args.disperse_num}_obs.pt")
+        output_path = f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/{args.task}_disperse{args.disperse_num}_obs.pt"
+    torch.save(obs_list, output_path)
+    print(f"Disperser saved to {path} and dispersed observations saved to {output_path}")
 
     # check (once):
     disp = Disperser(path)
