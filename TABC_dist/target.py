@@ -19,6 +19,8 @@ from disperser import Disperser
 
 def main(args):
     seed = args.seed
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        
     #torch.set_default_device("cpu")
     if args.task.startswith("bernoulli_glm2_disperse"): 
         original_task = "bernoulli_glm2"
@@ -38,7 +40,6 @@ def main(args):
         
     L = args.L
     
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print(f"Current CUDA device: {torch.cuda.get_device_name() if torch.cuda.is_available() else 'cpu'}", flush=True)
     priors = Priors(original_task)
     simulators = Simulators(original_task)
