@@ -8,7 +8,6 @@ In both modes s can be recovered exactly from s', so p(theta | s') = p(theta | s
 """
 import torch, argparse, os
 
-
 def haar_orthogonal(D, k=None, g=None):
     """D x k matrix with Haar-random orthonormal columns (k = D gives a full orthogonal matrix)."""
     k = k or D
@@ -96,8 +95,6 @@ def save_observation(x_obs, disperser, seed, path):
     return x_obs_D
 
 
-
-
 from simulator import Simulators, Priors, Bounds, observation_lists
 
 def main(args):
@@ -110,7 +107,6 @@ def main(args):
     current_dir = os.path.dirname(os.path.abspath(__file__))
     s_pilot = simulator(prior.sample((100_000,)))
     path = f"{current_dir}/utils/files/disperser_{args.task}_D{args.disperse_num}_{args.mode}.pt"
-
 
     tmp = build_disperser(s_pilot, d_out=args.disperse_num, mode=args.mode, alpha=1.0, sigma=1.0, seed=0, path=path)
     disp = Disperser(tmp)
@@ -131,7 +127,6 @@ def main(args):
     s = simulator(prior.sample((1000,)))
     print("max recover error:", (disp.recover(disp(s)) - s).abs().max().item())
 
-
 def get_args():
     parser = argparse.ArgumentParser(description="Run simulation with customizable parameters.")
     parser.add_argument('--task', type=str, default='twomoons', 
@@ -141,7 +136,6 @@ def get_args():
     parser.add_argument("--disperse_num", type=int, default=100, 
                         help="Disperser number (default: 100)")
     return parser.parse_args()
-
 
 if __name__ == "__main__":
     args = get_args()

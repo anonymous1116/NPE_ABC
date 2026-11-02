@@ -13,21 +13,29 @@ from sbibm.metrics.mmd import mmd
 from simulator import Priors, Simulators, Bounds, observation_lists, true_Posteriors, task_benchmark
 from help_functions import UnifSample, param_box, truncated_mvn_sample, ABC_rej2
 from utils.get_measure import sliced_wasserstein
+from disperser import Disperser
+
+
 
 def main(args):
     seed = args.seed
     #torch.set_default_device("cpu")
-    
-    original_task = "bernoulli_glm2" if args.task.startswith("bernoulli_glm2") else args.task
+    if args.task.startswith("bernoulli_glm2_disperse"): 
+        original_task = "bernoulli_glm2"
+    elif args.task.startswith("my_five_twomoons_disperse"): 
+        original_task = "my_five_twomoons"
+    else:
+        print("Error: Task not recognized. Please use a valid task name.")
 
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    disperse_num = int(args.task.split("_")[-1][8:])
-            
-    A = torch.load(f"{current_dir}/../utils/files/rotation_A_{disperse_num}x10_seed0.pt")
-    A = A.to(torch.float32)
     torch.manual_seed(seed)
     np.random.seed(seed)
 
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    disperse_num = int(args.task.split("_")[-1][8:])
+    disp = torch.load(f"{os.path.dirname(os.path.abspath(__file__))}/utils/files/disperser_bernoulli_glm2_D{disperse_num}_embed.pt")
+    disp = Disperser(disp)
+    disp = disp.to(device)
+        
     L = args.L
     
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -37,7 +45,6 @@ def main(args):
     bounds = Bounds(original_task)
     true_posteriors = true_Posteriors(original_task)
         
-
 
     chunk_size = 5_000_000
     num_chunks = L // chunk_size
@@ -56,7 +63,7 @@ def main(args):
     Y_cal = priors.sample((1_000_000,))
     X_cal = simulators(Y_cal)
 
-    output_file_path = os.path.join(f'{current_dir}/../../depot_hyun/hyun/NPE_ABC/nets/{args.task}/J_{int(args.num_training/1000)}K/{args.task}_{seed}_{args.cond_den}.pkl')
+    output_file_path = os.path.join(f'{current_dir}/../../depot_hyun/hyun/NPE_ABC/nets/{args.task}/J_{int(args.num_training/1000)}K/{args.task}_{seed}_nsf.pkl')
     with open(output_file_path, 'rb') as f:
         saved_data = pickle.load(f)
     density_estimator_npe = saved_data["density_estimator"]
@@ -70,8 +77,8 @@ def main(args):
     X_cal, Y_cal = X_cal[index_ABC], Y_cal[index_ABC]    
 
 
-    x0_transform = torch.matmul(x0.to(device), A.T.to(device))
-    X_cal_transform = torch.matmul(X_cal.to(device), A.T.to(device))
+    x0_transform = disp(x0.to(device))
+    X_cal_transform = disp(X_cal.to(device))
     
     with torch.no_grad():
         tmp, _ = transform.forward(Y_cal.to(device), context = embed(X_cal_transform.to(device)) )
@@ -126,7 +133,7 @@ def main(args):
     index_ABC = ABC_rej2(x0, X_abc, new_tol, device)
     X_abc_tmp, Y_abc_tmp = X_abc[index_ABC], Y_abc[index_ABC]
 
-    X_abc_tmp_transform = torch.matmul(X_abc_tmp.to(device), A.T.to(device))
+    X_abc_tmp_transform = disp(X_abc_tmp.to(device))
             
 
 
@@ -141,7 +148,7 @@ def main(args):
         print("new_tol", new_tol, "tol_bound:", tol_bound)
         index_ABC = ABC_rej2(x0, X_abc, tol_bound, device)
         X_abc, Y_abc = X_abc[index_ABC], Y_abc[index_ABC]
-        X_abc_transform = torch.matmul(X_abc.to(device), A.T.to(device))
+        X_abc_transform = disp(X_abc.to(device))
             
         with torch.no_grad():
             tmp, _ =  transform.forward(Y_abc.to(device), context = embed(X_abc_transform.to(device)) )
@@ -218,8 +225,6 @@ def get_args():
                         help="Number of training data of NPE (default: 100_000)")
     parser.add_argument("--tol", type=float, default=1e-4,
                     help="Tolerance value for ABC (any positive float, default: 1e-4 but less than 1e-2)")
-    parser.add_argument('--cond_den', type=str, default='nsf', 
-                        help='Conditional density estimator type: mdn, maf, nsf')
     return parser.parse_args()
 
 
@@ -232,7 +237,6 @@ if __name__ == "__main__":
     print(f"task: {args.task}")
     print(f"num_training: {args.num_training}")
     print(f"tol: {args.tol}")
-    print(f"cond_den: {args.cond_den}")
 
 
 #python ABC_calibration/calibrating_flow_latent_target.py --x0_ind 1 --seed 1 --task "my_five_twomoons_err90" --num_training 5000000 --L 1000000 --tol 1e-2
