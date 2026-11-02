@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --account=PES0984
 #SBATCH --clusters=ascend
-#SBATCH --partition=debug-nextgen #debug or preemptible
+#SBATCH --partition=nextgen #debug or preemptible
 #SBATCH --job-name=TABC
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
@@ -28,14 +28,14 @@ seed=$((SLURM_ARRAY_TASK_ID / 10 + 1))
 
 L=1000000000
 task="bernoulli_glm2_disperse20"
-num_training=500000
+num_training=3000000
 tol=1e-5
 #cdim=10
 # Run the calibrate_amor.py
 x0_ind=$((SLURM_ARRAY_TASK_ID % 10)) 
 
 echo "[$(date)] Starting job: x0_ind=$x0_ind, seed=$seed, L=$L"
-#python TABC_dist/target.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol 
+python TABC_dist/target.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol 
 echo "[$(date)] Job complete: x0_ind=$x0_ind, seed=$seed"
 
 #module load conda
@@ -45,4 +45,4 @@ echo "[$(date)] Job complete: x0_ind=$x0_ind, seed=$seed"
 #python DP/calibrating_DP.py --x0_ind 1 --seed 1 --L 10000000 --task "table_dp_77" --num_training 3000000 --tol 1e-3
 #python ABC_calibration/SE_calib.py --x0_ind 1 --seed 4 --L 10000000 --task "mog_10" --num_training 300000 --tol 1e-3 --SDE "vp"
 
-python TABC_dist/target.py --x0_ind 0 --seed 1 --L 1000000000 --task "bernoulli_glm2_disperse20" --num_training 500000 --tol 1e-5
+#python TABC_dist/target.py --x0_ind 0 --seed 1 --L 1000000000 --task "bernoulli_glm2_disperse20" --num_training 500000 --tol 1e-5
