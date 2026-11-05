@@ -42,4 +42,4 @@ echo "[$(date)] Job complete: x0_ind=$x0_ind, seed=$seed"
 #module load conda
 #conda activate /depot/wangxiao/apps/hyun18/NPE_NABC
 
-python TABC_dist/target.py --x0_ind 0 --seed 1 --L 100000000 --task "bernoulli_glm2_pad_disperse100" --num_training 3000000 --tol 1e-4
+python TABC_dist/Tdist.py --x0_ind 0 --seed 1 --L 100000000 --task "bernoulli_glm2_pad_disperse100" --num_training 3000000 --tol 1e-4
