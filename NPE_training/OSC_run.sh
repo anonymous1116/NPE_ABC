@@ -5,7 +5,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=8
-#SBATCH --time=3:00:00
+#SBATCH --time=4-3:00:00
 #SBATCH --output=slurm/output_log/%j.out            # %x = job name, %j = job ID
 #SBATCH --error=slurm/output_log/%j.err
 ##SBATCH --array=1-10               # Create a job array with indices from 1 to 10
@@ -23,6 +23,6 @@ seeds=$SLURM_ARRAY_TASK_ID
 
 cd $SLURM_SUBMIT_DIR                  # run from wherever you submitted the job
 #python circadian/training.py --task "circadian" --method NPE --num_training 500000 --seed $seeds --x0_ind 2
-#python NPE_training/NPE_run.py --task "bernoulli_glm2_pad_disperse100" --num_training 3000000 --seed $seeds
-python NPE_training/NPE_run.py --task "my_five_twomoons_pad_disperse20" --num_training 100000 --seed 1
+python NPE_training/NPE_run.py --task "my_five_twomoons_pad_disperse20" --num_training 3000000 --seed $seeds
+#python NPE_training/NPE_run.py --task "my_five_twomoons_pad_disperse20" --num_training 100000 --seed 1
 #python observation_generator.py --task "my_five_twomoons"
