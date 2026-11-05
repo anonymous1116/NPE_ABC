@@ -34,7 +34,11 @@ def main(args):
 
     current_dir = os.path.dirname(os.path.abspath(__file__))
     disperse_num = int(args.task.split("_")[-1][8:])
-    disp = torch.load(f"{os.path.dirname(os.path.abspath(__file__))}/../utils/files/disperser_bernoulli_glm2_D{disperse_num}_embed.pt")
+
+    if args.task.split("_")[-2] == "pad":
+        disp = torch.load(f"{os.path.dirname(os.path.abspath(__file__))}/../utils/files/disperser_{original_task}_D{disperse_num}_pad.pt")
+    else:
+        disp = torch.load(f"{os.path.dirname(os.path.abspath(__file__))}/../utils/files/disperser_{original_task}_D{disperse_num}_embed.pt")
     disp = Disperser(disp)
     disp = disp.to(device)
         
