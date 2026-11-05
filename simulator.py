@@ -117,6 +117,7 @@ task_benchmark = ["two_moons",
                   "bernoulli_glm2_disperse20","bernoulli_glm2_disperse40","bernoulli_glm2_disperse60","bernoulli_glm2_disperse80","bernoulli_glm2_disperse100",
                   "bernoulli_glm2_pad_disperse20","bernoulli_glm2_pad_disperse40","bernoulli_glm2_pad_disperse60","bernoulli_glm2_pad_disperse80","bernoulli_glm2_pad_disperse100",
                   "my_five_twomoons_disperse20","my_five_twomoons_disperse40","my_five_twomoons_disperse60","my_five_twomoons_disperse80","my_five_twomoons_disperse100",                                                       
+                  "my_five_twomoons_pad_disperse20","my_five_twomoons_pad_disperse40","my_five_twomoons_pad_disperse60","my_five_twomoons_pad_disperse80","my_five_twomoons_pad_disperse100",                                                       
                   "slcp_summary_transform2", "double_slcp_summary_transform2", "mog_10", "slcp_distractors", "slcp", 
                   "my_five_twomoons_err10",
                   "my_five_twomoons_err30",
@@ -141,7 +142,9 @@ class true_Posteriors:
             return self.bernoulli_glm2(kwargs.get('j', 0))
         elif self.task.startswith("my_five_twomoons_disperse"):
             return self.my_five_twomoons_fixed(kwargs.get('j', 0))
-                
+        elif self.task.startswith("my_five_twomoons_pad_disperse"):
+            return self.my_five_twomoons_fixed(kwargs.get('j', 0))
+                        
         elif self.task in ["slcp_summary_transform2", "slcp_distractors", "slcp"]:
             return self.slcp(kwargs.get('j', 0))
         elif self.task in ["double_slcp_summary_transform2"]:
@@ -440,27 +443,35 @@ def observation_lists(task_name:str):
         return torch.tensor(obs_list)
 
     elif task_name.startswith("bernoulli_glm2_disperse"):
-            obs_list = []
-            current_dir = os.path.dirname(os.path.abspath(__file__))
-            disperse_num = int(task_name.split("_")[-1][8:])
-            obs = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/bernoulli_glm2_disperse{disperse_num}_obs.pt")    
-            return obs 
-    
+        obs_list = []
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        disperse_num = int(task_name.split("_")[-1][8:])
+        obs = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/bernoulli_glm2_disperse{disperse_num}_obs.pt")    
+        return obs 
+
     elif task_name.startswith("bernoulli_glm2_pad_disperse"):
-            obs_list = []
-            current_dir = os.path.dirname(os.path.abspath(__file__))
-            disperse_num = int(task_name.split("_")[-1][8:])
-            obs = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/bernoulli_glm2_pad_disperse{disperse_num}_obs.pt")    
-            return obs  
+        obs_list = []
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        disperse_num = int(task_name.split("_")[-1][8:])
+        obs = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/bernoulli_glm2_pad_disperse{disperse_num}_obs.pt")    
+        return obs  
 
 
     elif task_name.startswith("my_five_twomoons_disperse"):
-            obs_list = []
-            current_dir = os.path.dirname(os.path.abspath(__file__))
-            disperse_num = int(task_name.split("_")[-1][8:])
-            obs = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/my_five_twomoons_disperse{disperse_num}_obs.pt")    
-            return obs 
-    
+        obs_list = []
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        disperse_num = int(task_name.split("_")[-1][8:])
+        obs = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/my_five_twomoons_disperse{disperse_num}_obs.pt")    
+        return obs 
+
+    elif task_name.startswith("my_five_twomoons_pad_disperse"):
+        obs_list = []
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        disperse_num = int(task_name.split("_")[-1][8:])
+        obs = torch.load(f"{current_dir}/../depot_hyun/hyun/NPE_ABC/seeds/my_five_twomoons_pad_disperse{disperse_num}_obs.pt")    
+        return obs 
+
+
     elif task_name in ["my_twomoons"]:
         return torch.tensor([[0.0, 0.0], [0.0, 1.0], [0.0, 2.0], [0.1, 0.1], 
                              [-0.1, -0.1], [-3.0, 3.0], [-2.0, 3.0], 
@@ -1360,6 +1371,14 @@ def Simulators(task_name: str):
         def simulator_with_disperse(theta):
             return simulator_bernoulli_disperse(theta, disp = disp)
         return simulator_with_disperse
+
+    elif task_name.startswith("my_five_twomoons_pad_disperse"):
+        disperse_num = int(task_name.split("_")[-1][8:])
+        disp = torch.load(f"{os.path.dirname(os.path.abspath(__file__))}/utils/files/disperser_my_five_twomoons_D{disperse_num}_pad.pt")
+        def simulator_with_disperse(theta):
+            return simulator_my_five_twomoons_disperse(theta, disp = disp)
+        return simulator_with_disperse
+
 
     elif task_name.startswith("my_five_twomoons_disperse"):
         disperse_num = int(task_name.split("_")[-1][8:])
