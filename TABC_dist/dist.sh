@@ -1,16 +1,16 @@
 #!/bin/bash
 #SBATCH --account=PES0984
 #SBATCH --clusters=ascend
-#SBATCH --partition=debug-nextgen #debug or preemptible
+#SBATCH --partition=nextgen #debug or preemptible
 #SBATCH --job-name=TABC
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=4
-#SBATCH --time=01:00:00            # the debug limit is 1 hour
+#SBATCH --time=02:00:00            # the debug limit is 1 hour
 #SBATCH --output=slurm/TABC_dist/output_log/%j.log
 #SBATCH --error=slurm/TABC_dist/output_log/%j.err
 #SBATCH --gpus-per-node=1
-##SBATCH --array=0-99               # Create a job array with indices from 0 to 99
+#SBATCH --array=0-99               # Create a job array with indices from 0 to 99
 
 mkdir -p slurm/TABC_dist/output_log
 
@@ -35,11 +35,11 @@ tol=1e-5
 x0_ind=$((SLURM_ARRAY_TASK_ID % 10)) 
 
 echo "[$(date)] Starting job: x0_ind=$x0_ind, seed=$seed, L=$L"
-#python TABC_dist/Tdist.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol 
+python TABC_dist/Tdist.py --x0_ind $x0_ind --seed $seed --L $L --task $task --num_training $num_training --tol $tol 
 echo "[$(date)] Job complete: x0_ind=$x0_ind, seed=$seed"
 
 
 #module load conda
 #conda activate /depot/wangxiao/apps/hyun18/NPE_NABC
 
-python TABC_dist/Tdist.py --x0_ind 0 --seed 1 --L 100000000 --task "bernoulli_glm2_pad_disperse100" --num_training 3000000 --tol 1e-4
+#python TABC_dist/Tdist.py --x0_ind 0 --seed 1 --L 100000000 --task "bernoulli_glm2_pad_disperse100" --num_training 3000000 --tol 1e-4
