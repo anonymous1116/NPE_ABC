@@ -22,9 +22,9 @@ def main(args):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         
     #torch.set_default_device("cpu")
-    if args.task.startswith("bernoulli_glm2_disperse"): 
+    if args.task.startswith("bernoulli_glm2_"): 
         original_task = "bernoulli_glm2"
-    elif args.task.startswith("my_five_twomoons_disperse"): 
+    elif args.task.startswith("my_five_twomoons_"): 
         original_task = "my_five_twomoons"
     else:
         print("Error: Task not recognized. Please use a valid task name.")
