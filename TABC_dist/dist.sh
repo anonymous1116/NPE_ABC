@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --account=PES0984
 #SBATCH --clusters=ascend
-#SBATCH --partition=debug-nextgen #debug or preemptible
+#SBATCH --partition=nextgen #debug or preemptible
 #SBATCH --job-name=TABC
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
